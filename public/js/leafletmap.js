@@ -60,11 +60,11 @@ function tableHTML(lat, lng){
 var locationMarker
 function placeSensorDataMarker(lat, lng){
   var sensorIcon = L.icon({
-    iconUrl: 'sensor_image.png',
-    iconSize: [360, 360],
+    iconUrl: 'img/sensor_image.png',
+    iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
     iconAnchor: [16, 16], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
-  locationMarker = L.marker([lat, lng]).addTo(map);
+  locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(map);
   
   // Pop-ups for data. 
   locationMarker.bindPopup(tableHTML(lat,lng))
