@@ -35,3 +35,20 @@ app.get('/index', (req, res) => {
 app.get('/index/:subpage', (req, res) => {
   res.send('parameter: ' + req.params.subpage + ' which is of type: ' + typeof(req.params.subpage));
 })
+
+////////////////////////////////////////
+// API Fetch opendata.dk sensor data. //
+////////////////////////////////////////
+
+// https://itk-dev.github.io/datatidy/user-guide/da/tutorial/
+
+const API_URL_CITYLAB_SENSOR="http://portal.opendata.dk/api/3/action/datastore_search?resource_id=c65b055d-a020-4871-ab51-bdbc3fd73fd8"
+
+const fetch = require("node-fetch")
+
+app.get('/citylab', (req, res) => {
+  fetch(API_URL_CITYLAB_SENSOR)
+  .then((response) => response.json())
+  .then((data) => res.send(data.result.records))
+  .catch(console.error());
+})

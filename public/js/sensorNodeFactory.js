@@ -1,7 +1,7 @@
-class CityLabSensor {
+export class CityLabSensor {
   constructor(options){
-    this.id = options.id // Unique sensor id for identification.
-    this.sensorType = options.sensorType // Sensor type identifier.
+    this.device_id = options.device_id || 7 // Unique sensor id for identification.
+    this.sensorType = "CityLab" // Sensor type identifier.
 
     // Data types. TODO: Update how data values are fetched.
     this.air_temperature = options.air_temperature || -144.0 // Temperature data. 
@@ -13,9 +13,13 @@ class CityLabSensor {
     this.wind_vane = options.wind_vane || 2 // wind direction
     this.rain = options.rain || 0 //rain data
   }
+
+  getData(){
+    return Object.keys(this)
+  }
 }
 
-class CityProbe2Sensor { 
+export class CityProbe2Sensor { 
   constructor(options) {
     this.aPS = options.aPS || 0.54,
     this.b = options.b || 100,
@@ -37,10 +41,15 @@ class CityProbe2Sensor {
     this.p = options.p || 1025.58,
     this.t = options.t || 4.38,
     this.device_id = options.device_id || "e00fce68fca36d2a30038a13"
+    this.sensorType = "CityProbe2"
+  }
+
+  getData(){ 
+    return object.keys(this)
   }
 }
 
-class SensorFactory {
+export class SensorFactory {
   create (options) {
     if(!options.sensorType) {return "no type specified"};
 
@@ -57,7 +66,7 @@ class SensorFactory {
 function test(){
   const sensorfactory = new SensorFactory();
   const sensor = sensorfactory.create({
-    id: 1,
+    device_id: 1,
     sensorType: "CityLab"
   })
   console.log("-------------------------------------")

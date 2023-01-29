@@ -52,13 +52,26 @@ function err(pos){
   }
 }
 
-// This is the formatting for the table used:
-function tableHTML(lat, lng){
-  return "<table><thead><tr><th>Location</th><th>(" + lat + ", " + lng + ")</th></tr></thead><tbody><tr><td>Sensor type<br></td><td>UNKNOWN TYPE</td></tr><tr><td>Most recent data<br></td><td>UNKNOWN DATA</td></tr><tr><td>Source</td><td>UNKNOWN SOURCE</td></tr></tbody></table>"
+// Format key and value for sensor into something readable. 
+function tableHTML(lat, lng, sensor){
+  const loc = "<table><thead><tr><th>Location</th><th>(" + lat + ", " + lng + ")</th></tr></thead><tbody>"
+
+  var tableListOutput = "<tr><td>Most recent data<br></td></tr> "
+  Object.entries(sensor).forEach(([key, value]) => {
+    tableListOutput += "<tr><td>" + `${key}` + "</td><td>" + `${value}` + "</td></tr>"
+  })
+  var tableListEnd = "</tbody></table>"
+
+  return loc+tableListOutput+tableListEnd
 }
-// Place a marker. 
+
+/*
+ * MARKER PLACEMENT.
+ */
+
+// Place a marker, and add a pop-up to it. 
 var locationMarker
-function placeSensorDataMarker(lat, lng){
+function placeSensorDataMarker(lat, lng, sensor){
   var sensorIcon = L.icon({
     iconUrl: 'img/sensor_image.png',
     iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
@@ -67,7 +80,13 @@ function placeSensorDataMarker(lat, lng){
   locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(map);
   
   // Pop-ups for data. 
-  locationMarker.bindPopup(tableHTML(lat,lng))
+  locationMarker.bindPopup(tableHTML(lat, lng, sensor))
 }
 
-placeSensorDataMarker(56.172689, 10.042084)
+// Test code for sensor factory. 
+import {SensorFactory} from './sensorNodeFactory.js'
+const sensorFactory = new SensorFactory();
+const testsensor = sensorFactory.create({device_id: 1, sensorType: "CityProbe2"})
+placeSensorDataMarker(56.172689, 10.042084, testsensor)
+const testsensor2 = sensorFactory.create({device_id: 2, sensorType: "CityLab"})
+placeSensorDataMarker(56.1720735,10.0418602, testsensor2)
