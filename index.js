@@ -52,3 +52,28 @@ app.get('/citylab', (req, res) => {
   .then((data) => res.send(data.result.records))
   .catch(console.error());
 })
+
+//////////////////////////////////////////
+// API Fetch cityflow.live sensor data. //
+//////////////////////////////////////////
+
+const API_URL_CITYPROBE2_SENSOR_LOCATION="https://api.cityflow.live/devices"
+const API_URL_CITYPROBE2_SENSOR_LATEST="https://api.cityflow.live/measurements/latest"
+const HEADER_CITYPROBE2_SENSORS = {
+  Authorization: "Bearer " + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTI0LCJpYXQiOjE2MTk2MzAwMzMsImV4cCI6MTkwOTcxNjQzM30.o2XZJEE9RE71Z-2z8oYLYD-9QANbi-fF1iTRvroTrx0"
+};
+
+app.get('/cityprobe2list', (req, res) => {
+  fetch(API_URL_CITYPROBE2_SENSOR_LOCATION, {headers: HEADER_CITYPROBE2_SENSORS})
+  .then((response) => response.json())
+  .then((data) => res.send(data))
+  .catch(console.error());
+})
+
+//TODO: The data gets fetched, but is never used.
+app.get('/cityprobe2latest', (req, res) => {
+  fetch(API_URL_CITYPROBE2_SENSOR_LATEST, {headers: HEADER_CITYPROBE2_SENSORS})
+  .then((response) => response.json())
+  .then((data) => res.send(data))
+  .catch(console.error());
+})

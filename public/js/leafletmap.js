@@ -40,7 +40,7 @@ function success(pos){
     map.fitBounds(userPosCircle.getBounds());
     foundUser = true;
   } 
-  map.setView([lat, lng]);
+  //map.setView([lat, lng]);
 }
 
 // Error handling of not retrieving user position. 
@@ -71,9 +71,9 @@ function tableHTML(lat, lng, sensor){
 
 // Place a marker, and add a pop-up to it. 
 var locationMarker
-function placeSensorDataMarker(lat, lng, sensor){
+function placeSensorDataMarker(lat, lng, sensor, iconUrl){
   var sensorIcon = L.icon({
-    iconUrl: 'img/sensor_image.png',
+    iconUrl: iconUrl,
     iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
     iconAnchor: [16, 16], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
@@ -86,7 +86,29 @@ function placeSensorDataMarker(lat, lng, sensor){
 // Test code for sensor factory. 
 import {SensorFactory} from './sensorNodeFactory.js'
 const sensorFactory = new SensorFactory();
-const testsensor = sensorFactory.create({device_id: 1, sensorType: "CityProbe2"})
-placeSensorDataMarker(56.172689, 10.042084, testsensor)
-const testsensor2 = sensorFactory.create({device_id: 2, sensorType: "CityLab"})
-placeSensorDataMarker(56.1720735,10.0418602, testsensor2)
+const testsensor = sensorFactory.create({id: "This is a test", sensorType: "CityProbe2"})
+placeSensorDataMarker(56.172689, 10.042084, testsensor, testsensor.iconUrl)
+const testsensor2 = sensorFactory.create({device_id: "This is a test", sensorType: "CityLab"})
+placeSensorDataMarker(56.1720735,10.0418602, testsensor2, testsensor2.iconUrl)
+
+// Fetch data for the CityProbe2 devices.
+async function fetchCityProbe2(){
+  const response = await fetch('/cityprobe2list')
+  const locationdata = await response.json()
+
+  const response2 = await fetch('/cityprobe2latest') // TODO: FIX
+  const data2 = await response2.json()
+
+  locationdata.forEach((item, index) => {
+    //console.log("ELEM" + Object.entries(item)) 
+    console.log("YEET" + JSON.stringify(data2))
+    const newSensor = sensorFactory.createCityProbe2Sensor(item, data2[index])
+    placeSensorDataMarker(item.latitude, item.longitude, newSensor, newSensor.iconUrl)
+  })
+}
+fetchCityProbe2();
+
+async function fetchCityLab(){
+  const response = await fetch('/citylab')
+  const locationda
+}

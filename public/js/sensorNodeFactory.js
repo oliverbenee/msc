@@ -12,6 +12,7 @@ export class CityLabSensor {
     this.wind_speed = options.wind_speed || 7.20000028610229 // wind velocity
     this.wind_vane = options.wind_vane || 2 // wind direction
     this.rain = options.rain || 0 //rain data
+    this.iconUrl='img/sensor_image.png'
   }
 
   getData(){
@@ -21,11 +22,15 @@ export class CityLabSensor {
 
 export class CityProbe2Sensor { 
   constructor(options) {
+    this.device_id = options.id || "e00fce68fca36d2a30038a13",
+    this.sensorType = "CityProbe2",
     this.aPS = options.aPS || 0.54,
     this.b = options.b || 100,
     this.h = options.h || 74.51,
     this.l = options.l || 59.4,
-    this.location = options.location || "228",
+    this.location = options.location || "DEFAULT",
+    this.location_name = options.location_name || "DEFAULT",
+    this.country = options.country || "DEFAULT", 
     this.mP1 = options.mP1 || 9.11,
     this.mP2 = options.mP2 || 10.22,
     this.mP4 = options.mP4 || 10.69,
@@ -40,8 +45,7 @@ export class CityProbe2Sensor {
     this.nS = options.nS || 1.27,
     this.p = options.p || 1025.58,
     this.t = options.t || 4.38,
-    this.device_id = options.device_id || "e00fce68fca36d2a30038a13"
-    this.sensorType = "CityProbe2"
+    this.iconUrl='img/montem_logo.jpg'
   }
 
   getData(){ 
@@ -50,6 +54,7 @@ export class CityProbe2Sensor {
 }
 
 export class SensorFactory {
+  // The other methods make more sense in my head. This requires reading the method every time and is dumb and stupid and also dumb. But leave it there for those... SPESHUL ones???? TODO: should this be deleted.
   create (options) {
     if(!options.sensorType) {return "no type specified"};
 
@@ -60,6 +65,12 @@ export class SensorFactory {
   
     sensor.sensorType = options.sensorType;
     return sensor;
+  }
+  createCityLabSensor(options) {
+    return new CityLabSensor(options);
+  }
+  createCityProbe2Sensor(options) {
+    return new CityProbe2Sensor(options);
   }
 };
 
@@ -76,9 +87,19 @@ function test(){
   console.log("test sensor 2")
   const sensor2 = sensorfactory.create({
     device_id: 2,
-    sensorType: "CityProbe2"
+    sensorType: "CityLab"
   })
   Object.keys(sensor2).forEach((prop, index) => {console.log(prop + ": " + Object.values(sensor2)[index])})
+
+  console.log("--------------------------------")
+  console.log("test sensor 3")
+  const sensor3 = sensorfactory.createCityLabSensor({device_id: 3})
+  Object.keys(sensor3).forEach((prop, index) => {console.log(prop + ": " + Object.values(sensor3)[index])})
+
+  console.log("----------------------------------------------------------------")
+  console.log("test sensor 4")
+  const sensor4 = sensorfactory.createCityProbe2Sensor({device_id:4})
+  Object.keys(sensor4).forEach((prop, index) => {console.log(prop + ": " + Object.values(sensor4)[index])})
 }
-test();
+//test();
 
