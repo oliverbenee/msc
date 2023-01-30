@@ -77,3 +77,8 @@ app.get('/cityprobe2latest', (req, res) => {
   .then((data) => res.send(data))
   .catch(console.error());
 })
+
+////////////////////////////////
+// API Fetch DMI sensor data. //
+////////////////////////////////
+

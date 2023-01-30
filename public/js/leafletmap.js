@@ -110,5 +110,4 @@ fetchCityProbe2();
 
 async function fetchCityLab(){
   const response = await fetch('/citylab')
-  const locationda
 }
