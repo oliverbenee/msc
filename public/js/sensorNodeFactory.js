@@ -21,7 +21,7 @@ export class CityLabSensor {
 }
 
 export class CityProbe2Sensor { 
-  constructor(options, ld) {
+  constructor(options) {
     this.device_id = options.device_id
     this.sensorType = "CityProbe2"
     this.time = options.time
@@ -82,8 +82,8 @@ export class SensorFactory {
   createCityLabSensor(options) {
     return new CityLabSensor(options);
   }
-  createCityProbe2Sensor(options, ld) {
-    return new CityProbe2Sensor(options, ld);
+  createCityProbe2Sensor(options) {
+    return new CityProbe2Sensor(options);
   }
   createNullSensor() {
     return new NullSensor()
