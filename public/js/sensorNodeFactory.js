@@ -4,14 +4,14 @@ export class CityLabSensor {
     this.sensorType = "CityLab" // Sensor type identifier.
 
     // Data types. TODO: Update how data values are fetched.
-    this.air_temperature = options.air_temperature || -144.0 // Temperature data. 
-    this.humidity = options.humidity || 100.0 // humidity data. 
-    this.pressure = options.pressure || 97402.03125 // Pressure data.
-    this.lux = options.lux || 503 // Light data (lux).
-    this.solar_radiation = options.solar_radiation || 0
-    this.wind_speed = options.wind_speed || 7.20000028610229 // wind velocity
-    this.wind_vane = options.wind_vane || 2 // wind direction
-    this.rain = options.rain || 0 //rain data
+    this.air_temperature = options.air_temperature // Temperature data. 
+    this.humidity = options.humidity // humidity data. 
+    this.pressure = options.pressure // Pressure data.
+    this.lux = options.lux // Light data (lux).
+    this.solar_radiation = options.solar_radiation
+    this.wind_speed = options.wind_speed // wind velocity
+    this.wind_vane = options.wind_vane // wind direction
+    this.rain = options.rain //rain data
     this.iconUrl='img/sensor_image.png'
   }
 
@@ -21,38 +21,51 @@ export class CityLabSensor {
 }
 
 export class CityProbe2Sensor { 
-  constructor(options) {
-    this.device_id = options.id || "e00fce68fca36d2a30038a13",
-    this.sensorType = "CityProbe2",
-    this.aPS = options.aPS || 0.54,
-    this.b = options.b || 100,
-    this.h = options.h || 74.51,
-    this.l = options.l || 59.4,
-    this.location = options.location || "DEFAULT",
-    this.location_name = options.location_name || "DEFAULT",
-    this.country = options.country || "DEFAULT", 
-    this.mP1 = options.mP1 || 9.11,
-    this.mP2 = options.mP2 || 10.22,
-    this.mP4 = options.mP4 || 10.69,
-    this.mPX = options.mPX || 10.79,
-    this.nA = options.nA || 54.63,
-    this.nMa = options.nMa || 55.29,
-    this.nMi = options.nMi || 45.23,
-    this.nP1 = options.nP1 || 71.87,
-    this.nP2 = options.nP2 || 72.67,
-    this.nP4 = options.nP4 || 72.82,
-    this.nPX = options.nPX || 72.85,
-    this.nS = options.nS || 1.27,
-    this.p = options.p || 1025.58,
-    this.t = options.t || 4.38,
+  constructor(options, ld) {
+    this.device_id = options.device_id
+    this.sensorType = "CityProbe2"
+    this.time = options.time
+    this.aPS = options.aPS
+    this.b = options.b
+    this.h = options.h
+    this.l = options.l
+    this.mP1 = options.mP1
+    this.mP2 = options.mP2
+    this.mP4 = options.mP4
+    this.mPX = options.mPX
+    this.nA = options.nA
+    this.nMa = options.nMa
+    this.nMi = options.nMi
+    this.nP1 = options.nP1
+    this.nP2 = options.nP2
+    this.nP4 = options.nP4
+    this.nPX = options.nPX
+    this.nS = options.nS
+    this.p = options.p
+    this.t = options.t
     this.iconUrl='img/montem_logo.jpg'
-  }
 
-  getData(){ 
-    return object.keys(this)
+    // locationdata
+    this.city = options.city
+    this.country = options.country
+    this.location_name = options.location_name
+    this.location = options.location
   }
 }
 
+export class DMIFreeDataSensor { 
+  constructor(options){
+    this.source = "DMI"
+    this.location = options.location ||"DEFAULT"
+  }
+}
+
+export class NullSensor {
+  constructor(){
+    this.description = "There is a known sensor location here, but there is no data for it. "
+    this.iconUrl='img/sensor_image.png'
+  }
+}
 export class SensorFactory {
   // The other methods make more sense in my head. This requires reading the method every time and is dumb and stupid and also dumb. But leave it there for those... SPESHUL ones???? TODO: should this be deleted.
   create (options) {
@@ -69,8 +82,11 @@ export class SensorFactory {
   createCityLabSensor(options) {
     return new CityLabSensor(options);
   }
-  createCityProbe2Sensor(options) {
-    return new CityProbe2Sensor(options);
+  createCityProbe2Sensor(options, ld) {
+    return new CityProbe2Sensor(options, ld);
+  }
+  createNullSensor() {
+    return new NullSensor()
   }
 };
 

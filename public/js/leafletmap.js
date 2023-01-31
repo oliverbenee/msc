@@ -71,9 +71,9 @@ function tableHTML(lat, lng, sensor){
 
 // Place a marker, and add a pop-up to it. 
 var locationMarker
-function placeSensorDataMarker(lat, lng, sensor, iconUrl){
+function placeSensorDataMarker(lat, lng, sensor){
   var sensorIcon = L.icon({
-    iconUrl: iconUrl,
+    iconUrl: sensor.iconUrl,
     iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
     iconAnchor: [16, 16], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
@@ -93,21 +93,35 @@ placeSensorDataMarker(56.1720735,10.0418602, testsensor2, testsensor2.iconUrl)
 
 // Fetch data for the CityProbe2 devices.
 async function fetchCityProbe2(){
+  // Locations are fetched seperately from sensor data.
   const response = await fetch('/cityprobe2list')
   const locationdata = await response.json()
 
-  const response2 = await fetch('/cityprobe2latest') // TODO: FIX
-  const data2 = await response2.json()
+  const response2 = await fetch('/cityprobe2latest')
+  const sensordata = await response2.json()
 
+  // Place CityProbe2 markers.
   locationdata.forEach((item, index) => {
-    //console.log("ELEM" + Object.entries(item)) 
-    console.log("YEET" + JSON.stringify(data2))
-    const newSensor = sensorFactory.createCityProbe2Sensor(item, data2[index])
-    placeSensorDataMarker(item.latitude, item.longitude, newSensor, newSensor.iconUrl)
+    var location = item.id;
+    var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
+    console.log("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
+    if(!elemToUse[0]){
+      placeSensorDataMarker(item.latitude, item.longitude, sensorFactory.createNullSensor())
+    } else {  
+      var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
+      var newSensor = sensorFactory.createCityProbe2Sensor(paramsForCityProbe2Sensor);
+      placeSensorDataMarker(item.latitude, item.longitude, newSensor);
+    }
   })
 }
 fetchCityProbe2();
 
 async function fetchCityLab(){
   const response = await fetch('/citylab')
+  
+}
+fetchCityLab();
+
+// Fetch DMI free data. 
+async function fetchDMIData(){
 }
