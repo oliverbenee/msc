@@ -91,6 +91,10 @@ placeSensorDataMarker(56.172689, 10.042084, testsensor, testsensor.iconUrl)
 const testsensor2 = sensorFactory.create({device_id: "This is a test", sensorType: "CityLab"})
 placeSensorDataMarker(56.1720735,10.0418602, testsensor2, testsensor2.iconUrl)
 
+/*
+ * FETCH DATA FROM APIs. 
+ */
+
 // Fetch data for the CityProbe2 devices.
 async function fetchCityProbe2(){
   // Locations are fetched seperately from sensor data.
