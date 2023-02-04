@@ -70,7 +70,6 @@ app.get('/cityprobe2list', (req, res) => {
   .catch(console.error());
 })
 
-//TODO: The data gets fetched, but is never used.
 app.get('/cityprobe2latest', (req, res) => {
   fetch(API_URL_CITYPROBE2_SENSOR_LATEST, {headers: HEADER_CITYPROBE2_SENSORS})
   .then((response) => response.json())
@@ -82,3 +81,12 @@ app.get('/cityprobe2latest', (req, res) => {
 // API Fetch DMI sensor data. //
 ////////////////////////////////
 
+const API_URL_DMI_METOBS_STATIONS="https://dmigw.govcloud.dk/v2/metObs/collections/station/items"
+const API_KEY_DMI_METOBS = "03814681-8a26-4e7d-8aa6-dfac3c679f3f" 
+
+app.get('/dmimetobslist', (req, res) => {
+  fetch(API_URL_DMI_METOBS_STATIONS + "?api-key=" + API_KEY_DMI_METOBS)
+  .then((response) => response.json())
+  .then((data) => res.send(data))
+  .catch(console.error())
+})

@@ -56,7 +56,8 @@ export class CityProbe2Sensor {
 export class DMIFreeDataSensor { 
   constructor(options){
     this.source = "DMI"
-    this.location = options.location ||"DEFAULT"
+    Object.assign(this, options) // OK so there are like a billion variables here and fat chance i can be bothered to add all of them :-)
+    this.iconUrl = 'img/dmi_logo.png'
   }
 }
 
@@ -87,6 +88,9 @@ export class SensorFactory {
   }
   createNullSensor() {
     return new NullSensor()
+  }
+  createDMIFreeDataSensor(options){
+    return new DMIFreeDataSensor(options);
   }
 };
 

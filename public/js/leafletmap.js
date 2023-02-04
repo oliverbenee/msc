@@ -116,12 +116,21 @@ async function fetchCityProbe2(){
 }
 fetchCityProbe2();
 
-async function fetchCityLab(){
-  const response = await fetch('/citylab')
-  
-}
-fetchCityLab();
-
 // Fetch DMI free data. 
 async function fetchDMIData(){
+    // Locations are fetched seperately from sensor data.
+    const response = await fetch('/dmimetobslist')
+    const dmiData = await response.json()
+    const features = dmiData.features
+
+    features.forEach(item => {
+      console.log(item)
+      // LATITUDE AND LONGITUDE ARE REVERSED I SHIT YOU NOT WHAT IN TARNATION.
+      var latitude = item.geometry.coordinates[1] // THIS IS LATITUDE
+      var longitude = item.geometry.coordinates[0] // THIS IS LONGITUDE
+      var paramsForDMISensor = jQuery.extend(latitude, longitude, item.properties)
+      placeSensorDataMarker(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
+    })
+
 }
+fetchDMIData();
