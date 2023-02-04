@@ -1,5 +1,5 @@
 'use strict';
-console.log("leafletmap script up")
+//console.log("leafletmap script up")
 
 // Initialize map, set its view on top of IT-byen, and xoom in.
 var map = L.map('map')
@@ -104,7 +104,7 @@ async function fetchCityProbe2(){
   locationdata.forEach((item, index) => {
     var location = item.id;
     var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
-    console.log("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
+    //console.log("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
     if(!elemToUse[0]){
       placeSensorDataMarker(item.latitude, item.longitude, sensorFactory.createNullSensor())
     } else {  
@@ -124,7 +124,7 @@ async function fetchDMIData(){
     const features = dmiData.features
 
     features.forEach(item => {
-      console.log(item)
+      //console.log(item)
       // LATITUDE AND LONGITUDE ARE REVERSED I SHIT YOU NOT WHAT IN TARNATION.
       var latitude = item.geometry.coordinates[1] // THIS IS LATITUDE
       var longitude = item.geometry.coordinates[0] // THIS IS LONGITUDE
