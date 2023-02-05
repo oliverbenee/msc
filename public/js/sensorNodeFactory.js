@@ -56,8 +56,19 @@ export class CityProbe2Sensor {
 export class DMIFreeDataSensor { 
   constructor(options){
     this.source = "DMI"
-    Object.assign(this, options) // OK so there are like a billion variables here and fat chance i can be bothered to add all of them :-)
     this.iconUrl = 'img/dmi_logo.png'
+    // TODO: Rewrite in a way that is readable. 
+    // The code essentially copies known properties into variables in the class. 
+    for (const element in options) {
+      if (Object.hasOwnProperty.call(options, element)) {
+        var thing = options[element].properties;
+        let propertyname = thing.parameterId
+        let propertyvalue = thing.value
+        //console.log(propertyname +": "+ propertyvalue)
+        eval("this."+propertyname+"="+propertyvalue) // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
+      }
+    }    
+    //jQuery.extend(this, options[0].properties)//FIXME: This only assigns one value, and i KNOW, there are more. How do we add them?
   }
 }
 

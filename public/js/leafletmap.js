@@ -3,7 +3,7 @@
 
 // Initialize map, set its view on top of IT-byen, and xoom in.
 var map = L.map('map')
-map.setView([56.172196954673105, 10.188960985472951], 15); // NOTE: This will normally just give a grey box.
+map.setView([56.172196954673105, 10.188960985472951], 10); // NOTE: This will normally just give a grey box.
 
 // Specify map data source. Use openstreetmap! The tiles are the "map fragments" you see. 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -127,14 +127,30 @@ async function fetchDMIData(){
     const dmiData = await response.json()
     const features = dmiData.features
 
+    const response2 = await fetch('dmimetobs')
+    const dmiData2 = await response2.json()
+    const features2 = dmiData2.features
+
+    var noOfEmptyObservationStations = 0;
     features.forEach(item => {
-      //console.log(item)
-      // LATITUDE AND LONGITUDE ARE REVERSED I SHIT YOU NOT WHAT IN TARNATION.
+      //console.log("-------------------------------------")
+      // Identify associated station for the location.
       var latitude = item.geometry.coordinates[1] // THIS IS LATITUDE
       var longitude = item.geometry.coordinates[0] // THIS IS LONGITUDE
-      var paramsForDMISensor = jQuery.extend(latitude, longitude, item.properties)
-      placeSensorDataMarker(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
-    })
+      var stationId = item.properties.stationId
 
+      // Now find the features for that sensor in the metobs. 
+      var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
+      if(featuresForThatSensor.length != 0){
+        var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
+        console.log("found " + featuresForThatSensor.length + " features. ")
+        //console.log(paramsForDMISensor)
+        placeSensorDataMarker(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
+      } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
+        placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
+        noOfEmptyObservationStations++;
+      }
+    })
+    console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
 fetchDMIData();
