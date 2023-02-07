@@ -65,3 +65,6 @@ nodemon.json
 
 # jshint config file
 .jshintrc
+
+# sql dump files - unused in release
+db/OLD TESTING STUFF

@@ -36,6 +36,28 @@ app.get('/index/:subpage', (req, res) => {
   res.send('parameter: ' + req.params.subpage + ' which is of type: ' + typeof(req.params.subpage));
 })
 
+//////////////////////////////
+// PostGreSQL database link // https://blog.logrocket.com/crud-rest-api-node-js-express-postgresql/#what-crud-api
+//////////////////////////////
+
+// Use bodyparser as a middleware for parsing requests.
+const bodyParser = require('body-parser')
+app.use(bodyParser.json())
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+) 
+
+// Database queries. 
+const db = require('./db/queries')
+app.get('/locations', db.getLocations)
+app.get('/locations/:id', db.getLocationById)
+app.post('/locations', db.createLocation)
+
+app.put('/locations/:id', db.updateLocation)
+app.delete('/locations/:id', db.deleteLocation)
+
 ////////////////////////////////////////
 // API Fetch opendata.dk sensor data. //
 ////////////////////////////////////////
