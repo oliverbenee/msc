@@ -2,7 +2,7 @@
 //console.log("leafletmap script up")
 
 // Initialize map, set its view on top of IT-byen, and xoom in.
-var map = L.map('map')
+var map = L.map('map', {drawControl: true})
 map.setView([56.172196954673105, 10.188960985472951], 10); // NOTE: This will normally just give a grey box.
 
 // Specify map data source. Use openstreetmap! The tiles are the "map fragments" you see. 
@@ -154,3 +154,21 @@ async function fetchDMIData(){
     console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
 fetchDMIData();
+
+/* 
+ * Leaflet.js drawing tools.
+ * Based on: https://tarekbagaa.medium.com/the-power-of-postgresql-with-leaflet-and-nodejs-express-e5a2a1f94611
+ */ 
+
+ // FeatureGroup is to store editable layers
+ let drawnItems = new L.FeatureGroup();
+ map.addLayer(drawnItems);
+
+ // capture drawn data event.
+ map.on('draw:created', (e) => {
+  // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
+  drawnItems.addLayer(e.layer);
+});
+
+// add scalebar in meter to the map
+L.control.scale({metric: true}).addTo(mymap);
