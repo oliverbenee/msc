@@ -36,7 +36,7 @@ function createTable(){
 }
 
 const getLocations = (request, response) => {
-  client.query('SELECT * FROM locations ORDER BY id ASC', (error, results) => {
+  client.query('SELECT *, st_asgeojson(coordinates) AS geojson FROM locations ORDER BY id ASC', (error, results) => {
     if (error) {
       throw error
     }
@@ -46,7 +46,7 @@ const getLocations = (request, response) => {
 
 const getLocationById = (request, response) => {
   const id = parseInt(request.params.id)
-  let query = `SELECT * FROM locations WHERE id = ${id}`
+  let query = `SELECT *, st_asgeojson(geom) AS geojson FROM locations WHERE id = ${id}`
   client.query(query, (error, results) => {
     if (error) {
       throw error
