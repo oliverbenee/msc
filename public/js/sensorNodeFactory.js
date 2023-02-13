@@ -55,7 +55,7 @@ export class CityProbe2Sensor {
 
 export class DMIFreeDataSensor { 
   constructor(options){
-    this.source = "DMI"
+    this.sensorType = "DMI"
     this.iconUrl = 'img/dmi_logo.png'
     // TODO: Rewrite in a way that is readable. 
     // The code essentially copies known properties into variables in the class. 
