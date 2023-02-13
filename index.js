@@ -57,6 +57,31 @@ app.post('/locations', db.createLocation)
 
 app.put('/locations/:id', db.updateLocation)
 app.delete('/locations/:id', db.deleteLocation)
+app.purge('/locations', db.nukeTable)
+
+var mcache = require('memory-cache')
+
+// Data caching. Time is in seconds.
+var cache = (duration) => { 
+  console.log("checking cache")
+  return (req, res, next) => {
+    let key = '__express__' + req.originalUrll || req.url
+    let cachedbody = mcache.get(key)
+    if(cachedbody) {
+      res.send(cachedbody)
+      console.log("sent cached data")
+      return
+    } else {
+      console.log("no cache found")
+      res.sendResponse = res.send
+      res.send = (body) => {
+        mcache.put(key, body, duration*1000)
+        res.sendResponse(body)
+      }
+      next()
+    }
+  }
+}
 
 ////////////////////////////////////////
 // API Fetch opendata.dk sensor data. //
