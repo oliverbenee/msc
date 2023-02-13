@@ -32,7 +32,7 @@ function success(pos){
   }
 
   // Create marker on map and accuracy circle.
-  userPosMarker = L.marker([lat,lng]).addTo(map);
+  userPosMarker = L.marker([lat,lng], {icon: L.icon({iconUrl: "img/location.png", iconSize: [48,48]})}).addTo(map);
   userPosCircle = L.circle([lat,lng], {radius:acc}).addTo(map);
 
   // Update view once user information has changed. (Only once.)
@@ -69,27 +69,41 @@ function tableHTML(lat, lng, sensor){
  * MARKER PLACEMENT.
  */
 
-// Place a marker, and add a pop-up to it. 
-var locationMarker
+// Place a marker, and add a pop-up to it. Still useful in case there is no data!
 function placeSensorDataMarker(lat, lng, sensor){
   var sensorIcon = L.icon({
     iconUrl: sensor.iconUrl,
     iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
     iconAnchor: [16, 16], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
-  locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(map);
+  var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(map);
   
   // Pop-ups for data. 
   locationMarker.bindPopup(tableHTML(lat, lng, sensor))
 }
 
+// send data to database.
+function sendPositionToDatabase(lat, lng, sensor){
+  // Add marker to databass.
+  fetch('/locations', {
+    method: 'POST',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ "coordinates": "POINT(" + lat + " " + lng + ")", "json": JSON.stringify(sensor) })
+  })
+}
+
 // Test code for sensor factory. 
 import {SensorFactory} from './sensorNodeFactory.js'
-const sensorFactory = new SensorFactory();
+const sensorFactory = new SensorFactory(); 
+/*
 const testsensor = sensorFactory.create({id: "This is a test", sensorType: "CityProbe2"})
 placeSensorDataMarker(56.172689, 10.042084, testsensor, testsensor.iconUrl)
 const testsensor2 = sensorFactory.create({device_id: "This is a test", sensorType: "CityLab"})
 placeSensorDataMarker(56.1720735,10.0418602, testsensor2, testsensor2.iconUrl)
+*/
 
 /*
  * FETCH DATA FROM APIs. 
@@ -114,7 +128,7 @@ async function fetchCityProbe2(){
     } else {  
       var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
       var newSensor = sensorFactory.createCityProbe2Sensor(paramsForCityProbe2Sensor);
-      placeSensorDataMarker(item.latitude, item.longitude, newSensor);
+      sendPositionToDatabase(item.latitude, item.longitude, newSensor);
     }
   })
 }
@@ -145,7 +159,7 @@ async function fetchDMIData(){
         var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
         console.log("found " + featuresForThatSensor.length + " features. ")
         //console.log(paramsForDMISensor)
-        placeSensorDataMarker(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
+        sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
       } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
         placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
         noOfEmptyObservationStations++;
@@ -155,20 +169,51 @@ async function fetchDMIData(){
 }
 fetchDMIData();
 
+// Fetch data from the MySQL database. 
+async function fetchDatabase(){
+  const response = await fetch('/locations')
+  const data = await response.json()
+  data.forEach(item => {
+    var parsedObject = JSON.parse(item.geojson)
+    var sensor = item.json
+    /*
+    console.log("----------------------------------------------------")
+    console.log("JSON:")
+    console.log(item)
+    console.log("SENSOR:")
+    console.log(sensor)
+    */
+    sensor.ORIGIN = "database"
+  
+    // This can't use placeSensorDataMarker since it is in geoJSON format. 
+    var newmarker = L.geoJSON(parsedObject, { 
+      coordsToLatLng: function(coords){return new L.LatLng(coords[0], coords[1], coords[2])}, // TODO: MYSQL ICON. 
+      onEachFeature: function(feature){
+        var mysqliconextension = L.Icon.extend({options:{iconUrl: sensor.iconUrl, iconSize: [16,16]}})
+        var mysqlicon = new mysqliconextension()
+        var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
+        newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
+      }
+    })
+    
+  })
+}
+fetchDatabase();
+
 /* 
  * Leaflet.js drawing tools.
  * Based on: https://tarekbagaa.medium.com/the-power-of-postgresql-with-leaflet-and-nodejs-express-e5a2a1f94611
  */ 
 
- // FeatureGroup is to store editable layers
- let drawnItems = new L.FeatureGroup();
- map.addLayer(drawnItems);
+// FeatureGroup is to store editable layers
+let drawnItems = new L.FeatureGroup();
+map.addLayer(drawnItems);
 
- // capture drawn data event.
- map.on('draw:created', (e) => {
+// capture drawn data event.
+map.on('draw:created', (e) => {
   // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
   drawnItems.addLayer(e.layer);
 });
 
 // add scalebar in meter to the map
-L.control.scale({metric: true}).addTo(mymap);
+L.control.scale({metric: true}).addTo(map);

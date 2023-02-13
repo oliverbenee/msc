@@ -25,18 +25,23 @@ function setupPostGIS(){
 }
 setupPostGIS()
 
+// NOTE: latitude and longitude are primary key. This prevents dupes when fetching from database.
+// 1. It makes updating the API very simple (only have to write, as the old version will be overwritten)
+// 2. Places with the same latitude and longitude won't work in leaflet.js anyway. 
+// https://dev.mysql.com/doc/refman/8.0/en/json.html
 function createTable(){
   client.query(`CREATE TABLE IF NOT EXISTS public.locations(
-    id SERIAL PRIMARY KEY, 
-    coordinates GEOGRAPHY(Point), 
-    name CHARACTER VARYING(100))`, (err, res) => { 
+    id SERIAL, 
+    geometry GEOGRAPHY(Point) PRIMARY KEY,
+    json JSON NOT NULL)`, (err, res) => { 
       if(err) throw err
     })
   client.end
 }
+createTable() // just ensures, that the table will exists, so stuff doesn't break. 
 
 const getLocations = (request, response) => {
-  client.query('SELECT *, st_asgeojson(coordinates) AS geojson FROM locations ORDER BY id ASC', (error, results) => {
+  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations ORDER BY id ASC', (error, results) => {
     if (error) {
       throw error
     }
@@ -57,10 +62,10 @@ const getLocationById = (request, response) => {
 
 const createLocation = (request, response) => {
   const coordinates = request.body.coordinates
-  const name = request.body.name
-  console.log("c: " + coordinates + " n: " + name)
+  const json = request.body.json
+  //console.log("c: " + coordinates + " j: " + json)
 
-  let query = `INSERT INTO locations(coordinates, name) values('${coordinates}', '${name}')`
+  let query = `INSERT INTO locations(geometry, json) values('${coordinates}', '${json}')`
   client.query(query, (error, results) => {
     if (error) {
       throw error
@@ -71,13 +76,14 @@ const createLocation = (request, response) => {
   })
 } 
 
+// Unnecessary, since we can just write over the location. TODO: Delete. 
 const updateLocation = (request, response) => {
   const id = parseInt(request.params.id)
-  const name = request.body.name
+  const json = request.body.json
   const coordinates = request.body.coordinates
  
   let query = 
-  client.query(`UPDATE locations SET name = '${name}', coordinates = '${coordinates}' WHERE id = '${id}'`,
+  client.query(`UPDATE locations SET json = '${json}', geometry = '${coordinates}' WHERE id = '${id}'`,
     (error, results) => {
       if (error) {
         throw error
@@ -98,11 +104,21 @@ const deleteLocation = (request, response) => {
   })
 }
 
+const nukeTable = (request, response) => {
+  client.query(`truncate table locations`, (error, results) => {
+    if(error) {
+      throw error
+    }
+    response.status(200).send(`Truncated all data.`)
+  })
+}
+
 module.exports = {
   getLocations,
   getLocationById,
   createLocation,
   updateLocation,
   deleteLocation,
+  nukeTable
 }
  
