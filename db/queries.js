@@ -32,7 +32,7 @@ setupPostGIS()
 function createTable(){
   client.query(`CREATE TABLE IF NOT EXISTS public.locations(
     id SERIAL, 
-    geometry GEOGRAPHY(Point) PRIMARY KEY,
+    geometry GEOGRAPHY(Point) UNIQUE NOT NULL,
     json JSON NOT NULL)`, (err, res) => { 
       if(err) throw err
     })
@@ -41,12 +41,13 @@ function createTable(){
 createTable() // just ensures, that the table will exists, so stuff doesn't break. 
 
 const getLocations = (request, response) => {
-  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations ORDER BY id ASC', (error, results) => {
+  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations ORDER BY geometry ASC', (error, results) => {
     if (error) {
       throw error
     }
     response.status(200).json(results.rows)
   })
+  client.end
 }
 
 const getLocationById = (request, response) => {
@@ -58,6 +59,7 @@ const getLocationById = (request, response) => {
     }
     response.status(200).json(results.rows)
   })
+  client.end
 }
 
 const createLocation = (request, response) => {
@@ -65,7 +67,10 @@ const createLocation = (request, response) => {
   const json = request.body.json
   //console.log("c: " + coordinates + " j: " + json)
 
-  let query = `INSERT INTO locations(geometry, json) values('${coordinates}', '${json}')`
+  // insert new location observation. If the geometry already exists, overwrite the JSON to the newest value. 
+  // https://stackoverflow.com/questions/1109061/insert-on-duplicate-update-in-postgresql
+  // https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT
+  let query = `INSERT INTO locations(geometry, json) values('${coordinates}', '${json}') ON CONFLICT(geometry) DO UPDATE SET json='${json}'`
   client.query(query, (error, results) => {
     if (error) {
       throw error
@@ -74,11 +79,11 @@ const createLocation = (request, response) => {
       response.status(201).send(`Location added!`)
     }
   })
+  client.end
 } 
 
 // Unnecessary, since we can just write over the location. TODO: Delete. 
 const updateLocation = (request, response) => {
-  const id = parseInt(request.params.id)
   const json = request.body.json
   const coordinates = request.body.coordinates
  
@@ -88,9 +93,10 @@ const updateLocation = (request, response) => {
       if (error) {
         throw error
       }
-      response.status(200).send(`User modified with ID: ${id}`)
+      response.status(200).send(`Location modified.`)
     }
   )
+  client.end
 }
 
 const deleteLocation = (request, response) => {
