@@ -21,28 +21,34 @@ export class CityLabSensor {
 }
 
 export class CityProbe2Sensor { 
+  // Translation for values found at:
+  // https://docs.cityflow.live/#get-device-types
+  // GET https://api.cityflow.live/devices/types
   constructor(options) {
+    console.log(options)
     this.device_id = options.device_id
     this.sensorType = "CityProbe2"
     this.time = options.time
-    this.aPS = options.aPS
-    this.b = options.b
-    this.h = options.h
-    this.l = options.l
-    this.mP1 = options.mP1
-    this.mP2 = options.mP2
-    this.mP4 = options.mP4
-    this.mPX = options.mPX
-    this.nA = options.nA
-    this.nMa = options.nMa
-    this.nMi = options.nMi
-    this.nP1 = options.nP1
-    this.nP2 = options.nP2
-    this.nP4 = options.nP4
-    this.nPX = options.nPX
-    this.nS = options.nS
-    this.p = options.p
-    this.t = options.t
+    this.average_particle_size_UNIT_micrometers = options.aPS
+    this.battery_level_UNIT_percent = options.b
+    this.humidity_UNIT_percent = options.h
+    this.luminosity_UNIT_lx = options.l
+    this.rain_avg_UNIT_dB = options.r
+    this.particle_pollution_PM1_UNIT_microgramsPerCubicMeter = options.mP1
+    this.particle_pollution_PM2_5_UNIT_microgramsPerCubicMeter = options.mP2
+    this.particle_pollution_PM4_UNIT_microgramsPerCubicMeter = options.mP4
+    this.particle_pollution_PM10_UNIT_microgramsPerCubicMeter = options.mPX
+    this.noise_average_UNIT_decibelA = options.nA
+    this.noise_maximum_UNIT_decibelA = options.nMa
+    this.noise_minimum_UNIT_decibelA = options.nMi
+    this.particle_concentration_1_UNIT_cm3 = options.nP1
+    this.particle_concentration_2_5_UNIT_cm3 = options.nP2
+    this.particle_concentration_4_UNIT_cm3 = options.nP4
+    this.particulate_concentration_UNIT_cm3 = options.nPX
+    this.noise_standarddeviation = options.nS
+    this.pressure_hPa = options.p
+    this.temperature_celcius = options.t
+    this.particlepollution_microgramsCubicmeter = options.p2
     this.iconUrl='img/montem_logo.jpg'
 
     // locationdata
