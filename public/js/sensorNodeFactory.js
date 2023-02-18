@@ -1,3 +1,12 @@
+const rangeMap = new Map();
+rangeMap.set("Synop", 10000)
+rangeMap.set("GIWS", 1000)
+rangeMap.set("Pluvio", 1000)
+rangeMap.set("Manual precipitation", 1000)
+rangeMap.set("Manual snow", 1000)
+rangeMap.set("CityProbe2", 100)
+// TODO: figure out what a reasonable sensor range is. 
+
 export class CityLabSensor {
   constructor(options){
     this.device_id = options.device_id || 7 // Unique sensor id for identification.
@@ -25,30 +34,34 @@ export class CityProbe2Sensor {
   // https://docs.cityflow.live/#get-device-types
   // GET https://api.cityflow.live/devices/types
   constructor(options) {
-    console.log(options)
+    //console.log(options)
     this.device_id = options.device_id
     this.sensorType = "CityProbe2"
     this.time = options.time
-    this.average_particle_size_UNIT_micrometers = options.aPS
-    this.battery_level_UNIT_percent = options.b
-    this.humidity_UNIT_percent = options.h
-    this.luminosity_UNIT_lx = options.l
-    this.rain_avg_UNIT_dB = options.r
-    this.particle_pollution_PM1_UNIT_microgramsPerCubicMeter = options.mP1
-    this.particle_pollution_PM2_5_UNIT_microgramsPerCubicMeter = options.mP2
-    this.particle_pollution_PM4_UNIT_microgramsPerCubicMeter = options.mP4
-    this.particle_pollution_PM10_UNIT_microgramsPerCubicMeter = options.mPX
-    this.noise_average_UNIT_decibelA = options.nA
-    this.noise_maximum_UNIT_decibelA = options.nMa
-    this.noise_minimum_UNIT_decibelA = options.nMi
-    this.particle_concentration_1_UNIT_cm3 = options.nP1
-    this.particle_concentration_2_5_UNIT_cm3 = options.nP2
-    this.particle_concentration_4_UNIT_cm3 = options.nP4
-    this.particulate_concentration_UNIT_cm3 = options.nPX
-    this.noise_standarddeviation = options.nS
+    this.avg_particle_size__mcm = options.aPS
+    this.battery_level__pct = options.b
+    this.humidity__pct = options.h
+    this.luminosity__lx = options.l
+    this.rain_avg__dB = options.r
+    this.particle_pollution = "-----------"
+    this.PM1__mcgPERcm3 = options.mP1
+    this.PM2_5__mcgPERcm3 = options.mP2
+    this.PM4__mcgPERcm3 = options.mP4
+    this.PM10__mcgPERcm3 = options.mPX
+    this.noise="----------"
+    this.average__dB_A = options.nA
+    this.maximum__dB_A = options.nMa
+    this.minimum__db_A = options.nMi
+    this.standarddeviation = options.nS
+    this.particle_concentration="----------"
+    this.pc_1__cm3 = options.nP1
+    this.pc_2_5__cm3 = options.nP2
+    this.pc_4__cm3 = options.nP4
+    this.particulate_concentration="----------"
+    this.p_conc__cm3 = options.nPX
     this.pressure_hPa = options.p
     this.temperature_celcius = options.t
-    this.particlepollution_microgramsCubicmeter = options.p2
+    this.particlepollution_microgramsCM3 = options.p2
     this.iconUrl='img/montem_logo.jpg'
 
     // locationdata
@@ -60,10 +73,15 @@ export class CityProbe2Sensor {
 }
 
 export class DMIFreeDataSensor { 
-  constructor(options){
-    this.sensorType = "DMI"
+  constructor(options){    //this.sensorType = options.properties.type
+    console.log("OPTIONS")
+    console.log(options)
+    this.sensorSource = "DMI"
     this.iconUrl = 'img/dmi_logo.png'
-    // TODO: Rewrite in a way that is readable. 
+    // This looks really stupid, but doing this lets us just copy fields into the sensor afterwards.
+    let ST = options.stationType
+    delete options.stationType
+    this.sensorType = ST
     // The code essentially copies known properties into variables in the class. 
     for (const element in options) {
       if (Object.hasOwnProperty.call(options, element)) {
@@ -73,8 +91,8 @@ export class DMIFreeDataSensor {
         //console.log(propertyname +": "+ propertyvalue)
         eval("this."+propertyname+"="+propertyvalue) // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
       }
-    }    
-    //jQuery.extend(this, options[0].properties)//FIXME: This only assigns one value, and i KNOW, there are more. How do we add them?
+    }   
+    this.explaination_of_values = "<a href =https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476621> link </a>" 
   }
 }
 
@@ -108,6 +126,10 @@ export class SensorFactory {
   }
   createDMIFreeDataSensor(options){
     return new DMIFreeDataSensor(options);
+  }
+  getRangeMap(key){
+    console.log("K: " + key + ", " + typeof(key))
+    return rangeMap.get(key);
   }
 };
 

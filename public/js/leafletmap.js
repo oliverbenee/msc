@@ -3,7 +3,7 @@
 
 // Initialize map, set its view on top of IT-byen, and xoom in.
 var map = L.map('map', {drawControl: true})
-map.setView([56.172196954673105, 10.188960985472951], 10); // NOTE: This will normally just give a grey box.
+map.setView([56.172196954673105, 10.188960985472951], 13); // NOTE: This will normally just give a grey box.
 
 // Specify map data source. Use openstreetmap! The tiles are the "map fragments" you see. 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -52,8 +52,9 @@ function err(pos){
   }
 }
 
-// Format key and value for sensor into something readable. 
-function tableHTML(lat, lng, sensor){
+// Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
+function tableHTML(lat, lng, sensor){                                                                                         //padding order: top, right, down, left // outer border for table
+  const style = "<style>thead, tbody {display: block;} tbody {max-height: 150px; overflow: auto; width: 100%; max-width: 300px; font-size: 1em; padding: 0.5em 0em 0.5em 0.5em; border: 1px solid #ddd; margin-bottom: 1em; } </style>"
   const loc = "<table><thead><tr><th>Location</th><th>(" + lat + ", " + lng + ")</th></tr></thead><tbody>"
 
   var tableListOutput = "<tr><td>Most recent data<br></td></tr> "
@@ -62,7 +63,7 @@ function tableHTML(lat, lng, sensor){
   })
   var tableListEnd = "</tbody></table>"
 
-  return loc+tableListOutput+tableListEnd
+  return style+loc+tableListOutput+tableListEnd
 }
 
 /*
@@ -152,13 +153,15 @@ async function fetchDMIData(){
       var latitude = item.geometry.coordinates[1] // THIS IS LATITUDE
       var longitude = item.geometry.coordinates[0] // THIS IS LONGITUDE
       var stationId = item.properties.stationId
+      var stationType = item.properties.type
 
       // Now find the features for that sensor in the metobs. 
       var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
       if(featuresForThatSensor.length != 0){
         var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
         console.log("found " + featuresForThatSensor.length + " features. ")
-        //console.log(paramsForDMISensor)
+        paramsForDMISensor.stationType = stationType
+        console.log(paramsForDMISensor)
         sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
       } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
         placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
@@ -193,6 +196,8 @@ async function fetchDatabase(){
         var mysqlicon = new mysqliconextension()
         var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
         newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
+        var range = sensorFactory.getRangeMap(sensor.sensorType)
+        createErrorCircle(parsedObject.coordinates[0], parsedObject.coordinates[1], range)
       }
     })
     
@@ -217,3 +222,13 @@ map.on('draw:created', (e) => {
 
 // add scalebar in meter to the map
 L.control.scale({metric: true}).addTo(map);
+
+function createErrorCircle(lat, lng, radius){
+  // error circle.
+  var circle = L.circle([lat, lng], {
+    color: 'yellow',
+    fillcolor: '#ffc800',
+    fillopacity: 90,
+    radius: radius
+  }).addTo(map)
+}
