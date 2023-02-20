@@ -85,7 +85,7 @@ export class DMIFreeDataSensor {
     this.device_id=options[0].properties.stationId
     // save newest timestamp
     this.time = options[0].properties.time
-    this.iconUrl='img/dmi_logo.jpg'   
+    this.iconUrl='img/dmi_logo.png'   
 
     // The code essentially copies known properties into variables in the class. 
     for (const element in options) {
