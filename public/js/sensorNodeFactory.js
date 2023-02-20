@@ -1,5 +1,5 @@
 const rangeMap = new Map();
-rangeMap.set("Synop", 10000)
+rangeMap.set("Synop", 25000)
 rangeMap.set("GIWS", 1000)
 rangeMap.set("Pluvio", 1000)
 rangeMap.set("Manual precipitation", 1000)
@@ -35,15 +35,20 @@ export class CityProbe2Sensor {
   // GET https://api.cityflow.live/devices/types
   constructor(options) {
     //console.log(options)
+    this.sensorSource="Montem"
+    this.sensorType="CityProbe2"
     this.device_id = options.device_id
-    this.sensorType = "CityProbe2"
     this.time = options.time
-    this.avg_particle_size__mcm = options.aPS
+    this.iconUrl='img/montem_logo.jpg'
+
     this.battery_level__pct = options.b
+    this.measurements = "----------"
     this.humidity__pct = options.h
     this.luminosity__lx = options.l
     this.rain_avg__dB = options.r
     this.particle_pollution = "-----------"
+    this.particlepollution_microgramsCM3 = options.p2
+    this.avg_particle_size__mcm = options.aPS
     this.PM1__mcgPERcm3 = options.mP1
     this.PM2_5__mcgPERcm3 = options.mP2
     this.PM4__mcgPERcm3 = options.mP4
@@ -61,8 +66,6 @@ export class CityProbe2Sensor {
     this.p_conc__cm3 = options.nPX
     this.pressure_hPa = options.p
     this.temperature_celcius = options.t
-    this.particlepollution_microgramsCM3 = options.p2
-    this.iconUrl='img/montem_logo.jpg'
 
     // locationdata
     this.city = options.city
@@ -73,15 +76,17 @@ export class CityProbe2Sensor {
 }
 
 export class DMIFreeDataSensor { 
-  constructor(options){    //this.sensorType = options.properties.type
-    console.log("OPTIONS")
-    console.log(options)
-    this.sensorSource = "DMI"
-    this.iconUrl = 'img/dmi_logo.png'
+  constructor(options){    
+    this.sensorSource="DMI"
     // This looks really stupid, but doing this lets us just copy fields into the sensor afterwards.
     let ST = options.stationType
     delete options.stationType
     this.sensorType = ST
+    this.device_id=options[0].properties.stationId
+    // save newest timestamp
+    this.time = options[0].properties.time
+    this.iconUrl='img/dmi_logo.jpg'   
+
     // The code essentially copies known properties into variables in the class. 
     for (const element in options) {
       if (Object.hasOwnProperty.call(options, element)) {
@@ -98,6 +103,13 @@ export class DMIFreeDataSensor {
 
 export class NullSensor {
   constructor(){
+    this.sensorSource="null"
+    this.sensorType = "null"
+    this.device_id="null"
+    // save newest timestamp
+    this.time = new Date().toISOString()
+    this.iconUrl='img/dmi_logo.jpg'  
+
     this.description = "There is a known sensor location here, but there is no data for it. "
     this.iconUrl='img/sensor_image.png'
   }
