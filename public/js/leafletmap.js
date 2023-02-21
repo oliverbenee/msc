@@ -66,6 +66,12 @@ function tableHTML(lat, lng, sensor){                                           
   return style+loc+tableListOutput+tableListEnd
 }
 
+
+/*
+ * Leaflet.js marker clustering
+ */
+
+
 /*
  * MARKER PLACEMENT.
  */
@@ -75,7 +81,7 @@ function placeSensorDataMarker(lat, lng, sensor){
   var sensorIcon = L.icon({
     iconUrl: sensor.iconUrl,
     iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
-    iconAnchor: [16, 16], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
+    iconAnchor: [8, 8], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
   var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(map);
   
@@ -194,8 +200,10 @@ async function fetchDatabase(){
       onEachFeature: function(feature){
         var mysqliconextension = L.Icon.extend({options:{iconUrl: sensor.iconUrl, iconSize: [16,16]}})
         var mysqlicon = new mysqliconextension()
-        var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
-        newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
+        placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor)
+        //var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
+        //newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
+        
         var range = sensorFactory.getRangeMap(sensor.sensorType)
         createErrorCircle(parsedObject.coordinates[0], parsedObject.coordinates[1], range)
       }
