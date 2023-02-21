@@ -52,6 +52,12 @@ function err(pos){
   }
 }
 
+/*
+ * Geocoding
+ */
+
+L.Control.geocoder().addTo(map);
+
 // Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
 function tableHTML(lat, lng, sensor){                                                                                         //padding order: top, right, down, left // outer border for table
   const style = "<style>thead, tbody {display: block;} tbody {max-height: 150px; overflow: auto; width: 100%; max-width: 300px; font-size: 1em; padding: 0.5em 0em 0.5em 0.5em; border: 1px solid #ddd; margin-bottom: 1em; } </style>"
@@ -65,12 +71,6 @@ function tableHTML(lat, lng, sensor){                                           
 
   return style+loc+tableListOutput+tableListEnd
 }
-
-
-/*
- * Leaflet.js marker clustering
- */
-
 
 /*
  * MARKER PLACEMENT.
