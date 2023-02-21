@@ -56,7 +56,7 @@ function err(pos){
  * Geocoding
  */
 
-L.Control.geocoder().addTo(map);
+//L.Control.geocoder().addTo(map);
 
 // Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
 function tableHTML(lat, lng, sensor){                                                                                         //padding order: top, right, down, left // outer border for table
