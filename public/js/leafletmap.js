@@ -148,13 +148,12 @@ async function fetchDMIData(){
     const dmiData = await response.json()
     const features = dmiData.features
 
-    const response2 = await fetch('dmimetobs')
+    const response2 = await fetch('/dmimetobs')
     const dmiData2 = await response2.json()
     const features2 = dmiData2.features
 
     var noOfEmptyObservationStations = 0;
     features.forEach(item => {
-      //console.log("-------------------------------------")
       // Identify associated station for the location.
       var latitude = item.geometry.coordinates[1] // THIS IS LATITUDE
       var longitude = item.geometry.coordinates[0] // THIS IS LONGITUDE
@@ -165,12 +164,13 @@ async function fetchDMIData(){
       var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
       if(featuresForThatSensor.length != 0){
         var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
+        console.log("----------------------------")
         console.log("found " + featuresForThatSensor.length + " features. ")
         paramsForDMISensor.stationType = stationType
         console.log(paramsForDMISensor)
         sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
       } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
-        placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
+        //placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
         noOfEmptyObservationStations++;
       }
     })
@@ -180,36 +180,43 @@ fetchDMIData();
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-  const response = await fetch('/locations')
+  console.log("begin fetch database")
+  const response = await fetch('/locations/dmi')
   const data = await response.json()
-  data.forEach(item => {
-    var parsedObject = JSON.parse(item.geojson)
-    var sensor = item.json
-    /*
-    console.log("----------------------------------------------------")
-    console.log("JSON:")
-    console.log(item)
-    console.log("SENSOR:")
-    console.log(sensor)
-    */
-    sensor.ORIGIN = "database"
-  
-    // This can't use placeSensorDataMarker since it is in geoJSON format. 
-    var newmarker = L.geoJSON(parsedObject, { 
-      coordsToLatLng: function(coords){return new L.LatLng(coords[0], coords[1], coords[2])}, // TODO: MYSQL ICON. 
-      onEachFeature: function(feature){
-        var mysqliconextension = L.Icon.extend({options:{iconUrl: sensor.iconUrl, iconSize: [16,16]}})
-        var mysqlicon = new mysqliconextension()
-        placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor)
-        //var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
-        //newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
-        
-        var range = sensorFactory.getRangeMap(sensor.sensorType)
-        createErrorCircle(parsedObject.coordinates[0], parsedObject.coordinates[1], range)
-      }
-    })
-    
-  })
+  addMarkersToMap(data);
+  const response2 = await fetch('/locations/cityprobe2')
+  const data2  = await response2.json()
+  addMarkersToMap(data2);
+
+  function addMarkersToMap(data) {
+    data.forEach(item => {
+      console.log("----------------------------------------------------");
+      console.log("geojson");
+      var parsedObject = JSON.parse(item.geojson);
+
+      console.log("sensor json");
+      let sensor = item;
+      console.log(sensor);
+
+
+      sensor.ORIGIN = "database";
+      sensor.iconUrl = "img/msql.png";
+
+      // This can't use placeSensorDataMarker since it is in geoJSON format. 
+      var newmarker = L.geoJSON(parsedObject, {
+        coordsToLatLng: function (coords) { return new L.LatLng(coords[0], coords[1], coords[2]); },
+        onEachFeature: function (feature) {
+          var mysqliconextension = L.Icon.extend({ options: { iconUrl: sensor.iconUrl, iconSize: [16, 16] } });
+          var mysqlicon = new mysqliconextension();
+          placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor);
+          //var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
+          //newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
+          var range = sensorFactory.getRangeMap("CityProbe2");
+          createErrorCircle(parsedObject.coordinates[0], parsedObject.coordinates[1], range);
+        }
+      });
+    });
+  }
 }
 fetchDatabase();
 

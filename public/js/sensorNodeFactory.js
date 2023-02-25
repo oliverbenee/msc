@@ -1,7 +1,7 @@
 const rangeMap = new Map();
 rangeMap.set("Synop", 25000)
 rangeMap.set("GIWS", 1000)
-rangeMap.set("Pluvio", 1000)
+rangeMap.set("Pluvio", 10000)
 rangeMap.set("Manual precipitation", 1000)
 rangeMap.set("Manual snow", 1000)
 rangeMap.set("CityProbe2", 100)
@@ -43,6 +43,8 @@ export class CityProbe2Sensor {
 
     this.battery_level__pct = options.b
     this.measurements = "----------"
+    this.pressure__hPa = options.p
+    this.temperature__celcius = options.t
     this.humidity__pct = options.h
     this.luminosity__lx = options.l
     this.rain_avg__dB = options.r
@@ -56,7 +58,7 @@ export class CityProbe2Sensor {
     this.noise="----------"
     this.average__dB_A = options.nA
     this.maximum__dB_A = options.nMa
-    this.minimum__db_A = options.nMi
+    this.minimum__dB_A = options.nMi
     this.standarddeviation = options.nS
     this.particle_concentration="----------"
     this.pc_1__cm3 = options.nP1
@@ -64,8 +66,6 @@ export class CityProbe2Sensor {
     this.pc_4__cm3 = options.nP4
     this.particulate_concentration="----------"
     this.p_conc__cm3 = options.nPX
-    this.pressure_hPa = options.p
-    this.temperature_celcius = options.t
 
     // locationdata
     this.city = options.city
@@ -82,21 +82,89 @@ export class DMIFreeDataSensor {
     let ST = options.stationType
     delete options.stationType
     this.sensorType = ST
-    this.device_id=options[0].properties.stationId
-    // save newest timestamp
-    this.time = options[0].properties.time
+    this.device_id=options[0].properties.stationId.toString()
+    this.time = options[0].properties.observed
     this.iconUrl='img/dmi_logo.png'   
+
+    this.temperature__celcius = []
+    this.humidity__pct = []
+    this.pressure__hPa = []
+    this.radia_glob = []
+    this.wind_dir = []
+    this.wind_speed = []
+    this.precip = []
+    this.sun = []
+    this.visibility = []
 
     // The code essentially copies known properties into variables in the class. 
     for (const element in options) {
       if (Object.hasOwnProperty.call(options, element)) {
         var thing = options[element].properties;
-        let propertyname = thing.parameterId
-        let propertyvalue = thing.value
-        //console.log(propertyname +": "+ propertyvalue)
-        eval("this."+propertyname+"="+propertyvalue) // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
+        var propertyname = thing.parameterId
+        var propertyvalue = parseFloat(thing.value)
+        //console.log("name: " + propertyname + ", value: " + propertyvalue)
+        if(propertyname.includes("temp") && !propertyname.includes("min") && !propertyname.includes("max") &&propertyvalue != Infinity){this.temperature__celcius.push(parseFloat(propertyvalue));}
+        else if(propertyname.includes("hum")){this.humidity__pct.push(propertyvalue)}
+        else if(propertyname.includes("pressure")){this.pressure__hPa.push(propertyvalue)} 
+        else if(propertyname.includes("radia")){this.radia_glob.push(propertyvalue)}
+        else if(propertyname.includes("wind_dir")){this.wind_dir.push(propertyvalue)}
+        else if(propertyname.includes("wind_speed")){this.wind_speed.push(propertyvalue)}
+        else if(propertyname.includes("precip") && !propertyname.includes("dur")){this.precip.push(propertyvalue)}
+        else if(propertyname.includes("sun")){this.sun.push(propertyvalue)}
+        else if(propertyname.includes("visib")){this.visibility.push(propertyvalue)}
+        else { console.log("not pushed"); eval("this."+propertyname+"="+propertyvalue) } // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
       }
-    }   
+    }
+
+
+    var length = this.temperature__celcius.length
+    if(length > 1){
+      //console.log("temp: " + this.temperature__celcius)
+      this.temperature__celcius = this.temperature__celcius.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.temperature__celcius = 0}
+    length = this.humidity__pct.length
+    if(length > 1){
+      //console.log("hum: " + this.humidity__pct)
+      this.humidity__pct = this.humidity__pct.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.humidity__pct = 0}
+    length = this.pressure__hPa.length
+    if(length > 1){
+      //console.log("pre: " + this.pressure__hPa)
+      this.pressure__hPa = this.pressure__hPa.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.pressure__hPa = 0}
+    length = this.radia_glob.length
+    if(length > 1){
+      //console.log("rad: " + this.radia_glob)
+      this.radia_glob = this.radia_glob.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.radia_glob = 0}
+    length = this.wind_dir.length
+    if(length > 1){
+      //console.log("wnd: " + this.wind_dir)
+      this.wind_dir = this.wind_dir.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.wind_dir = 0}
+    length = this.wind_speed.length
+    if(length > 1){
+      //console.log("wsp: " + this.wind_speed)
+      this.wind_speed = this.wind_speed.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.wind_speed = 0}
+    length = this.precip.length
+    if(length > 1){
+      //console.log("cip: " + this.precip)
+      this.precip = this.precip.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.precip = 0}
+    length = this.sun.length
+    if(length > 1){
+      //console.log("sun: " + this.sun)
+      this.sun = this.sun.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.sun = 0}
+    length = this.visibility.length
+    if(length > 1){
+      //console.log("vis: " + this.visibility)
+      this.visibility = this.visibility.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
+    } if(length == 0){this.visibility = 0}
+    
+    //console.log("VALUES:")
+    console.log("t:" + this.temperature__celcius + ", h:"+ this.humidity__pct +", p:" + this.pressure__hPa+ ", r:" + this.radia_glob+", w:"+ this.wind_dir+ ", ws:"+ this.wind_speed+", pre:"+ this.precip+", s:"+ this.sun+", v:"+ this.visibility)
     this.explaination_of_values = "<a href =https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476621> link </a>" 
   }
 }
@@ -140,7 +208,7 @@ export class SensorFactory {
     return new DMIFreeDataSensor(options);
   }
   getRangeMap(key){
-    console.log("K: " + key + ", " + typeof(key))
+    //console.log("K: " + key + ", " + typeof(key))
     return rangeMap.get(key);
   }
 };

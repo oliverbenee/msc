@@ -51,7 +51,8 @@ app.use(
 
 // Database queries. 
 const db = require('./db/queries')
-app.get('/locations', db.getLocations)
+app.get('/locations/dmi', db.getDmi)
+app.get('/locations/cityprobe2', db.getCityProbe)
 app.get('/locations/:id', db.getLocationById)
 app.post('/locations', db.createLocation)
 
