@@ -7,6 +7,12 @@ rangeMap.set("Manual snow", 1000)
 rangeMap.set("CityProbe2", 100)
 // TODO: figure out what a reasonable sensor range is. 
 
+const iconMap = new Map();
+iconMap.set("CityProbe2", "img/montem_logo.jpg")
+iconMap.set("Synop", "img/dmi_logo.png")
+iconMap.set("Pluvio", "img/dmi_logo.png")
+iconMap.set("GIWS", "img/dmi_logo.png")
+
 export class CityLabSensor {
   constructor(options){
     this.device_id = options.device_id || 7 // Unique sensor id for identification.
@@ -164,7 +170,7 @@ export class DMIFreeDataSensor {
     } if(length == 0){this.visibility = 0}
     
     //console.log("VALUES:")
-    console.log("t:" + this.temperature__celcius + ", h:"+ this.humidity__pct +", p:" + this.pressure__hPa+ ", r:" + this.radia_glob+", w:"+ this.wind_dir+ ", ws:"+ this.wind_speed+", pre:"+ this.precip+", s:"+ this.sun+", v:"+ this.visibility)
+    //console.log("t:" + this.temperature__celcius + ", h:"+ this.humidity__pct +", p:" + this.pressure__hPa+ ", r:" + this.radia_glob+", w:"+ this.wind_dir+ ", ws:"+ this.wind_speed+", pre:"+ this.precip+", s:"+ this.sun+", v:"+ this.visibility)
     this.explaination_of_values = "<a href =https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476621> link </a>" 
   }
 }
@@ -210,6 +216,9 @@ export class SensorFactory {
   getRangeMap(key){
     //console.log("K: " + key + ", " + typeof(key))
     return rangeMap.get(key);
+  }
+  getIconMap(key){
+    return iconMap.get(key);
   }
 };
 

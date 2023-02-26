@@ -190,17 +190,18 @@ async function fetchDatabase(){
 
   function addMarkersToMap(data) {
     data.forEach(item => {
-      console.log("----------------------------------------------------");
-      console.log("geojson");
+      //console.log("----------------------------------------------------");
+      //console.log("geojson");
       var parsedObject = JSON.parse(item.geojson);
 
-      console.log("sensor json");
+      //console.log("sensor json");
       let sensor = item;
       console.log(sensor);
 
-
       sensor.ORIGIN = "database";
       sensor.iconUrl = "img/msql.png";
+      let device_type = sensor.device_type
+      sensor.iconUrl = sensorFactory.getIconMap(device_type)
 
       // This can't use placeSensorDataMarker since it is in geoJSON format. 
       var newmarker = L.geoJSON(parsedObject, {
@@ -211,7 +212,7 @@ async function fetchDatabase(){
           placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor);
           //var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
           //newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
-          var range = sensorFactory.getRangeMap("CityProbe2");
+          var range = sensorFactory.getRangeMap(device_type);
           createErrorCircle(parsedObject.coordinates[0], parsedObject.coordinates[1], range);
         }
       });
