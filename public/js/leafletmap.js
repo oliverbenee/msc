@@ -164,8 +164,8 @@ async function fetchDMIData(){
       var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
       if(featuresForThatSensor.length != 0){
         var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
-        console.log("----------------------------")
-        console.log("found " + featuresForThatSensor.length + " features. ")
+        //console.log("----------------------------")
+        //console.log("found " + featuresForThatSensor.length + " features. ")
         paramsForDMISensor.stationType = stationType
         console.log(paramsForDMISensor)
         sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
@@ -174,9 +174,30 @@ async function fetchDMIData(){
         noOfEmptyObservationStations++;
       }
     })
-    console.log("No of empty observation stations: ", noOfEmptyObservationStations)
+    //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
 fetchDMIData();
+
+async function fetchSCK(){
+  const response = await fetch('/scklocations')
+  const data = await response.json()
+  
+  data.forEach(item => {
+    if(item.system_tags.indexOf("offline") !== -1){
+      console.log(item)
+      var latitude = item.data.location.latitude
+      var longitude = item.data.location.longitude
+      let sensors = new Map();
+      item.data.sensors.forEach((sensor) => {
+        let sensorName = sensor.unit
+        let sensorValue = sensor.value
+      })
+      sendPositionToDatabase(latitude, longitude, sensorFactory.createSmartCitizenKitSensor(item))
+    }
+  })
+}
+fetchSCK()
+
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
@@ -187,6 +208,9 @@ async function fetchDatabase(){
   const response2 = await fetch('/locations/cityprobe2')
   const data2  = await response2.json()
   addMarkersToMap(data2);
+  const response3 = await fetch('locations/sck')
+  const data3 = await response3.json()
+  addMarkersToMap(data3);
 
   function addMarkersToMap(data) {
     data.forEach(item => {
@@ -196,11 +220,12 @@ async function fetchDatabase(){
 
       //console.log("sensor json");
       let sensor = item;
-      console.log(sensor);
+      // console.log(sensor);
 
       sensor.ORIGIN = "database";
       sensor.iconUrl = "img/msql.png";
       let device_type = sensor.device_type
+      console.log("DT: " + device_type)
       sensor.iconUrl = sensorFactory.getIconMap(device_type)
 
       // This can't use placeSensorDataMarker since it is in geoJSON format. 

@@ -4,7 +4,10 @@ rangeMap.set("GIWS", 1000)
 rangeMap.set("Pluvio", 10000)
 rangeMap.set("Manual precipitation", 1000)
 rangeMap.set("Manual snow", 1000)
-rangeMap.set("CityProbe2", 100)
+rangeMap.set("CityProbe2", 300)
+rangeMap.set("SmartCitizen Kit 1.1", 300)
+rangeMap.set("SCK 2.1", 300)
+rangeMap.set("SCK 2.1 GPS", 300)
 // TODO: figure out what a reasonable sensor range is. 
 
 const iconMap = new Map();
@@ -12,6 +15,11 @@ iconMap.set("CityProbe2", "img/montem_logo.jpg")
 iconMap.set("Synop", "img/dmi_logo.png")
 iconMap.set("Pluvio", "img/dmi_logo.png")
 iconMap.set("GIWS", "img/dmi_logo.png")
+
+// all the smartCitizen ones
+iconMap.set("SmartCitizen Kit 1.1", "img/smartcitizen.png")
+iconMap.set("SCK 2.1", "img/smartcitizen.png")
+iconMap.set("SCK 2.1 GPS", "img/smartcitizen.png")
 
 export class CityLabSensor {
   constructor(options){
@@ -45,7 +53,6 @@ export class CityProbe2Sensor {
     this.sensorType="CityProbe2"
     this.device_id = options.device_id
     this.time = options.time
-    this.iconUrl='img/montem_logo.jpg'
 
     this.battery_level__pct = options.b
     this.measurements = "----------"
@@ -90,7 +97,6 @@ export class DMIFreeDataSensor {
     this.sensorType = ST
     this.device_id=options[0].properties.stationId.toString()
     this.time = options[0].properties.observed
-    this.iconUrl='img/dmi_logo.png'   
 
     this.temperature__celcius = []
     this.humidity__pct = []
@@ -171,7 +177,57 @@ export class DMIFreeDataSensor {
     
     //console.log("VALUES:")
     //console.log("t:" + this.temperature__celcius + ", h:"+ this.humidity__pct +", p:" + this.pressure__hPa+ ", r:" + this.radia_glob+", w:"+ this.wind_dir+ ", ws:"+ this.wind_speed+", pre:"+ this.precip+", s:"+ this.sun+", v:"+ this.visibility)
-    this.explaination_of_values = "<a href =https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476621> link </a>" 
+    this.explaination_of_values = "<a href=https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476621> link </a>" 
+    this.parameters = "<a href=https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476616> link </a>"
+  }
+}
+
+const NULL = null
+
+export class SmartCitizenKitDevice {
+  constructor(options){
+    this.sensorSource = "SmartCitizen"
+    this.sensorType = options.kit.name
+    this.device_id = options.kit.uuid
+    this.time = options.updated_at
+
+    this.mDigitalAmbientLightSensor = null
+    this.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm = null
+    this.mTemperature = null
+    this.mHumidity = null
+    this.mDigitalBarometricPressureSensor = null
+    this.mParticleMatterPM2_5 = null
+    this.mParticleMatterPM10 = null
+    this.mParticleMatterPM1 = null
+    this.mEquivalentCarbonDioxideDigitalIndoorSensor = null
+    this.mTotalVolatileOrganicCompoundsDigitalIndoorSensor = null
+
+    options.data.sensors.forEach(elem => {
+      if(elem.value && elem.description){
+        elem.description = "m"+elem.description.replace(/^\s+|\s+$/gm,'').trim().replaceAll(" ","").replaceAll("(","").replaceAll(")","").replaceAll(".","_").replaceAll("/","")
+        if(elem.value != undefined && elem.value != null && elem.value != "null"){ 
+          //console.log("this." + elem.description + "="+elem.value)
+          eval("this." +elem.description + "=" + "'" + elem.value.toFixed(1) +"'") // toFixed forces decimals.
+        } else {
+          eval("this." + elem.description + "= NULL")
+        }
+      }
+    })
+
+    /*
+    this.battery_level__pct = options.b
+    this.measurements = "----------"
+    this.luminosity__lx = ""
+    this.noise__dBA = ""
+    this.temperature__celcius = ""
+    this.humidity__pct = ""
+    this.pressure__hPa = ""
+    this.PM2_5__mcgPERcm3 = ""
+    this.PM10__mcgPERcm3 = ""
+    this.PM1__mcgPERcm3 = ""
+    this.eCO2__ppm = ""
+    this.TVOC__ppb = ""
+    */
   }
 }
 
@@ -212,6 +268,9 @@ export class SensorFactory {
   }
   createDMIFreeDataSensor(options){
     return new DMIFreeDataSensor(options);
+  }
+  createSmartCitizenKitSensor(options){
+    return new SmartCitizenKitDevice(options);
   }
   getRangeMap(key){
     //console.log("K: " + key + ", " + typeof(key))

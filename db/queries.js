@@ -50,7 +50,14 @@ function createTable(){
     device_id VARCHAR UNIQUE NOT NULL,
     FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE, 
     time TIMESTAMP, 
-    t float(5), h float(5), p float(6), radia_glob float(5), wind_dir float(5), wind_speed float(5), precip float(5), sun float(5), visibility float(5))`, (err, res) => {
+    t float(5), h float(5), p float(6), radia_glob float(5), wind_dir float(5), wind_speed float(5), precip float(5), sun float(5), visibility float(5));
+    
+    CREATE TABLE IF NOT EXISTS public.smartcitizen(
+      device_id VARCHAR UNIQUE NOT NULL,
+      FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE,
+      time TIMESTAMP,
+      l float(5), nA float(5), t float(5), h float(5), p float(6), mP2 float(5), mPX float(5), mP1 float(5), eCO2 float(5), TVOC float(5))
+    `, (err, res) => {
       if(err) throw err
     })
   client.end
@@ -90,6 +97,16 @@ const getCityProbe = (request, response) => {
   client.end
 }
 
+const getSCK = (request, response) => {
+  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations JOIN smartcitizen ON locations.device_id = smartcitizen.device_id ORDER BY geometry ASC', (error, results) => {
+    if(error){
+      throw error
+    }
+    response.status(200).send(results.rows)
+  })
+  client.end
+}
+
 const getLocationById = (request, response) => {
   const id = parseInt(request.params.id)
   let query = `SELECT *, st_asgeojson(geom) AS geojson FROM locations WHERE id = ${id}`
@@ -117,9 +134,8 @@ const createLocation = (request, response) => {
   // https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT
   client.query(`INSERT INTO locations(geometry, device_type, device_id) values('${coordinates}', '${sensor_type}', '${device_id}') ON CONFLICT(device_id) DO UPDATE SET geometry='${coordinates}', device_type='${sensor_type}'`, (err, res) => {
     if(err){
-      throw err
-      res.send(err)
       console.log("FAILED TO INSERT: " + device_id)
+      response.send("failed to insert: " + device_id)
       return
     } else {
       // NOTICE: MONTEM IS WORKING WITH THE EXCEPTION OF SOME MEASUREMENTS JUST NOT EXISTING. 
@@ -137,15 +153,26 @@ const createLocation = (request, response) => {
         mP1='${json.PM1__mcgPERcm3}', mP2='${json.PM2_5__mcgPERcm3}', mP4='${json.PM4__mcgPERcm3}', mPX='${json.PM10__mcgPERcm3}', nA='${json.average__dB_A}', 
         nMa='${json.maximum__dB_A}', nMi='${json.minimum__dB_A}', nS='${json.standarddeviation}', 
         nP1='${json.pc_1__cm3}', nP2='${json.pc_2_5__cm3}', nP4='${json.pc_4__cm3}', nPX='${json.p_conc__cm3}', p='${json.pressure__hPa}', t='${json.temperature__celcius}'`
-      } else if(json.sensorSource == "DMI"){ // TODO: ...
+      } else if(json.sensorSource == "DMI"){
         //console.log("DMI")
         //console.log(JSON.stringify(json, null, 2))
         query = `INSERT INTO dmisensor(device_id, time, t, h, p, radia_glob, wind_dir, wind_speed, precip, sun, visibility) 
         VALUES ('${device_id}', '${json.time}', '${json.temperature__celcius}', '${json.humidity__pct}', '${json.pressure__hPa}', '${json.radia_glob}', '${json.wind_dir}', '${json.wind_speed}', '${json.precip}', '${json.sun}', '${json.visibility}')
         ON CONFLICT(device_id) DO UPDATE SET 
         time = '${json.time}', t = '${json.temperature__celcius}', h ='${json.humidity__pct}', p='${json.pressure__hPa}', radia_glob='${json.radia_glob}',wind_dir='${json.wind_dir}',wind_speed='${json.wind_speed}',precip='${json.precip}',sun='${json.sun}',visibility= '${json.visibility}'`    
+      } else if(json.sensorSource == "SmartCitizen"){
+        query = `
+        INSERT INTO smartcitizen (device_id, time, l, nA, t, h, p, mP2, mPX, mP1, eCO2, TVOC) VALUES
+        ('${json.device_id}', '${json.time}', ${json.mDigitalAmbientLightSensor}, ${json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm},
+        ${json.mTemperature}, ${json.mHumidity}, ${json.mDigitalBarometricPressureSensor}, ${json.mParticleMatterPM2_5}, ${json.mParticleMatterPM10},
+        ${json.mParticleMatterPM1}, ${json.mEquivalentCarbonDioxideDigitalIndoorSensor}, ${json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor})
+        ON CONFLICT(device_id) DO UPDATE SET
+        l=${json.mDigitalAmbientLightSensor}, nA=${json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm}, t=${json.mTemperature},
+        h=${json.mHumidity}, p=${json.mDigitalBarometricPressureSensor}, mP2=${json.mParticleMatterPM2_5}, mPX=${json.mParticleMatterPM10},
+        mP1=${json.mParticleMatterPM1}, eCO2=${json.mEquivalentCarbonDioxideDigitalIndoorSensor}, TVOC=${json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor}`
       } else {
-        console.log("Unknown sensor source: '" + JSON.stringify(json, null, 2) + "'")
+        console.log("Unknown sensor source.")
+        //console.log("Unknown sensor source: '" + JSON.stringify(json, null, 2) + "'")
         query = null;
         return
       }
@@ -154,7 +181,7 @@ const createLocation = (request, response) => {
         client.query(query, (error, results) => {
           if (error) {console.log(error); response.send(error) } 
           else {
-            //console.log("location added."); 
+            console.log("location added."); 
             response.status(201).send(`Location added!`)
           }
         })
@@ -204,6 +231,7 @@ const nukeTable = (request, response) => {
 module.exports = {
   getDmi,
   getCityProbe,
+  getSCK,
   getLocationById,
   createLocation,
   updateLocation,

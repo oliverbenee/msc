@@ -53,6 +53,7 @@ app.use(
 const db = require('./db/queries')
 app.get('/locations/dmi', db.getDmi)
 app.get('/locations/cityprobe2', db.getCityProbe)
+app.get('/locations/sck', db.getSCK)
 app.get('/locations/:id', db.getLocationById)
 app.post('/locations', db.createLocation)
 
@@ -143,6 +144,19 @@ const API_URL_DMI_METOBS_COLLECTIONS = "https://dmigw.govcloud.dk/v2/metObs/coll
 
 app.get('/dmimetobs', (req, res) => {
   fetch(API_URL_DMI_METOBS_COLLECTIONS + "?limit=500&datetime=2023-01-01T00:00:00Z&api-key=" + API_KEY_DMI_METOBS)
+  .then((response => response.json()))
+  .then((data) => res.send(data))
+  .catch(console.error())
+})
+
+///////////////////////////////////
+// API Fetch Smart Citizen kits. //
+///////////////////////////////////
+
+const API_URL_SMARTCITIZEN_LOCATIONS="https://api.smartcitizen.me"
+
+app.get('/scklocations', (req, res) => {
+  fetch(API_URL_SMARTCITIZEN_LOCATIONS + "/devices?near=56.172592, 10.189799&distance=1000000")
   .then((response => response.json()))
   .then((data) => res.send(data))
   .catch(console.error())
