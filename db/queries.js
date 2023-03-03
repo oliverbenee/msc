@@ -181,7 +181,7 @@ const createLocation = (request, response) => {
         client.query(query, (error, results) => {
           if (error) {console.log(error); response.send(error) } 
           else {
-            console.log("location added."); 
+            //console.log("location added."); 
             response.status(201).send(`Location added!`)
           }
         })

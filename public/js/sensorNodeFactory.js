@@ -124,7 +124,7 @@ export class DMIFreeDataSensor {
         else if(propertyname.includes("precip") && !propertyname.includes("dur")){this.precip.push(propertyvalue)}
         else if(propertyname.includes("sun")){this.sun.push(propertyvalue)}
         else if(propertyname.includes("visib")){this.visibility.push(propertyvalue)}
-        else { console.log("not pushed"); eval("this."+propertyname+"="+propertyvalue) } // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
+        else { /*console.log("not pushed");*/ eval("this."+propertyname+"="+propertyvalue) } // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
       }
     }
 
