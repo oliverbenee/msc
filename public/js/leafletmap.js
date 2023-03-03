@@ -83,10 +83,30 @@ function placeSensorDataMarker(lat, lng, sensor){
     iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
     iconAnchor: [8, 8], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
-  var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(map);
   
-  // Pop-ups for data. 
-  locationMarker.bindPopup(tableHTML(lat, lng, sensor))
+  // check if the marker exists. if it does, just update it, and block the dupe check from running. 
+  // We have to do it like this, because js doesn't let us return out of a foreach loop.
+  let isUpdated = false
+  // if we find a marker at that position, update it instead of making a new one. 
+  map.eachLayer((layer) => { 
+    if(layer instanceof L.Marker){
+      if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
+        //console.log("UPDATEEEE" + sensor.sensorType + "ID: " + sensor.device_id)
+        layer.bindPopup(/*tableHTML(lat, lng, sensor*/ "UPDATED")
+        isUpdated = true
+      }
+    } 
+  })
+  if(!isUpdated){
+    //console.log(`no dupe found for: ${sensor.device_id}. It is a ${sensor.device_type} from ${sensor.sensorSource}`)
+    var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(map);
+    if(sensor.device_type){
+      let range = sensorFactory.getRangeMap(sensor.device_type);
+      createErrorCircle(lat, lng, range);
+      // Pop-ups for data. 
+      locationMarker.bindPopup(tableHTML(lat, lng, sensor))
+    }
+  }
 }
 
 // send data to database.
@@ -167,7 +187,7 @@ async function fetchDMIData(){
         //console.log("----------------------------")
         //console.log("found " + featuresForThatSensor.length + " features. ")
         paramsForDMISensor.stationType = stationType
-        console.log(paramsForDMISensor)
+        //console.log(paramsForDMISensor)
         sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
       } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
         //placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
@@ -184,7 +204,7 @@ async function fetchSCK(){
   
   data.forEach(item => {
     if(item.system_tags.indexOf("offline") !== -1){
-      console.log(item)
+      //console.log(item)
       var latitude = item.data.location.latitude
       var longitude = item.data.location.longitude
       let sensors = new Map();
@@ -198,10 +218,9 @@ async function fetchSCK(){
 }
 fetchSCK()
 
-
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-  console.log("begin fetch database")
+  //console.log("begin fetch database")
   const response = await fetch('/locations/dmi')
   const data = await response.json()
   addMarkersToMap(data);
@@ -225,10 +244,10 @@ async function fetchDatabase(){
       sensor.ORIGIN = "database";
       sensor.iconUrl = "img/msql.png";
       let device_type = sensor.device_type
-      console.log("DT: " + device_type)
+      //console.log("DT: " + device_type)
       sensor.iconUrl = sensorFactory.getIconMap(device_type)
 
-      // This can't use placeSensorDataMarker since it is in geoJSON format. 
+      // parse geoJSON. 
       var newmarker = L.geoJSON(parsedObject, {
         coordsToLatLng: function (coords) { return new L.LatLng(coords[0], coords[1], coords[2]); },
         onEachFeature: function (feature) {
@@ -237,8 +256,6 @@ async function fetchDatabase(){
           placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor);
           //var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
           //newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
-          var range = sensorFactory.getRangeMap(device_type);
-          createErrorCircle(parsedObject.coordinates[0], parsedObject.coordinates[1], range);
         }
       });
     });
@@ -246,10 +263,20 @@ async function fetchDatabase(){
 }
 fetchDatabase();
 
-/* 
+// refresh databazz every 30 seconds
+let refreshTimer = 60000
+setInterval(() => {
+  setTimeout(() => {
+    fetchCityProbe2()
+    fetchDMIData()
+    fetchSCK()
+  }, refreshTimer-7000)
+  fetchDatabase()
+}, refreshTimer)
+
+/* LEAFLET DRAWING TOOLS.
  * Leaflet.js drawing tools.
  * Based on: https://tarekbagaa.medium.com/the-power-of-postgresql-with-leaflet-and-nodejs-express-e5a2a1f94611
- */ 
 
 // FeatureGroup is to store editable layers
 let drawnItems = new L.FeatureGroup();
@@ -263,6 +290,8 @@ map.on('draw:created', (e) => {
 
 // add scalebar in meter to the map
 L.control.scale({metric: true}).addTo(map);
+
+*/
 
 function createErrorCircle(lat, lng, radius){
   // error circle.
