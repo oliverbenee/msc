@@ -92,7 +92,7 @@ function placeSensorDataMarker(lat, lng, sensor){
     if(layer instanceof L.Marker){
       if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
         //console.log("UPDATEEEE" + sensor.sensorType + "ID: " + sensor.device_id)
-        layer.bindPopup(/*tableHTML(lat, lng, sensor*/ "UPDATED")
+        layer.bindPopup(tableHTML(lat, lng, sensor) /*"UPDATED"*/)
         isUpdated = true
       }
     } 
