@@ -76,6 +76,16 @@ function tableHTML(lat, lng, sensor){                                           
  * MARKER PLACEMENT.
  */
 
+var markers = L.markerClusterGroup({
+  chunkedLoading: true,
+  showCoverageOnHover: true,
+  spiderfyOnMaxZoom: true,
+  zoomToBoundsOnClick: true, 
+  removeOutsideVisibleBounds: true,
+  spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
+})
+map.addLayer(markers)
+
 // Place a marker, and add a pop-up to it. Still useful in case there is no data!
 function placeSensorDataMarker(lat, lng, sensor){
   var sensorIcon = L.icon({
@@ -97,15 +107,20 @@ function placeSensorDataMarker(lat, lng, sensor){
       }
     } 
   })
+
+  // Place a NEW marker. 
   if(!isUpdated){
     //console.log(`no dupe found for: ${sensor.device_id}. It is a ${sensor.device_type} from ${sensor.sensorSource}`)
-    var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(map);
+    var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(markers); // Note, we add the marker to a group "markers", which allows clustering to work. 
     if(sensor.device_type){
       let range = sensorFactory.getRangeMap(sensor.device_type);
-      createErrorCircle(lat, lng, range);
+      //let circle = createErrorCircle(lat, lng, range);
+      //markers.addLayer(circle)
       // Pop-ups for data. 
       locationMarker.bindPopup(tableHTML(lat, lng, sensor))
     }
+    // clustering tool. 
+    markers.addLayer(locationMarker)
   }
 }
 
@@ -251,8 +266,8 @@ async function fetchDatabase(){
       var newmarker = L.geoJSON(parsedObject, {
         coordsToLatLng: function (coords) { return new L.LatLng(coords[0], coords[1], coords[2]); },
         onEachFeature: function (feature) {
-          var mysqliconextension = L.Icon.extend({ options: { iconUrl: sensor.iconUrl, iconSize: [16, 16] } });
-          var mysqlicon = new mysqliconextension();
+          //var mysqliconextension = L.Icon.extend({ options: { iconUrl: sensor.iconUrl, iconSize: [16, 16] } });
+          //mysqlicon = new mysqliconextension();
           placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor);
           //var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
           //newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
@@ -301,4 +316,5 @@ function createErrorCircle(lat, lng, radius){
     fillopacity: 90,
     radius: radius
   }).addTo(map)
+  return circle
 }

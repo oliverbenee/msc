@@ -19,5 +19,27 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
+<!-- Marker clusters. Files are stored in public/lib/leaflet-markercluster. Note, that they are copied from the npm install. --> 
+<link rel="stylesheet" href="/lib/leaflet-markercluster/MarkerCluster.css"/> 
+<link rel="stylesheet" href="/lib/leaflet-markercluster/MarkerCluster.Default.css"/> 
+<script src="/lib/leaflet-markercluster/leaflet.markercluster-src.js"></script>
+<script src="/lib/leaflet-markercluster/MarkerCluster.js"></script>
+<script src="/lib/leaflet-markercluster/MarkerCluster.Spiderfier.js"
+
+<!-- Side-by-Side -->
+<!-- script src="leaflet-side-by-side.js"></script -->
+
 <h1> Map with user location </h1>
+<p>todo:</p>
+<ul>
+  <li> [ ] Good resource: <a href="https://towardsdatascience.com/postgis-a-complete-workflow-729bb604f34c"> LINK</a></li>
+  <li> [ ] Time series and scale. <a href="https://dba.stackexchange.com/questions/294292/database-architecture-of-high-frequency-sensor-values"> LINK </a></li>
+  <li> [ ] side-by-side tool to switch map projections. <a href="https://www.youtube.com/watch?v=R6xybRnfzh4"> LINK </a>, <a href="https://www.npmjs.com/package/leaflet-side-by-side">NPM</a></li>
+  <li> [ ] See onenote for projections </li>
+  <li> [ OK ] make leaflet markers refresh </li>
+  <li> [ OK ] marker clusters </li>
+  <ul> drawing tools: 
+    <li> [ ] Draw an area to get information about the selected elements. I.e. a table below the map. </li>
+  </ul>
+</ul>
 <div id="map"></div>
