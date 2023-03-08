@@ -1,15 +1,19 @@
 'use strict';
 //console.log("leafletmap script up")
 
-// Initialize map, set its view on top of IT-byen, and xoom in.
-var map = L.map('map', {drawControl: true})
-map.setView([56.172196954673105, 10.188960985472951], 13); // NOTE: This will normally just give a grey box.
-
 // Specify map data source. Use openstreetmap! The tiles are the "map fragments" you see. 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
+})
+
+// Initialize map, set its view on top of IT-byen, and xoom in.
+var map = L.map('map', {
+  drawControl: true, 
+  layers: osm, 
+  center: [56.172196954673105, 10.188960985472951],
+  zoom: 13
+})
 
 /*
   Geolocation
@@ -40,7 +44,7 @@ function success(pos){
     map.fitBounds(userPosCircle.getBounds());
     foundUser = true;
   } 
-  //map.setView([lat, lng]);
+  //map.setView([lat, lng]); // see map.flyTo
 }
 
 // Error handling of not retrieving user position. 
@@ -73,18 +77,51 @@ function tableHTML(lat, lng, sensor){                                           
 }
 
 /*
- * MARKER PLACEMENT.
+ * MARKER LAYERS.
  */
 
 var markers = L.markerClusterGroup({
   chunkedLoading: true,
-  showCoverageOnHover: true,
+  showCoverageOnHover: false, // this would have been nice but doesn't seem to work. 
   spiderfyOnMaxZoom: true,
   zoomToBoundsOnClick: true, 
   removeOutsideVisibleBounds: true,
   spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
 })
-map.addLayer(markers)
+//map.addLayer(markers)
+
+let dmiLayer = L.layerGroup()
+let cityprobe2layer = L.layerGroup()
+let scklayer = L.layerGroup()
+let errorlayer = L.layerGroup()
+let allPointsLG = L.layerGroup()
+
+// https://www.npmjs.com/package/leaflet-groupedlayercontrol
+let overlaysObj = { 
+  "Sensors": {
+    "DMI": dmiLayer,
+    "CityProbe2": cityprobe2layer, 
+    "Smart Citizen Kit": scklayer,
+    "Sensors with no data": errorlayer
+  }
+}
+
+var control = L.control.groupedLayers(null, overlaysObj).addTo(map);
+
+/*
+map.on('overlayadd', (event) => {
+  if(event.name == "All Points"){
+    if(!map.hasLayer(dmiLayer)){map.addLayer(dmiLayer);}
+    if(!map.hasLayer(cityprobe2layer)){map.addLayer(cityprobe2layer);}
+    if(!map.hasLayer(scklayer)){map.addLayer(scklayer)}
+  } else if(event.name == "DMI" || "CityProbe2" || "Smart Citizen Kit"){
+    map.removeLayer(markers)
+  }
+})
+*/
+
+// add scalebar in meter to the map
+L.control.scale({metric: true}).addTo(map);
 
 // Place a marker, and add a pop-up to it. Still useful in case there is no data!
 function placeSensorDataMarker(lat, lng, sensor){
@@ -118,9 +155,27 @@ function placeSensorDataMarker(lat, lng, sensor){
       //markers.addLayer(circle)
       // Pop-ups for data. 
       locationMarker.bindPopup(tableHTML(lat, lng, sensor))
+      
+      // for layer filtering.
+      let publisher = sensorFactory.getPublisherMap(sensor.device_type)
+      if(publisher == "Montem"){
+        cityprobe2layer.addLayer(locationMarker)
+        cityprobe2layer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
+      }
+      if(publisher == "DMI"){
+        dmiLayer.addLayer(locationMarker)
+        dmiLayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
+      }
+      if(publisher == "SmartCitizen"){
+        scklayer.addLayer(locationMarker)
+        scklayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
+      }
+      if(publisher == "null"){
+        errorlayer.addLayer(locationMarker)
+      }
     }
     // clustering tool. 
-    markers.addLayer(locationMarker)
+    //markers.addLayer(locationMarker)
   }
 }
 
@@ -174,7 +229,6 @@ async function fetchCityProbe2(){
     }
   })
 }
-fetchCityProbe2();
 
 // Fetch DMI free data. 
 async function fetchDMIData(){
@@ -211,7 +265,6 @@ async function fetchDMIData(){
     })
     //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
-fetchDMIData();
 
 async function fetchSCK(){
   const response = await fetch('/scklocations')
@@ -231,7 +284,6 @@ async function fetchSCK(){
     }
   })
 }
-fetchSCK()
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
@@ -265,7 +317,7 @@ async function fetchDatabase(){
       // parse geoJSON. 
       var newmarker = L.geoJSON(parsedObject, {
         coordsToLatLng: function (coords) { return new L.LatLng(coords[0], coords[1], coords[2]); },
-        onEachFeature: function (feature) {
+        onEachFeature: function (feature, layer) {
           //var mysqliconextension = L.Icon.extend({ options: { iconUrl: sensor.iconUrl, iconSize: [16, 16] } });
           //mysqlicon = new mysqliconextension();
           placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor);
@@ -276,37 +328,18 @@ async function fetchDatabase(){
     });
   }
 }
-fetchDatabase();
+fetchDatabase()
 
 // refresh databazz every 30 seconds
 let refreshTimer = 60000
 setInterval(() => {
   setTimeout(() => {
     fetchCityProbe2()
-    fetchDMIData()
+    //fetchDMIData()
     fetchSCK()
   }, refreshTimer-7000)
   fetchDatabase()
 }, refreshTimer)
-
-/* LEAFLET DRAWING TOOLS.
- * Leaflet.js drawing tools.
- * Based on: https://tarekbagaa.medium.com/the-power-of-postgresql-with-leaflet-and-nodejs-express-e5a2a1f94611
-
-// FeatureGroup is to store editable layers
-let drawnItems = new L.FeatureGroup();
-map.addLayer(drawnItems);
-
-// capture drawn data event.
-map.on('draw:created', (e) => {
-  // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
-  drawnItems.addLayer(e.layer);
-});
-
-// add scalebar in meter to the map
-L.control.scale({metric: true}).addTo(map);
-
-*/
 
 function createErrorCircle(lat, lng, radius){
   // error circle.
@@ -315,6 +348,41 @@ function createErrorCircle(lat, lng, radius){
     fillcolor: '#ffc800',
     fillopacity: 90,
     radius: radius
-  }).addTo(map)
+  })
   return circle
+}
+
+/* LEAFLET DRAWING TOOLS.
+ * Leaflet.js drawing tools.
+ * Based on: https://tarekbagaa.medium.com/the-power-of-postgresql-with-leaflet-and-nodejs-express-e5a2a1f94611
+ */
+
+// FeatureGroup is to store editable layers
+let drawnItems = new L.FeatureGroup();
+map.addLayer(drawnItems);
+
+// capture drawn data event.
+map.on('draw:created', (event) => {
+  var layer = event.layer
+  if(layer && layer instanceof L.Circle) {
+    console.log("circle at: " + layer.getBounds())
+    getCircleMarkers(layer.getBounds())
+  }
+  // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
+  drawnItems.addLayer(layer);
+});
+
+function getCircleMarkers(bounds){
+  var layers = [];
+  drawnItems.eachLayer((layer)=>{
+    if(layer && layer instanceof L.CircleMarkers && !(layer instanceof L.Circle)){ //only circleMarkers, exclude Circles
+        if(bounds.contains(layer.getLatLng())){
+        layers.push(layer)
+      }
+      console.log("circle")
+      console.log(layer)
+    }
+  });
+  console.log(layers)
+  return layers;
 }

@@ -10,6 +10,15 @@ rangeMap.set("SCK 2.1", 300)
 rangeMap.set("SCK 2.1 GPS", 300)
 // TODO: figure out what a reasonable sensor range is. 
 
+const publisherMap = new Map();
+publisherMap.set("CityProbe2", "Montem")
+publisherMap.set("Synop", "DMI")
+publisherMap.set("Pluvio", "DMI")
+publisherMap.set("GIWS", "DMI")
+publisherMap.set("SmartCitizen Kit 1.1", "SmartCitizen")
+publisherMap.set("SCK 2.1", "SmartCitizen")
+publisherMap.set("SCK 2.1 GPS", "SmartCitizen")
+
 const iconMap = new Map();
 iconMap.set("CityProbe2", "img/montem_logo.jpg")
 iconMap.set("Synop", "img/dmi_logo.png")
@@ -36,10 +45,6 @@ export class CityLabSensor {
     this.wind_vane = options.wind_vane // wind direction
     this.rain = options.rain //rain data
     this.iconUrl='img/sensor_image.png'
-  }
-
-  getData(){
-    return Object.keys(this)
   }
 }
 
@@ -278,6 +283,9 @@ export class SensorFactory {
   }
   getIconMap(key){
     return iconMap.get(key);
+  }
+  getPublisherMap(key){
+    return publisherMap.get(key);
   }
 };
 
