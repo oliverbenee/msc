@@ -76,11 +76,53 @@ function tableHTML(lat, lng, sensor){                                           
   return style+loc+tableListOutput+tableListEnd
 }
 
+/* 
+ * ADDITIONAL MAP LAYERS
+ */ 
+
+var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+	subdomains: 'abcd',
+	maxZoom: 20
+});
+var SafeCast = L.tileLayer('https://s3.amazonaws.com/te512.safecast.org/{z}/{x}/{y}.png', {
+	maxZoom: 16,
+	attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://blog.safecast.org/about/">SafeCast</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+});
+let OpenWeatherMap_API_KEY ='<insert your api key here>'
+var OpenWeatherMap_Clouds = L.tileLayer('http://{s}.tile.openweathermap.org/map/clouds/{z}/{x}/{y}.png?appid={apiKey}', {
+	maxZoom: 19,
+	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
+	apiKey: OpenWeatherMap_API_KEY,
+	opacity: 0.5
+});
+var OpenWeatherMap_Pressure = L.tileLayer('http://{s}.tile.openweathermap.org/map/pressure/{z}/{x}/{y}.png?appid={apiKey}', {
+	maxZoom: 19,
+	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
+	apiKey: OpenWeatherMap_API_KEY,
+	opacity: 0.5
+});
+var OpenWeatherMap_Wind = L.tileLayer('http://{s}.tile.openweathermap.org/map/wind/{z}/{x}/{y}.png?appid={apiKey}', {
+	maxZoom: 19,
+	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
+	apiKey: OpenWeatherMap_API_KEY,
+	opacity: 0.5
+});
+
+// let mbapik = pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ
+let basemaps = {
+  "OpenStreetMap": osm,
+  "CartoDB": CartoDB_Positron
+};
+
 /*
  * MARKER LAYERS.
  */
 
-var markers = L.markerClusterGroup({
+let layers = L.layerGroup(); // This is a container object to quickly scan all layers with markers.
+let markers = L.layerGroup();
+
+var markerClusterGroupingTool = L.markerClusterGroup({
   chunkedLoading: true,
   showCoverageOnHover: false, // this would have been nice but doesn't seem to work. 
   spiderfyOnMaxZoom: true,
@@ -88,13 +130,12 @@ var markers = L.markerClusterGroup({
   removeOutsideVisibleBounds: true,
   spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
 })
-map.addLayer(markers) // A little cheat, that lets us ignore the layers control. 
+markers.addLayer(markerClusterGroupingTool) // A little cheat, that lets us ignore the layers control. 
 
 let dmiLayer = L.layerGroup()
 let cityprobe2layer = L.layerGroup()
 let scklayer = L.layerGroup()
 let errorlayer = L.layerGroup()
-let allPointsLG = L.layerGroup()
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
@@ -105,7 +146,7 @@ let overlaysObj = {
     "Sensors with no data": errorlayer
   },
   "Tools": {
-    "Clustering": markers
+    "Past values": markers
   }
 }
 
@@ -113,7 +154,7 @@ let overlayOptions= {
   groupCheckboxes: true,
 }
 
-var control = L.control.groupedLayers(null, overlaysObj, overlayOptions).addTo(map);
+var control = L.control.groupedLayers(basemaps, overlaysObj, overlayOptions).addTo(map);
 
 /*
 map.on('overlayadd', (event) => {
@@ -182,7 +223,8 @@ function placeSensorDataMarker(lat, lng, sensor){
       }
     }
     // clustering tool. 
-    //markers.addLayer(locationMarker)
+    layers.addLayer(locationMarker)
+    markerClusterGroupingTool.addLayer(locationMarker)
   }
 }
 
@@ -368,6 +410,7 @@ function createErrorCircle(lat, lng, radius){
 let drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
+/*
 // capture drawn data event.
 map.on('draw:created', (event) => {
   var layer = event.layer
@@ -378,7 +421,9 @@ map.on('draw:created', (event) => {
   // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
   drawnItems.addLayer(layer);
 });
+*/
 
+/*
 function getCircleMarkers(bounds){
   var layers = [];
   drawnItems.eachLayer((layer)=>{
@@ -393,3 +438,4 @@ function getCircleMarkers(bounds){
   console.log(layers)
   return layers;
 }
+*/

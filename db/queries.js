@@ -200,8 +200,12 @@ const getFields = (request, response) => {
   let params = request.query
   console.log("params")
   console.log(params)
-  console.log("------")
   var query = `SELECT ${params.fields} FROM ${params.source}`
+  if(params.source.length > 1){
+    response.status(501).send("Can't select multiple rows yet. Sorry.")
+    return
+  }
+
   if(params.clause){
     query += ` WHERE ${params.clause.replace('%3D',' =')} `
   }
