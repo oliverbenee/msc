@@ -27,6 +27,7 @@
 <script src="/lib/leaflet-markercluster/MarkerCluster.js"></script>
 <script src="/lib/leaflet-markercluster/MarkerCluster.Spiderfier.js"></script>
 
+<!-- Grouped layer control -->
 <link rel="stylesheet" href="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css"></script>
 <script src="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js"></script>
 
@@ -36,16 +37,73 @@
 <h1> Map with user location </h1>
 <p>todo:</p>
 <ul>
+  <li> <a href="https://www.youtube.com/@gissolutions4604/videos"> GIS SOLUTIONS </a></li>
   <li> [ ] Good resource: <a href="https://towardsdatascience.com/postgis-a-complete-workflow-729bb604f34c"> LINK</a></li>
   <li> [ ] Time series and scale. <a href="https://dba.stackexchange.com/questions/294292/database-architecture-of-high-frequency-sensor-values"> LINK </a></li>
-  <li> [ ] side-by-side tool to switch map projections. <a href="https://www.youtube.com/watch?v=R6xybRnfzh4"> LINK </a>, <a href="https://www.npmjs.com/package/leaflet-side-by-side">NPM</a></li>
-  <li> [ ] See onenote for projections </li>
+  <li> [ ] Leaflet tips and tricks. <a href="https://leanpub.com/leaflet-tips-and-tricks/read#leanpub-auto-adjust-the-markers-transparency"> LINK </a></li>
+  <ul> LAYER CONTROL
+    <li> Tag filter button? <a href="https://maydemirx.github.io/leaflet-tag-filter-button/"> LINK </a></li>
+    <li> Togglable overlays <a href="https://gis.stackexchange.com/questions/169011/leaflet-how-to-create-toggleable-overlays-from-a-single-geojson-featurecollecti"> LINK</a> </li>
+    <li> [ ] side-by-side tool to switch map projections. <a href="https://www.youtube.com/watch?v=R6xybRnfzh4"> LINK </a>, <a href="https://www.npmjs.com/package/leaflet-side-by-side">NPM</a></li>
+    <li> [ ] See onenote for projections </li>
+    <li> [ ] Mapbox access token to test: "access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ" </li>
+  </ul>
+  <li> [ ] marker clusters </li>
+  <ul>
+    <li> [ ] Marker cluster overlay <a href="https://gis.stackexchange.com/questions/437459/leaflet-toggle-marker-clustering-with-overlay">LINK</a></li>
+  </ul>
   <li> [ OK ] make leaflet markers refresh </li>
-  <li> [ OK ] marker clusters </li>
-  <ul> drawing tools: 
-    <li> [ ] Draw an area to get information about the selected elements. I.e. a table below the map. </li>
+  <li>drawing tools: </li>
+   <ul>
+    <li> [ ] Draw an area to get information about the selected elements. I.e. a table below the map. <a href="https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat"> LINK </a></li>
     <li> [ ] This query tool is good inspiration. <a href="https://www.youtube.com/watch?v=KfljXu9xmSE"> LINK </a></li>
   </ul>
-  <li> [ ] Fix markers???? </li>
+  <li> Nearest neighbor stuff. QUERIES. </li>
+  <ul>
+    <li> [ ] What are the closest sensor values for where i am? </li>
+    <li> [ ] <a href="https://www.youtube.com/watch?v=8rOZRE1Z0hE&t=52s"> LINK </a> </li>
+    <li> [ ] Get all sensors within range. <a href="https://stackoverflow.com/questions/51889155/getting-all-buildings-in-range-of-5-miles-from-specified-coordinates/51889638#51889638"> LINK</li>
+    <li> [ ] Other queries. <a href="https://www.bostongis.com/?content_name=postgis_tut02#21"> LINK </a></li>
+  </ul>
+  <li> Search </li>
+  <ul>
+    <li> Find markers/features - find by attribute. <a href="https://www.youtube.com/watch?v=WnPcSGlh0eQ"> LINK </a></li>
+  </ul>
+  <li>Data to add: </li>
+  <ul> 
+    <li> [ ] Traffic data. <a href="https://www.opendata.dk/city-of-aarhus/realtids-trafikdata"> LINK </a></li>
+    <li> [ ] WiFi locations. IMPORTANT! <a href="https://www.opendata.dk/city-of-aarhus/wifi-i-aarhus-kommune"> LINK </a></li>
+    <li> [ ] Air quality. <a href="https://envs2.au.dk/Luftdata/Presentation/table/Aarhus/AARH3"> LINK </a></li>
+  </ul>
+  <li>Other stuff to check out. </li>
+  <ul>
+    <li> [ ] Angular Leaflet. <a href="https://tombatossals.github.io/angular-leaflet-directive/examples/0000-viewer.html#/basic/double-map-toggle-example"> LINK </a></li>
+  </ul>
 </ul>
 <div id="map"></div>
+<h2> Query tool. </h2>
+
+<form method="GET" action="/locations">
+  <label for="queryType">SELECT</label>
+  <select name="fields" id="fields" multiple>
+    <option value="geometry">Geometry</option>
+    <option value="device_type">Device Type</option>
+    <option value="device_id">Device ID</option>
+    <option value="*">ALL</option>
+  </select>
+  <label for="querySource">FROM</label>
+  <select name="source" id="source" multiple>
+    <option value="cityprobe2">cityprobe2</option>
+    <option value="dmisensor">dmisensor</option>
+    <option value="smartcitizen">smartcitizen</option>
+  </select>
+  <label for="queryClause">WHERE</label>
+  <input type="text" id="clause" name="clause">
+  <input type="submit" value="Submit">
+</form>
+  
+<table id="dataTable">
+  <thead></thead>
+  <tbody id="tableContent"></tbody>
+</table>
+<p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple options.</p>

@@ -191,6 +191,31 @@ const createLocation = (request, response) => {
   client.end
 } 
 
+const getFields = (request, response) => {
+  console.log(request)
+  console.log(" using fields.")
+  //let tables = request.header.querySource
+  //console.log(tables)
+
+  let params = request.query
+  console.log("params")
+  console.log(params)
+  console.log("------")
+  var query = `SELECT ${params.fields} FROM ${params.source}`
+  if(params.clause){
+    query += ` WHERE ${params.clause.replace('%3D',' =')} `
+  }
+  console.log(query)
+  client.query(query, (error, results) => {
+    if (error) {
+      throw error
+    }
+    console.log(results.rows)
+    response.status(200).json(results.rows) 
+  })
+  client.end 
+}
+
 // Unnecessary, since we can just write over the location. TODO: Delete. 
 const updateLocation = (request, response) => {
   const json = request.body.json
@@ -233,6 +258,7 @@ module.exports = {
   getCityProbe,
   getSCK,
   getLocationById,
+  getFields,
   createLocation,
   updateLocation,
   deleteLocation,

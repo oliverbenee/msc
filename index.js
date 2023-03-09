@@ -61,6 +61,9 @@ app.put('/locations/:id', db.updateLocation)
 app.delete('/locations/:id', db.deleteLocation)
 app.purge('/locations', db.nukeTable)
 
+// Fetch dht data for the table
+app.get('/locations', db.getFields)
+
 var mcache = require('memory-cache')
 
 // Data caching. Time is in seconds.

@@ -88,7 +88,7 @@ var markers = L.markerClusterGroup({
   removeOutsideVisibleBounds: true,
   spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
 })
-//map.addLayer(markers)
+map.addLayer(markers) // A little cheat, that lets us ignore the layers control. 
 
 let dmiLayer = L.layerGroup()
 let cityprobe2layer = L.layerGroup()
@@ -97,16 +97,23 @@ let errorlayer = L.layerGroup()
 let allPointsLG = L.layerGroup()
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
-let overlaysObj = { 
+let overlaysObj = {
   "Sensors": {
     "DMI": dmiLayer,
-    "CityProbe2": cityprobe2layer, 
+    "CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer
+  },
+  "Tools": {
+    "Clustering": markers
   }
 }
 
-var control = L.control.groupedLayers(null, overlaysObj).addTo(map);
+let overlayOptions= {
+  groupCheckboxes: true,
+}
+
+var control = L.control.groupedLayers(null, overlaysObj, overlayOptions).addTo(map);
 
 /*
 map.on('overlayadd', (event) => {
