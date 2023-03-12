@@ -164,3 +164,15 @@ app.get('/scklocations', (req, res) => {
   .then((data) => res.send(data))
   .catch(console.error())
 })
+
+////////////////////////////////////////////
+// API Fetch opendata.dk Wi-Fi locations. //
+////////////////////////////////////////////
+
+const API_URL_WIFI_LOCATIONS=`https://admin.opendata.dk/api/3/action/datastore_search_sql?sql=SELECT * from "5a4a9d62-b17e-4a7d-a249-f6a6bf11ef62"`
+app.get('/wifilocations', (req, res) => {
+  fetch(API_URL_WIFI_LOCATIONS)
+  .then((response) => response.json())
+  .then((data) => res.send(data))
+  .catch(console.error())
+})

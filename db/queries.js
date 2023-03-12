@@ -201,15 +201,18 @@ const getFields = (request, response) => {
   console.log("params")
   console.log(params)
   var query = `SELECT ${params.fields} FROM ${params.source}`
-  if(params.source.length > 1){
-    response.status(501).send("Can't select multiple rows yet. Sorry.")
-    return
+  if(params.source.length >= 1 && params.source.length < 3){
+    query = `SELECT ${params.fields} FROM locations`
+    for(let i=0; i<params.source.length; i++){
+      query += ` LEFT JOIN ${params.source[i]} ON locations.device_id = ${params.source[i]}.device_id`
+    }
+    console.log(params.source.length)
   }
 
   if(params.clause){
     query += ` WHERE ${params.clause.replace('%3D',' =')} `
   }
-  console.log(query)
+  //console.log(query)
   client.query(query, (error, results) => {
     if (error) {
       throw error

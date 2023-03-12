@@ -137,16 +137,19 @@ let cityprobe2layer = L.layerGroup()
 let scklayer = L.layerGroup()
 let errorlayer = L.layerGroup()
 
+let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer]
+
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
   "Sensors": {
     "DMI": dmiLayer,
     "CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
-    "Sensors with no data": errorlayer
+    "Sensors with no data": errorlayer,
+    "SafeCast Radiation": SafeCast
   },
   "Tools": {
-    "Past values": markers
+    "Cluster markers": markers
   }
 }
 
@@ -183,14 +186,17 @@ function placeSensorDataMarker(lat, lng, sensor){
   // We have to do it like this, because js doesn't let us return out of a foreach loop.
   let isUpdated = false
   // if we find a marker at that position, update it instead of making a new one. 
-  map.eachLayer((layer) => { 
-    if(layer instanceof L.Marker){
-      if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
-        //console.log("UPDATEEEE" + sensor.sensorType + "ID: " + sensor.device_id)
-        layer.bindPopup(tableHTML(lat, lng, sensor) /*"UPDATED"*/)
-        isUpdated = true
-      }
-    } 
+  markerlayers.forEach((ML) => { 
+    ML.eachLayer((layer) => { 
+      if(layer instanceof L.Marker){
+        if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
+          //console.log("UPDATEEEE" + sensor.sensorType + "ID: " + sensor.device_id)
+          layer.bindPopup(tableHTML(lat, lng, sensor) /*"UPDATED"*/)
+          layer.sensor = sensor
+          isUpdated = true
+        }
+      } 
+    })
   })
 
   // Place a NEW marker. 
@@ -202,6 +208,7 @@ function placeSensorDataMarker(lat, lng, sensor){
       //let circle = createErrorCircle(lat, lng, range);
       //markers.addLayer(circle)
       // Pop-ups for data. 
+      locationMarker.sensor = sensor
       locationMarker.bindPopup(tableHTML(lat, lng, sensor))
       
       // for layer filtering.
@@ -410,32 +417,89 @@ function createErrorCircle(lat, lng, radius){
 let drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
-/*
+
+// Inspired from: https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat
 // capture drawn data event.
 map.on('draw:created', (event) => {
   var layer = event.layer
-  if(layer && layer instanceof L.Circle) {
-    console.log("circle at: " + layer.getBounds())
-    getCircleMarkers(layer.getBounds())
+  if(layer && layer instanceof L.Rectangle) {
+    console.log("drawn Rectangle")
+    getMarkers(layer.getBounds())
   }
   // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
   drawnItems.addLayer(layer);
 });
-*/
 
-/*
-function getCircleMarkers(bounds){
+function getMarkers(bounds){
+  console.log("getmarkers")
   var layers = [];
-  drawnItems.eachLayer((layer)=>{
-    if(layer && layer instanceof L.CircleMarkers && !(layer instanceof L.Circle)){ //only circleMarkers, exclude Circles
+
+    markers.eachLayer((layer) => { 
+      if(layer instanceof L.Marker){
         if(bounds.contains(layer.getLatLng())){
-        layers.push(layer)
-      }
-      console.log("circle")
-      console.log(layer)
-    }
-  });
+          layers.push(layer)
+        }
+      } 
+    })
+
+  console.log("found the following layers: ")
   console.log(layers)
+
+  let sensorsToTable = []
+  layers.forEach((elem) => {
+    console.log(elem.sensor)
+    console.log("lat: " + elem._latlng.lat + ", lng: " + elem._latlng.lng)
+    sensorsToTable.push(elem.sensor)
+    
+    //console.log(conv)
+  })
+  let table = document.getElementById("queryTable")
+  table.innerHTML = ""
+  table.appendChild(buildHtmlTable(sensorsToTable))
+
   return layers;
 }
-*/
+
+var _table_ = document.createElement('table'),
+  _tr_ = document.createElement('tr'),
+  _th_ = document.createElement('th'),
+  _td_ = document.createElement('td');
+
+_table_.className="queryTable"
+
+// Builds the HTML Table out of myList json data from Ivy restful service.
+function buildHtmlTable(arr) {
+  var table = _table_.cloneNode(false),
+    columns = addAllColumnHeaders(arr, table);
+  for (var i = 0, maxi = arr.length; i < maxi; ++i) {
+    var tr = _tr_.cloneNode(false);
+    for (var j = 0, maxj = columns.length; j < maxj; ++j) {
+      var td = _td_.cloneNode(false);
+      var cellValue = arr[i][columns[j]];
+      td.appendChild(document.createTextNode(arr[i][columns[j]] || ''));
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+  return table;
+}
+
+// Adds a header row to the table and returns the set of columns.
+// Need to do union of keys from all records as some records may not contain
+// all records
+function addAllColumnHeaders(arr, table) {
+  var columnSet = [],
+    tr = _tr_.cloneNode(false);
+  for (var i = 0, l = arr.length; i < l; i++) {
+    for (var key in arr[i]) {
+      if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
+        columnSet.push(key);
+        var th = _th_.cloneNode(false);
+        th.appendChild(document.createTextNode(key));
+        tr.appendChild(th);
+      }
+    }
+  }
+  table.appendChild(tr);
+  return columnSet;
+}

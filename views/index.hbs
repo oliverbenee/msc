@@ -55,7 +55,7 @@
   <li> [ OK ] make leaflet markers refresh </li>
   <li>drawing tools: </li>
    <ul>
-    <li> [ ] Draw an area to get information about the selected elements. I.e. a table below the map. <a href="https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat"> LINK </a></li>
+    <li> [ OK ] Draw an area to get information about the selected elements. I.e. a table below the map. <a href="https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat"> LINK </a></li>
     <li> [ ] This query tool is good inspiration. <a href="https://www.youtube.com/watch?v=KfljXu9xmSE"> LINK </a></li>
   </ul>
   <li> Nearest neighbor stuff. QUERIES. </li>
@@ -83,27 +83,28 @@
 <div id="map"></div>
 <h2> Query tool. </h2>
 
+Testing for finding nearest sensors. 
+In the future, this form won't actually just do SQL injection, but provide a curated set of interactions, that will produce a table of information. 
+I want to use the drawing tools in leaflet to affect these queries. 
 <form method="GET" action="/locations">
-  <label for="queryType">SELECT</label>
+  <label for="queryType">Fields</label>
   <select name="fields" id="fields" multiple>
     <option value="geometry">Geometry</option>
     <option value="device_type">Device Type</option>
     <option value="device_id">Device ID</option>
     <option value="*">ALL</option>
   </select>
-  <label for="querySource">FROM</label>
+  <label for="querySource">Source</label>
   <select name="source" id="source" multiple>
     <option value="cityprobe2">cityprobe2</option>
     <option value="dmisensor">dmisensor</option>
     <option value="smartcitizen">smartcitizen</option>
   </select>
-  <label for="queryClause">WHERE</label>
+  <label for="queryClause">Clause</label>
   <input type="text" id="clause" name="clause">
   <input type="submit" value="Submit">
 </form>
   
-<table id="dataTable">
-  <thead></thead>
-  <tbody id="tableContent"></tbody>
-</table>
 <p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple options.</p>
+
+<table id="queryTable">

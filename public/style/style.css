@@ -7,3 +7,32 @@ html, body, #map{
   /*height: 100%;*/
   width: 97vw;
 }
+
+table.queryTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.queryTable td, table.queryTable th {
+  border: 1px solid #AAAAAA;
+  padding: 3px 2px;
+}
+table.queryTable thead {
+    border-bottom: 2px solid #444444;
+}
+table.queryTable thead th {
+  font-size: 15px;
+  font-weight: bold;
+}
+table.queryTable tfoot td {
+  font-size: 14px;
+}
+table.queryTable tfoot .links {
+  text-align: right;
+}
+table.queryTable tfoot .links a{
+  display: inline-block;
+  background: #1C6EA4;
+  color: #FFFFFF;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
