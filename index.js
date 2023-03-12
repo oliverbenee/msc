@@ -54,6 +54,7 @@ const db = require('./db/queries')
 app.get('/locations/dmi', db.getDmi)
 app.get('/locations/cityprobe2', db.getCityProbe)
 app.get('/locations/sck', db.getSCK)
+app.get('/locations/wifi', db.getWiFi)
 app.get('/locations/:id', db.getLocationById)
 app.post('/locations', db.createLocation)
 

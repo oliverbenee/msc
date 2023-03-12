@@ -56,7 +56,12 @@ function createTable(){
       device_id VARCHAR UNIQUE NOT NULL,
       FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE,
       time TIMESTAMP,
-      l float(5), nA float(5), t float(5), h float(5), p float(6), mP2 float(5), mPX float(5), mP1 float(5), eCO2 float(5), TVOC float(5))
+      l float(5), nA float(5), t float(5), h float(5), p float(6), mP2 float(5), mPX float(5), mP1 float(5), eCO2 float(5), TVOC float(5));
+
+    CREATE TABLE IF NOT EXISTS public.wifilocations(
+      device_id VARCHAR UNIQUE NOT NULL,
+      FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE,
+      city VARCHAR, name VARCHAR, zip VARCHAR, street VARCHAR, department VARCHAR, houseno VARCHAR);
     `, (err, res) => {
       if(err) throw err
     })
@@ -107,6 +112,16 @@ const getSCK = (request, response) => {
   client.end
 }
 
+const getWiFi = (request, response) => {
+  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations JOIN wifilocations ON locations.device_id = wifilocations.device_id ORDER BY geometry ASC', (error, results) => {
+    if(error){
+      throw error
+    }
+    response.status(200).send(results.rows)
+  })
+  client.end
+}
+
 const getLocationById = (request, response) => {
   const id = parseInt(request.params.id)
   let query = `SELECT *, st_asgeojson(geom) AS geojson FROM locations WHERE id = ${id}`
@@ -138,8 +153,6 @@ const createLocation = (request, response) => {
       response.send("failed to insert: " + device_id)
       return
     } else {
-      // NOTICE: MONTEM IS WORKING WITH THE EXCEPTION OF SOME MEASUREMENTS JUST NOT EXISTING. 
-      // NOTICE: DMI Sensor database part is working.
       if(json.sensorSource == "Montem"){
         //console.log("MONTEM")
         //console.log(JSON.stringify(json, null, 2))
@@ -170,8 +183,14 @@ const createLocation = (request, response) => {
         l=${json.mDigitalAmbientLightSensor}, nA=${json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm}, t=${json.mTemperature},
         h=${json.mHumidity}, p=${json.mDigitalBarometricPressureSensor}, mP2=${json.mParticleMatterPM2_5}, mPX=${json.mParticleMatterPM10},
         mP1=${json.mParticleMatterPM1}, eCO2=${json.mEquivalentCarbonDioxideDigitalIndoorSensor}, TVOC=${json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor}`
+      } else if(json.sensorSource == "Open Data Aarhus WiFi Routers"){
+        console.log(json)
+        query = `INSERT INTO wifilocations(device_id, city, name, zip, street, department, houseno)
+        VALUES ('${device_id}', '${json.city}', '${json.name}', '${json.zip}', '${json.street}', '${json.department}', '${json.no}')
+        ON CONFLICT(device_id) DO UPDATE SET 
+        city='${json.city}', name='${json.name}', zip='${json.zip}', street='${json.street}', department='${json.department}', houseno='${json.no}'`  
       } else {
-        console.log("Unknown sensor source.")
+        console.log("Unknown sensor source: " + json.sensorSource)
         //console.log("Unknown sensor source: '" + JSON.stringify(json, null, 2) + "'")
         query = null;
         return
@@ -264,6 +283,7 @@ module.exports = {
   getDmi,
   getCityProbe,
   getSCK,
+  getWiFi,
   getLocationById,
   getFields,
   createLocation,

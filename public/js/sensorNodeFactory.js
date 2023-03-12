@@ -19,6 +19,8 @@ publisherMap.set("SmartCitizen Kit 1.1", "SmartCitizen")
 publisherMap.set("SCK 2.1", "SmartCitizen")
 publisherMap.set("SCK 2.1 GPS", "SmartCitizen")
 
+publisherMap.set("WiFi router", "Aarhus Municipality")
+
 const iconMap = new Map();
 iconMap.set("CityProbe2", "img/montem_logo.jpg")
 iconMap.set("Synop", "img/dmi_logo.png")
@@ -29,6 +31,8 @@ iconMap.set("GIWS", "img/dmi_logo.png")
 iconMap.set("SmartCitizen Kit 1.1", "img/smartcitizen.png")
 iconMap.set("SCK 2.1", "img/smartcitizen.png")
 iconMap.set("SCK 2.1 GPS", "img/smartcitizen.png")
+
+iconMap.set("WiFi router", "img/msql.png")
 
 export class CityLabSensor {
   constructor(options){
@@ -44,7 +48,7 @@ export class CityLabSensor {
     this.wind_speed = options.wind_speed // wind velocity
     this.wind_vane = options.wind_vane // wind direction
     this.rain = options.rain //rain data
-    this.iconUrl='img/sensor_image.png'
+    //this.iconUrl='img/sensor_image.png'
   }
 }
 
@@ -236,6 +240,20 @@ export class SmartCitizenKitDevice {
   }
 }
 
+export class WiFiRouterLocation {
+  constructor(options){
+    this.sensorSource = "Open Data Aarhus WiFi Routers"
+    this.sensorType = "WiFi router"
+    this.device_id = options.id
+    this.city = options.city
+    this.name = options.name
+    this.zip = options.zip
+    this.street = options.street
+    this.department = options.department
+    this.houseno = options.houseno
+  }
+}
+
 export class NullSensor {
   constructor(){
     this.sensorSource="null"
@@ -243,10 +261,9 @@ export class NullSensor {
     this.device_id="null"
     // save newest timestamp
     this.time = new Date().toISOString()
-    this.iconUrl='img/dmi_logo.jpg'  
 
     this.description = "There is a known sensor location here, but there is no data for it. "
-    this.iconUrl='img/sensor_image.png'
+    //this.iconUrl='img/sensor_image.png'
   }
 }
 export class SensorFactory {
@@ -276,6 +293,9 @@ export class SensorFactory {
   }
   createSmartCitizenKitSensor(options){
     return new SmartCitizenKitDevice(options);
+  }
+  createWiFiRouterLocation(options){
+    return new WiFiRouterLocation(options);
   }
   getRangeMap(key){
     //console.log("K: " + key + ", " + typeof(key))

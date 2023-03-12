@@ -136,8 +136,9 @@ let dmiLayer = L.layerGroup()
 let cityprobe2layer = L.layerGroup()
 let scklayer = L.layerGroup()
 let errorlayer = L.layerGroup()
+let wifilayer = L.layerGroup()
 
-let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer]
+let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer, wifilayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
@@ -146,7 +147,8 @@ let overlaysObj = {
     "CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer,
-    "SafeCast Radiation": SafeCast
+    "SafeCast Radiation": SafeCast,
+    "WiFi Locations": wifilayer
   },
   "Tools": {
     "Cluster markers": markers
@@ -176,8 +178,14 @@ L.control.scale({metric: true}).addTo(map);
 
 // Place a marker, and add a pop-up to it. Still useful in case there is no data!
 function placeSensorDataMarker(lat, lng, sensor){
+  var iconUrl = "img/msql.png";
+  let device_type = sensor.device_type
+  //console.log("DT: " + device_type)
+  iconUrl = sensorFactory.getIconMap(device_type)
+  //console.log("device type: '" + device_type + "', iconUrl: " + iconUrl)
+
   var sensorIcon = L.icon({
-    iconUrl: sensor.iconUrl,
+    iconUrl: iconUrl,
     iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
     iconAnchor: [8, 8], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
@@ -216,17 +224,21 @@ function placeSensorDataMarker(lat, lng, sensor){
       if(publisher == "Montem"){
         cityprobe2layer.addLayer(locationMarker)
         cityprobe2layer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
-      }
-      if(publisher == "DMI"){
+      } else if(publisher == "DMI"){
         dmiLayer.addLayer(locationMarker)
         dmiLayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
-      }
-      if(publisher == "SmartCitizen"){
+      } else if(publisher == "SmartCitizen"){
         scklayer.addLayer(locationMarker)
         scklayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
-      }
-      if(publisher == "null"){
+      } else if(publisher == "Aarhus Municipality"){
+        console.log("WIFI") 
+        wifilayer.addLayer(locationMarker)
+      } else if(publisher == "null"){
         errorlayer.addLayer(locationMarker)
+      } else {
+        console.log("no publisher found for: " + publisher)
+        console.log("object: ")
+        console.log(sensor)
       }
     }
     // clustering tool. 
@@ -322,6 +334,7 @@ async function fetchDMIData(){
     //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
 
+// Fetch Smart Citizen kits.
 async function fetchSCK(){
   const response = await fetch('/scklocations')
   const data = await response.json()
@@ -341,6 +354,16 @@ async function fetchSCK(){
   })
 }
 
+async function fetchWiFi(){
+  const response = await fetch('/wifilocations')
+  const data = await response.json()
+  data.result.records.forEach(record =>{
+    let latitude = record.lat
+    let longitude = record.lng
+    sendPositionToDatabase(latitude, longitude, sensorFactory.createWiFiRouterLocation(record))
+  })
+}
+
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
   //console.log("begin fetch database")
@@ -353,6 +376,10 @@ async function fetchDatabase(){
   const response3 = await fetch('locations/sck')
   const data3 = await response3.json()
   addMarkersToMap(data3);
+  const response4 = await fetch('/locations/wifi')
+  const data4 = await response4.json()
+  addMarkersToMap(data4);
+
 
   function addMarkersToMap(data) {
     data.forEach(item => {
@@ -365,10 +392,6 @@ async function fetchDatabase(){
       // console.log(sensor);
 
       sensor.ORIGIN = "database";
-      sensor.iconUrl = "img/msql.png";
-      let device_type = sensor.device_type
-      //console.log("DT: " + device_type)
-      sensor.iconUrl = sensorFactory.getIconMap(device_type)
 
       // parse geoJSON. 
       var newmarker = L.geoJSON(parsedObject, {
@@ -393,6 +416,7 @@ setInterval(() => {
     fetchCityProbe2()
     //fetchDMIData()
     fetchSCK()
+    fetchWiFi()
   }, refreshTimer-7000)
   fetchDatabase()
 }, refreshTimer)
