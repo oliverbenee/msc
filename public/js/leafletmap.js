@@ -9,7 +9,6 @@ let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Initialize map, set its view on top of IT-byen, and xoom in.
 var map = L.map('map', {
-  drawControl: true, 
   layers: osm, 
   center: [56.172196954673105, 10.188960985472951],
   zoom: 13
@@ -212,7 +211,6 @@ function placeSensorDataMarker(lat, lng, sensor){
     //console.log(`no dupe found for: ${sensor.device_id}. It is a ${sensor.device_type} from ${sensor.sensorSource}`)
     var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(markers); // Note, we add the marker to a group "markers", which allows clustering to work. 
     if(sensor.device_type){
-      let range = sensorFactory.getRangeMap(sensor.device_type);
       //let circle = createErrorCircle(lat, lng, range);
       //markers.addLayer(circle)
       // Pop-ups for data. 
@@ -231,8 +229,8 @@ function placeSensorDataMarker(lat, lng, sensor){
         scklayer.addLayer(locationMarker)
         scklayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
       } else if(publisher == "Aarhus Municipality"){
-        console.log("WIFI") 
         wifilayer.addLayer(locationMarker)
+        wifilayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
       } else if(publisher == "null"){
         errorlayer.addLayer(locationMarker)
       } else {
@@ -441,12 +439,32 @@ function createErrorCircle(lat, lng, radius){
 let drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
+let drawControl = new L.Control.Draw({
+  /*
+  draw: {
+    polygon: {
+      allowIntersection: false,
+      drawError:{
+        color: 'red',
+        timeout: 3000
+      },
+      showArea: true,
+      metric: true
+      
+    }, 
+    edit: {
+      featureGroup: drawnItems
+    }
+  }
+  */
+})
+map.addControl(drawControl)
 
 // Inspired from: https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat
 // capture drawn data event.
 map.on('draw:created', (event) => {
   var layer = event.layer
-  if(layer && layer instanceof L.Rectangle) {
+  if(layer && layer instanceof L.Rectangle) { // GetBounds works like a square, so it doesn't work properly if you make polygons.
     console.log("drawn Rectangle")
     getMarkers(layer.getBounds())
   }
@@ -488,7 +506,6 @@ var _table_ = document.createElement('table'),
   _tr_ = document.createElement('tr'),
   _th_ = document.createElement('th'),
   _td_ = document.createElement('td');
-
 _table_.className="queryTable"
 
 // Builds the HTML Table out of myList json data from Ivy restful service.

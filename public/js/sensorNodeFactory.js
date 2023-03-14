@@ -9,6 +9,7 @@ rangeMap.set("SmartCitizen Kit 1.1", 300)
 rangeMap.set("SCK 2.1", 300)
 rangeMap.set("SCK 2.1 GPS", 300)
 // TODO: figure out what a reasonable sensor range is. 
+rangeMap.set("WiFi router", 20)
 
 const publisherMap = new Map();
 publisherMap.set("CityProbe2", "Montem")

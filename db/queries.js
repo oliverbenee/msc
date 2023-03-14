@@ -184,7 +184,7 @@ const createLocation = (request, response) => {
         h=${json.mHumidity}, p=${json.mDigitalBarometricPressureSensor}, mP2=${json.mParticleMatterPM2_5}, mPX=${json.mParticleMatterPM10},
         mP1=${json.mParticleMatterPM1}, eCO2=${json.mEquivalentCarbonDioxideDigitalIndoorSensor}, TVOC=${json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor}`
       } else if(json.sensorSource == "Open Data Aarhus WiFi Routers"){
-        console.log(json)
+        //console.log(json)
         query = `INSERT INTO wifilocations(device_id, city, name, zip, street, department, houseno)
         VALUES ('${device_id}', '${json.city}', '${json.name}', '${json.zip}', '${json.street}', '${json.department}', '${json.no}')
         ON CONFLICT(device_id) DO UPDATE SET 

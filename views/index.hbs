@@ -39,48 +39,57 @@
 <ul>
   <li> <a href="https://www.youtube.com/@gissolutions4604/videos"> GIS SOLUTIONS </a></li>
   <li> [ ] Good resource: <a href="https://towardsdatascience.com/postgis-a-complete-workflow-729bb604f34c"> LINK</a></li>
-  <li> [ ] Time series and scale. <a href="https://dba.stackexchange.com/questions/294292/database-architecture-of-high-frequency-sensor-values"> LINK </a></li>
-  <li> [ ] Leaflet tips and tricks. <a href="https://leanpub.com/leaflet-tips-and-tricks/read#leanpub-auto-adjust-the-markers-transparency"> LINK </a></li>
-  <ul> LAYER CONTROL
-    <li> Tag filter button? <a href="https://maydemirx.github.io/leaflet-tag-filter-button/"> LINK </a></li>
+  <!--li> [ OK ] Time series and scale. <a href="https://dba.stackexchange.com/questions/294292/database-architecture-of-high-frequency-sensor-values"> LINK </a></li>
+  <li> [ OK ] Leaflet tips and tricks. <a href="https://leanpub.com/leaflet-tips-and-tricks/read#leanpub-auto-adjust-the-markers-transparency"> LINK </a></li -->
+  <li> [ ] Leaflet tips based on AngularJS. <a href="https://tombatossals.github.io/angular-leaflet-directive/examples/0000-viewer.html#/basic/double-map-toggle-example"> LINK </a></li>
+  <!--ul> LAYER CONTROL
+    <li> [ OK ] Tag filter button? <a href="https://maydemirx.github.io/leaflet-tag-filter-button/"> LINK </a></li>
     <li> [ OK ] Togglable overlays <a href="https://gis.stackexchange.com/questions/169011/leaflet-how-to-create-toggleable-overlays-from-a-single-geojson-featurecollecti"> LINK</a> </li>
-    <li> [ ] side-by-side tool to switch map projections. <a href="https://www.youtube.com/watch?v=R6xybRnfzh4"> LINK </a>, <a href="https://www.npmjs.com/package/leaflet-side-by-side">NPM</a></li>
+    <li> [ DROP ] side-by-side tool to switch map projections. <a href="https://www.youtube.com/watch?v=R6xybRnfzh4"> LINK </a>, <a href="https://www.npmjs.com/package/leaflet-side-by-side">NPM</a></li>
     <li> [ OK ] See onenote for projections </li>
     <li> [ ] Mapbox access token to test: "access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ" </li>
-  </ul>
-  <li> [ OK ] marker clusters </li>
+  </ul -->
+  <!--li> [ OK ] marker clusters </li>
   <ul>
     <li> [ OK ] Marker cluster overlay <a href="https://gis.stackexchange.com/questions/437459/leaflet-toggle-marker-clustering-with-overlay">LINK</a></li>
   </ul>
-  <li> [ OK ] make leaflet markers refresh </li>
+  <li> [ OK ] make leaflet markers refresh </li-->
   <li>drawing tools: </li>
    <ul>
     <li> [ OK ] Draw an area to get information about the selected elements. I.e. a table below the map. <a href="https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat"> LINK </a></li>
     <li> [ ] This query tool is good inspiration. <a href="https://www.youtube.com/watch?v=KfljXu9xmSE"> LINK </a></li>
   </ul>
   <li> Nearest neighbor stuff. QUERIES. </li>
-  <ul>
+  <ul> QUESTION: How well do i know about pollution/sensor information *right here*? And would it be a good idea to set up a sensor here?
     <li> [ ] What are the closest sensor values for where i am? </li>
     <li> [ ] <a href="https://www.youtube.com/watch?v=8rOZRE1Z0hE&t=52s"> LINK </a> </li>
     <li> [ ] Get all sensors within range. <a href="https://stackoverflow.com/questions/51889155/getting-all-buildings-in-range-of-5-miles-from-specified-coordinates/51889638#51889638"> LINK</li>
     <li> [ ] Other queries. <a href="https://www.bostongis.com/?content_name=postgis_tut02#21"> LINK </a></li>
   </ul>
-  <li> Search </li>
-  <ul>
-    <li> Find markers/features - find by attribute. <a href="https://www.youtube.com/watch?v=WnPcSGlh0eQ"> LINK </a></li>
-  </ul>
   <li>Data to add: </li>
   <ul> 
     <li> [ ] Traffic data. <a href="https://www.opendata.dk/city-of-aarhus/realtids-trafikdata"> LINK </a></li>
-    <li> [ ] WiFi locations. IMPORTANT! <a href="https://www.opendata.dk/city-of-aarhus/wifi-i-aarhus-kommune"> LINK </a></li>
-    <li> [ ] Air quality. <a href="https://envs2.au.dk/Luftdata/Presentation/table/Aarhus/AARH3"> LINK </a></li>
+    <li> [ OK ] WiFi locations. IMPORTANT! <a href="https://www.opendata.dk/city-of-aarhus/wifi-i-aarhus-kommune"> LINK </a></li>
+    <li> [ ] Air quality. <a href="https://envs2.au.dk/Luftdata/Presentation/table/Aarhus/AARH3"> LINK </a> <a href="https://www.opendata.dk/city-of-aarhus/luftkvaliteten-i-danmark"> LINK </a></li>
   </ul>
-  <li>Other stuff to check out. </li>
+  <li> SOLVE TASKS FROM REPORT
   <ul>
-    <li> [ ] Angular Leaflet. <a href="https://tombatossals.github.io/angular-leaflet-directive/examples/0000-viewer.html#/basic/double-map-toggle-example"> LINK </a></li>
+    <li> [OK] \item What are the sensor types and their values in general? This question can help users get an overview of known data in Aarhus. </li>
+    <ul><li> Find markers/features - find by attribute. <a href="https://www.youtube.com/watch?v=WnPcSGlh0eQ"> LINK </a></li></ul>
+    <li> [OK] \item Which sensors INTERSECT this area, and what do they record? </li>
+    <li> \item (follow-up) Would it be a good idea to set up a sensor here? </li>
+    <li> \item From this point, what is the closest sensor data in PROXIMITY, and what does it read? </li>
+    <li>\item If there are no sensors nearby, what are the NEAREST NEIGHBORS, and what do they say?</li>
+  </ul>
+  <ul>
+    <li> \item For this particular sensor, do sensors in PROXIMITY sensors show similar values?</li>
+    <li> \item For this particular sensor, if there are no sensors in proximity, how does it diverge from its NEAREST NEIGHBORS?</li>
   </ul>
 </ul>
 <div id="map"></div>
+
+<table id="queryTable"></table>
+
 <h2> Query tool. </h2>
 
 Testing for finding nearest sensors. 
@@ -107,4 +116,3 @@ I want to use the drawing tools in leaflet to affect these queries.
   
 <p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple options.</p>
 
-<table id="queryTable">
