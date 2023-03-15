@@ -410,12 +410,17 @@ fetchDatabase()
 // refresh databazz every 30 seconds
 let refreshTimer = 60000
 setInterval(() => {
-  setTimeout(() => {
-    fetchCityProbe2()
-    //fetchDMIData()
-    fetchSCK()
-    fetchWiFi()
-  }, refreshTimer-7000)
+  try {
+    setTimeout(() => {
+      fetchCityProbe2()
+      //fetchDMIData()
+      fetchSCK()
+      fetchWiFi()
+    }, refreshTimer - 7000)
+  } catch(error) {
+    console.log("failed to fetch data.")
+    console.error(error)
+  }
   fetchDatabase()
 }, refreshTimer)
 
