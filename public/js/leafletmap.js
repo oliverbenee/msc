@@ -301,67 +301,78 @@ async function fetchCityProbe2(){
 }
 
 // Fetch DMI free data. 
-async function fetchDMIData(){
+async function fetchDMIData() {
   console.log("fetchdmi")
-    // Locations are fetched seperately from sensor data.
-    const response = await fetch('/dmimetobslist')
-    const dmiData = await response.json()
-    const features = dmiData.features
+  const urls = ['/dmimetobslist', '/dmimetobs']
+  // use map() to perform a fetch and handle the response for each url
+  Promise.all(urls.map(url =>
+      fetch(url)
+      .then(response => response.json())
+      .catch(console.error)
+    ))
+    .then((values) => {
+      // locations
+      let features = values[0].features
+      console.log(features)
+      // sensor data
+      let features2 = values[1].features
+      console.log(features2)
+      var noOfEmptyObservationStations = 0;
+      features.forEach(item => {
+        // Identify associated station for the location.
+        var latitude = item.geometry.coordinates[1] // THIS IS LATITUDE
+        var longitude = item.geometry.coordinates[0] // THIS IS LONGITUDE
+        var stationId = item.properties.stationId
+        var stationType = item.properties.type
 
-    const response2 = await fetch('/dmimetobs')
-    const dmiData2 = await response2.json()
-    const features2 = dmiData2.features
-
-    var noOfEmptyObservationStations = 0;
-    features.forEach(item => {
-      // Identify associated station for the location.
-      var latitude = item.geometry.coordinates[1] // THIS IS LATITUDE
-      var longitude = item.geometry.coordinates[0] // THIS IS LONGITUDE
-      var stationId = item.properties.stationId
-      var stationType = item.properties.type
-
-      // Now find the features for that sensor in the metobs. 
-      var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
-      if(featuresForThatSensor.length != 0){
-        var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
-        //console.debug("found " + featuresForThatSensor.length + " features. ")
-        paramsForDMISensor.stationType = stationType
-        //console.debug(paramsForDMISensor)
-        sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
-      } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
-        placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
-        noOfEmptyObservationStations++;
-      }
+        // Now find the features for that sensor in the metobs. 
+        var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
+        if (featuresForThatSensor.length != 0) {
+          var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
+          //console.debug("found " + featuresForThatSensor.length + " features. ")
+          paramsForDMISensor.stationType = stationType
+          //console.debug(paramsForDMISensor)
+          sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
+        } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
+          placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
+          noOfEmptyObservationStations++;
+        }
+      })
     })
-    //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
+  //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
 
 // Fetch Smart Citizen kits.
 async function fetchSCK(){
-  const response = await fetch('/scklocations')
-  const data = await response.json()
-  
-  data.forEach(item => {
-    if(item.system_tags.indexOf("offline") !== -1){
-      var latitude = item.data.location.latitude
-      var longitude = item.data.location.longitude
-      let sensors = new Map();
-      item.data.sensors.forEach((sensor) => {
-        let sensorName = sensor.unit
-        let sensorValue = sensor.value
-      })
-      sendPositionToDatabase(latitude, longitude, sensorFactory.createSmartCitizenKitSensor(item))
-    }
+  fetch('/scklocations')
+  .then(response => response.json())
+  .catch(console.error)
+  .then((data) => {
+    data.forEach((item) => {
+      if(item.system_tags.indexOf("offline") !== -1){
+        var latitude = item.data.location.latitude
+        var longitude = item.data.location.longitude
+        let sensors = new Map();
+        item.data.sensors.forEach((sensor) => {
+          let sensorName = sensor.unit
+          let sensorValue = sensor.value
+        })
+       sendPositionToDatabase(latitude, longitude, sensorFactory.createSmartCitizenKitSensor(item))
+      }
+    })
   })
 }
 
 async function fetchWiFi(){
-  const response = await fetch('/wifilocations')
-  const data = await response.json()
-  data.result.records.forEach(record =>{
-    let latitude = record.lat
-    let longitude = record.lng
-    sendPositionToDatabase(latitude, longitude, sensorFactory.createWiFiRouterLocation(record))
+  fetch('/wifilocations')
+  .then(response => response.json())
+  .catch(console.error)
+  .then((data) => {
+    data.result.records.forEach(record =>{
+      let latitude = record.lat
+      let longitude = record.lng
+      sendPositionToDatabase(latitude, longitude, sensorFactory.createWiFiRouterLocation(record))
+    })
   })
 }
 
@@ -413,9 +424,9 @@ function fetchAll(){
   try {
     setTimeout(() => {
       fetchCityProbe2()
-      //fetchDMIData()
-      //fetchSCK()
-      //fetchWiFi()
+      fetchDMIData()
+      fetchSCK()
+      fetchWiFi()
     }, refreshTimer - 7000)
   } catch(error) {
     console.error("failed to fetch data.")
