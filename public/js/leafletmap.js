@@ -179,7 +179,6 @@ L.control.scale({metric: true}).addTo(map);
 function placeSensorDataMarker(lat, lng, sensor){
   var iconUrl = "img/msql.png";
   let device_type = sensor.device_type
-  //console.log("DT: " + device_type)
   iconUrl = sensorFactory.getIconMap(device_type)
   //console.log("device type: '" + device_type + "', iconUrl: " + iconUrl)
 
@@ -208,7 +207,7 @@ function placeSensorDataMarker(lat, lng, sensor){
 
   // Place a NEW marker. 
   if(!isUpdated){
-    //console.log(`no dupe found for: ${sensor.device_id}. It is a ${sensor.device_type} from ${sensor.sensorSource}`)
+    //console.debug(`no dupe found for: ${sensor.device_id}. It is a ${sensor.device_type} from ${sensor.sensorSource}`)
     var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(markers); // Note, we add the marker to a group "markers", which allows clustering to work. 
     if(sensor.device_type){
       //let circle = createErrorCircle(lat, lng, range);
@@ -234,9 +233,8 @@ function placeSensorDataMarker(lat, lng, sensor){
       } else if(publisher == "null"){
         errorlayer.addLayer(locationMarker)
       } else {
-        console.log("no publisher found for: " + publisher)
-        console.log("object: ")
-        console.log(sensor)
+        console.error("no layer found for: " + publisher)
+        console.error("object: " + sensor)
       }
     }
     // clustering tool. 
@@ -274,30 +272,37 @@ placeSensorDataMarker(56.1720735,10.0418602, testsensor2, testsensor2.iconUrl)
 
 // Fetch data for the CityProbe2 devices.
 async function fetchCityProbe2(){
-  // Locations are fetched seperately from sensor data.
-  const response = await fetch('/cityprobe2list')
-  const locationdata = await response.json()
-
-  const response2 = await fetch('/cityprobe2latest')
-  const sensordata = await response2.json()
-
-  // Place CityProbe2 markers.
-  locationdata.forEach((item, index) => {
-    var location = item.id;
-    var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
-    //console.log("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
-    if(!elemToUse[0]){
-      placeSensorDataMarker(item.latitude, item.longitude, sensorFactory.createNullSensor())
-    } else {  
-      var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
-      var newSensor = sensorFactory.createCityProbe2Sensor(paramsForCityProbe2Sensor);
-      sendPositionToDatabase(item.latitude, item.longitude, newSensor);
-    }
+  const urls = ['/cityprobe2list', '/cityprobe2latest']
+  // use map() to perform a fetch and handle the response for each url
+  Promise.all(urls.map(url =>
+    fetch(url)
+      .then(response => response.json())
+      .catch(console.error)
+  ))
+  .then((values) => {
+    // locations
+    let locationdata = values[0]
+    // sensor data
+    let sensordata = values[1]
+    // Place CityProbe2 markers.
+    locationdata.forEach((item) => {
+      var location = item.id;
+      var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
+      console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
+      if(!elemToUse[0]){
+        placeSensorDataMarker(item.latitude, item.longitude, sensorFactory.createNullSensor())
+      } else {  
+        var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
+        var newSensor = sensorFactory.createCityProbe2Sensor(paramsForCityProbe2Sensor);
+        sendPositionToDatabase(item.latitude, item.longitude, newSensor);
+      }
+    })
   })
 }
 
 // Fetch DMI free data. 
 async function fetchDMIData(){
+  console.log("fetchdmi")
     // Locations are fetched seperately from sensor data.
     const response = await fetch('/dmimetobslist')
     const dmiData = await response.json()
@@ -319,13 +324,12 @@ async function fetchDMIData(){
       var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
       if(featuresForThatSensor.length != 0){
         var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
-        //console.log("----------------------------")
-        //console.log("found " + featuresForThatSensor.length + " features. ")
+        //console.debug("found " + featuresForThatSensor.length + " features. ")
         paramsForDMISensor.stationType = stationType
-        //console.log(paramsForDMISensor)
+        //console.debug(paramsForDMISensor)
         sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
       } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
-        //placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
+        placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
         noOfEmptyObservationStations++;
       }
     })
@@ -339,7 +343,6 @@ async function fetchSCK(){
   
   data.forEach(item => {
     if(item.system_tags.indexOf("offline") !== -1){
-      //console.log(item)
       var latitude = item.data.location.latitude
       var longitude = item.data.location.longitude
       let sensors = new Map();
@@ -364,13 +367,14 @@ async function fetchWiFi(){
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-  //console.log("begin fetch database")
   const response = await fetch('/locations/dmi')
   const data = await response.json()
   addMarkersToMap(data);
   const response2 = await fetch('/locations/cityprobe2')
-  const data2  = await response2.json()
-  addMarkersToMap(data2);
+  if(response2[0] != '<'){
+    const data2  = await response2.json()
+    addMarkersToMap(data2);
+  } 
   const response3 = await fetch('locations/sck')
   const data3 = await response3.json()
   addMarkersToMap(data3);
@@ -381,13 +385,9 @@ async function fetchDatabase(){
 
   function addMarkersToMap(data) {
     data.forEach(item => {
-      //console.log("----------------------------------------------------");
-      //console.log("geojson");
       var parsedObject = JSON.parse(item.geojson);
-
-      //console.log("sensor json");
       let sensor = item;
-      // console.log(sensor);
+      // console.debug(sensor);
 
       sensor.ORIGIN = "database";
 
@@ -405,23 +405,28 @@ async function fetchDatabase(){
     });
   }
 }
-fetchDatabase()
 
 // refresh databazz every 30 seconds
 let refreshTimer = 60000
-setInterval(() => {
+
+function fetchAll(){
   try {
     setTimeout(() => {
       fetchCityProbe2()
       //fetchDMIData()
-      fetchSCK()
-      fetchWiFi()
+      //fetchSCK()
+      //fetchWiFi()
     }, refreshTimer - 7000)
   } catch(error) {
-    console.log("failed to fetch data.")
+    console.error("failed to fetch data.")
     console.error(error)
   }
   fetchDatabase()
+}
+fetchAll()
+
+setInterval(() => {
+  fetchAll()
 }, refreshTimer)
 
 function createErrorCircle(lat, lng, radius){
@@ -470,7 +475,7 @@ map.addControl(drawControl)
 map.on('draw:created', (event) => {
   var layer = event.layer
   if(layer && layer instanceof L.Rectangle) { // GetBounds works like a square, so it doesn't work properly if you make polygons.
-    console.log("drawn Rectangle")
+    console.debug("drawn Rectangle")
     getMarkers(layer.getBounds())
   }
   // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
@@ -478,7 +483,7 @@ map.on('draw:created', (event) => {
 });
 
 function getMarkers(bounds){
-  console.log("getmarkers")
+  console.debug("getmarkers")
   var layers = [];
 
     markers.eachLayer((layer) => { 
@@ -515,6 +520,8 @@ _table_.className="queryTable"
 
 // Builds the HTML Table out of myList json data from Ivy restful service.
 function buildHtmlTable(arr) {
+  console.debug("array: ")
+  console.debug(arr)
   var table = _table_.cloneNode(false),
     columns = addAllColumnHeaders(arr, table);
   for (var i = 0, maxi = arr.length; i < maxi; ++i) {
@@ -522,7 +529,7 @@ function buildHtmlTable(arr) {
     for (var j = 0, maxj = columns.length; j < maxj; ++j) {
       var td = _td_.cloneNode(false);
       var cellValue = arr[i][columns[j]];
-      td.appendChild(document.createTextNode(arr[i][columns[j]] || ''));
+      td.appendChild(document.createTextNode(cellValue || ''));
       tr.appendChild(td);
     }
     table.appendChild(tr);
