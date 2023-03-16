@@ -118,6 +118,8 @@ export class DMIFreeDataSensor {
     this.sun = []
     this.visibility = []
 
+    this.jsonmap = new Map()
+
     // The code essentially copies known properties into variables in the class. 
     for (const element in options) {
       if (Object.hasOwnProperty.call(options, element)) {
@@ -134,9 +136,18 @@ export class DMIFreeDataSensor {
         else if(propertyname.includes("precip") && !propertyname.includes("dur")){this.precip.push(propertyvalue)}
         else if(propertyname.includes("sun")){this.sun.push(propertyvalue)}
         else if(propertyname.includes("visib")){this.visibility.push(propertyvalue)}
-        else { /*console.log("not pushed");*/ eval("this."+propertyname+"="+propertyvalue) } // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
+
+        // Save a backup value for preservation. 
+        /*console.log("not pushed");*/ 
+        this.jsonmap.set(propertyname, propertyvalue)
+        //eval("this."+propertyname+"="+propertyvalue) // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
       }
     }
+    console.log("----------------------------")
+    console.log("JSONMAP")
+    console.log(this.jsonmap)
+    //console.log("Now convert to JSON.")
+    this.jsonmap = JSON.stringify(Object.fromEntries(this.jsonmap))
 
 
     var length = this.temperature__celcius.length

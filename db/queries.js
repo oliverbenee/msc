@@ -50,7 +50,8 @@ function createTable(){
     device_id VARCHAR UNIQUE NOT NULL,
     FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE, 
     time TIMESTAMP, 
-    t float(5), h float(5), p float(6), radia_glob float(5), wind_dir float(5), wind_speed float(5), precip float(5), sun float(5), visibility float(5));
+    t float(5), h float(5), p float(6), radia_glob float(5), wind_dir float(5), wind_speed float(5), precip float(5), sun float(5), visibility float(5),
+    json JSON);
     
     CREATE TABLE IF NOT EXISTS public.smartcitizen(
       device_id VARCHAR UNIQUE NOT NULL,
@@ -148,7 +149,7 @@ const createLocation = (request, response) => {
   // https://stackoverflow.com/questions/1109061/insert-on-duplicate-update-in-postgresql
   // https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT
   client.query(`INSERT INTO locations(geometry, device_type, device_id) values('${coordinates}', '${sensor_type}', '${device_id}') ON CONFLICT(device_id) DO UPDATE SET geometry='${coordinates}', device_type='${sensor_type}'`, (err, res) => {
-    if(err){
+    if(err && !err.message.includes("duplicate")){
       console.log("FAILED TO INSERT: " + device_id)
       response.send("failed to insert: " + device_id)
       return
@@ -169,10 +170,11 @@ const createLocation = (request, response) => {
       } else if(json.sensorSource == "DMI"){
         //console.log("DMI")
         //console.log(JSON.stringify(json, null, 2))
-        query = `INSERT INTO dmisensor(device_id, time, t, h, p, radia_glob, wind_dir, wind_speed, precip, sun, visibility) 
-        VALUES ('${device_id}', '${json.time}', '${json.temperature__celcius}', '${json.humidity__pct}', '${json.pressure__hPa}', '${json.radia_glob}', '${json.wind_dir}', '${json.wind_speed}', '${json.precip}', '${json.sun}', '${json.visibility}')
+        query = `INSERT INTO dmisensor(device_id, time, t, h, p, radia_glob, wind_dir, wind_speed, precip, sun, visibility, json) 
+        VALUES ('${device_id}', '${json.time}', '${json.temperature__celcius}', '${json.humidity__pct}', '${json.pressure__hPa}', '${json.radia_glob}', '${json.wind_dir}', '${json.wind_speed}', '${json.precip}', '${json.sun}', '${json.visibility}', '${json.jsonmap}')
         ON CONFLICT(device_id) DO UPDATE SET 
-        time = '${json.time}', t = '${json.temperature__celcius}', h ='${json.humidity__pct}', p='${json.pressure__hPa}', radia_glob='${json.radia_glob}',wind_dir='${json.wind_dir}',wind_speed='${json.wind_speed}',precip='${json.precip}',sun='${json.sun}',visibility= '${json.visibility}'`    
+        time = '${json.time}', t = '${json.temperature__celcius}', h ='${json.humidity__pct}', p='${json.pressure__hPa}', radia_glob='${json.radia_glob}',wind_dir='${json.wind_dir}',wind_speed='${json.wind_speed}',precip='${json.precip}',sun='${json.sun}',visibility= '${json.visibility}', json='${json.jsonmap}'`    
+        //console.log(query)
       } else if(json.sensorSource == "SmartCitizen"){
         query = `
         INSERT INTO smartcitizen (device_id, time, l, nA, t, h, p, mP2, mPX, mP1, eCO2, TVOC) VALUES
@@ -196,7 +198,6 @@ const createLocation = (request, response) => {
         return
       }
       if(query){
-        //console.log(query)
         client.query(query, (error, results) => {
           if (error) {console.log(error); response.send(error) } 
           else {
