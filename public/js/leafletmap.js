@@ -534,16 +534,19 @@ function buildHtmlTable(arr) {
   console.debug("array: ")
   console.debug(arr)
   var table = _table_.cloneNode(false),
-    columns = addAllColumnHeaders(arr, table);
+  columns = addAllColumnHeaders(arr, table);
   for (var i = 0, maxi = arr.length; i < maxi; ++i) {
-    var tr = _tr_.cloneNode(false);
-    for (var j = 0, maxj = columns.length; j < maxj; ++j) {
-      var td = _td_.cloneNode(false);
-      var cellValue = arr[i][columns[j]];
-      td.appendChild(document.createTextNode(cellValue || ''));
-      tr.appendChild(td);
+    if(arr[i] != undefined){
+      var tr = _tr_.cloneNode(false);
+      for (var j = 0, maxj = columns.length; j < maxj; ++j) {
+        var td = _td_.cloneNode(false);
+        var cellValue = arr[i][columns[j]];
+        if(typeof cellValue === 'object' && !Array.isArray(cellValue) && cellValue !== null){cellValue = JSON.stringify(cellValue)}
+        td.appendChild(document.createTextNode(cellValue || ''));
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
     }
-    table.appendChild(tr);
   }
   return table;
 }
