@@ -143,9 +143,9 @@ export class DMIFreeDataSensor {
         //eval("this."+propertyname+"="+propertyvalue) // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
       }
     }
-    console.log("----------------------------")
-    console.log("JSONMAP")
-    console.log(this.jsonmap)
+    //console.log("----------------------------")
+    //console.log("JSONMAP")
+    //console.log(this.jsonmap)
     //console.log("Now convert to JSON.")
     this.jsonmap = JSON.stringify(Object.fromEntries(this.jsonmap))
 
