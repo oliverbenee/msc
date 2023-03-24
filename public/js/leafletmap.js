@@ -1,5 +1,12 @@
 'use strict';
 //console.log("leafletmap script up")
+import { CityProbe2Factory, DMIFreeDataSensorFactory, SmartCitizenKitFactory, WiFiRouterFactory, NullSensorFactory, SensorOptions } from './sensorNodeFactory.js'
+let sensorOptions = new SensorOptions()
+let cityProbe2Factory = new CityProbe2Factory();
+let dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory();
+let smartCitizenKitFactory = new SmartCitizenKitFactory();
+let wiFiRouterFactory = new WiFiRouterFactory();
+let nullSensorFactory = new NullSensorFactory();
 
 // Specify map data source. Use openstreetmap! The tiles are the "map fragments" you see. 
 let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -179,7 +186,7 @@ L.control.scale({metric: true}).addTo(map);
 function placeSensorDataMarker(lat, lng, sensor){
   var iconUrl = "img/msql.png";
   let device_type = sensor.device_type
-  iconUrl = sensorFactory.getIconMap(device_type)
+  iconUrl = sensorOptions.getIconMap(device_type)
   //console.log("device type: '" + device_type + "', iconUrl: " + iconUrl)
 
   var sensorIcon = L.icon({
@@ -217,19 +224,19 @@ function placeSensorDataMarker(lat, lng, sensor){
       locationMarker.bindPopup(tableHTML(lat, lng, sensor))
       
       // for layer filtering.
-      let publisher = sensorFactory.getPublisherMap(sensor.device_type)
+      let publisher = sensorOptions.getPublisherMap(sensor.device_type)
       if(publisher == "Montem"){
         cityprobe2layer.addLayer(locationMarker)
-        cityprobe2layer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
+        cityprobe2layer.addLayer(createErrorCircle(lat, lng, sensorOptions.getRangeMap(sensor.device_type)))
       } else if(publisher == "DMI"){
         dmiLayer.addLayer(locationMarker)
-        dmiLayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
+        dmiLayer.addLayer(createErrorCircle(lat, lng, sensorOptions.getRangeMap(sensor.device_type)))
       } else if(publisher == "SmartCitizen"){
         scklayer.addLayer(locationMarker)
-        scklayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
+        scklayer.addLayer(createErrorCircle(lat, lng, sensorOptions.getRangeMap(sensor.device_type)))
       } else if(publisher == "Aarhus Municipality"){
         wifilayer.addLayer(locationMarker)
-        wifilayer.addLayer(createErrorCircle(lat, lng, sensorFactory.getRangeMap(sensor.device_type)))
+        wifilayer.addLayer(createErrorCircle(lat, lng, sensorOptions.getRangeMap(sensor.device_type)))
       } else if(publisher == "null"){
         errorlayer.addLayer(locationMarker)
       } else {
@@ -257,12 +264,11 @@ function sendPositionToDatabase(lat, lng, sensor){
 }
 
 // Test code for sensor factory. 
-import {SensorFactory} from './sensorNodeFactory.js'
-const sensorFactory = new SensorFactory(); 
+
 /*
-const testsensor = sensorFactory.create({id: "This is a test", sensorType: "CityProbe2"})
+const testsensor = SF.create({id: "This is a test", sensorType: "CityProbe2"})
 placeSensorDataMarker(56.172689, 10.042084, testsensor, testsensor.iconUrl)
-const testsensor2 = sensorFactory.create({device_id: "This is a test", sensorType: "CityLab"})
+const testsensor2 = SF.create({device_id: "This is a test", sensorType: "CityLab"})
 placeSensorDataMarker(56.1720735,10.0418602, testsensor2, testsensor2.iconUrl)
 */
 
@@ -288,16 +294,17 @@ async function fetchCityProbe2(){
     locationdata.forEach((item) => {
       var location = item.id;
       var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
-      console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
+      //console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
       if(!elemToUse[0]){
-        placeSensorDataMarker(item.latitude, item.longitude, sensorFactory.createNullSensor())
+        placeSensorDataMarker(item.latitude, item.longitude, nullSensorFactory.create())
       } else {  
         var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
-        var newSensor = sensorFactory.createCityProbe2Sensor(paramsForCityProbe2Sensor);
+        var newSensor = cityProbe2Factory.create(paramsForCityProbe2Sensor);
         sendPositionToDatabase(item.latitude, item.longitude, newSensor);
       }
     })
   })
+  .catch(console.error)
 }
 
 // Fetch DMI free data. 
@@ -332,9 +339,9 @@ async function fetchDMIData() {
           //console.debug("found " + featuresForThatSensor.length + " features. ")
           paramsForDMISensor.stationType = stationType
           //console.debug(paramsForDMISensor)
-          sendPositionToDatabase(latitude, longitude, sensorFactory.createDMIFreeDataSensor(paramsForDMISensor))
+          sendPositionToDatabase(latitude, longitude, dmiFreeDataSensorFactory.create(paramsForDMISensor))
         } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
-          placeSensorDataMarker(latitude, longitude, sensorFactory.createNullSensor())
+          placeSensorDataMarker(latitude, longitude, nullSensorFactory.create())
           noOfEmptyObservationStations++;
         }
       })
@@ -357,7 +364,7 @@ async function fetchSCK(){
           let sensorName = sensor.unit
           let sensorValue = sensor.value
         })
-       sendPositionToDatabase(latitude, longitude, sensorFactory.createSmartCitizenKitSensor(item))
+       sendPositionToDatabase(latitude, longitude, smartCitizenKitFactory.create(item))
       }
     })
   })
@@ -371,7 +378,7 @@ async function fetchWiFi(){
     data.result.records.forEach(record =>{
       let latitude = record.lat
       let longitude = record.lng
-      sendPositionToDatabase(latitude, longitude, sensorFactory.createWiFiRouterLocation(record))
+      sendPositionToDatabase(latitude, longitude, wiFiRouterFactory.create(record))
     })
   })
 }

@@ -98,6 +98,12 @@ export class CityProbe2Sensor {
   }
 }
 
+export class CityProbe2Factory {
+  create(options){
+    return new CityProbe2Sensor(options)
+  }
+}
+
 export class DMIFreeDataSensor { 
   constructor(options){    
     this.sensorSource="DMI"
@@ -203,6 +209,12 @@ export class DMIFreeDataSensor {
   }
 }
 
+export class DMIFreeDataSensorFactory {
+  create(options){
+    return new DMIFreeDataSensor(options)
+  }
+}
+
 const NULL = null
 
 export class SmartCitizenKitDevice {
@@ -252,6 +264,12 @@ export class SmartCitizenKitDevice {
   }
 }
 
+export class SmartCitizenKitFactory {
+  create(options){
+    return new SmartCitizenKitDevice(options)
+  }
+}
+
 export class WiFiRouterLocation {
   constructor(options){
     this.sensorSource = "Open Data Aarhus WiFi Routers"
@@ -266,8 +284,14 @@ export class WiFiRouterLocation {
   }
 }
 
+export class WiFiRouterFactory {
+  create(options) {
+    return new WiFiRouterLocation(options)
+  }
+}
+
 export class NullSensor {
-  constructor(){
+  constructor(options){
     this.sensorSource="null"
     this.sensorType = "null"
     this.device_id="null"
@@ -278,7 +302,15 @@ export class NullSensor {
     //this.iconUrl='img/sensor_image.png'
   }
 }
-export class SensorFactory {
+
+export class NullSensorFactory {
+  create(options){
+    return new NullSensor()
+  }
+}
+
+export class SensorOptions {
+  /*
   // The other methods make more sense in my head. This requires reading the method every time and is dumb and stupid and also dumb. But leave it there for those... SPESHUL ones???? TODO: should this be deleted.
   create (options) {
     if(!options.sensorType) {return "no type specified"};
@@ -294,21 +326,8 @@ export class SensorFactory {
   createCityLabSensor(options) {
     return new CityLabSensor(options);
   }
-  createCityProbe2Sensor(options) {
-    return new CityProbe2Sensor(options);
-  }
-  createNullSensor() {
-    return new NullSensor()
-  }
-  createDMIFreeDataSensor(options){
-    return new DMIFreeDataSensor(options);
-  }
-  createSmartCitizenKitSensor(options){
-    return new SmartCitizenKitDevice(options);
-  }
-  createWiFiRouterLocation(options){
-    return new WiFiRouterLocation(options);
-  }
+  */
+
   getRangeMap(key){
     //console.log("K: " + key + ", " + typeof(key))
     return rangeMap.get(key);
