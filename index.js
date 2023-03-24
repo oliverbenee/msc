@@ -71,7 +71,7 @@ var mcache = require('memory-cache')
 var cache = (duration) => { 
   console.log("checking cache")
   return (req, res, next) => {
-    let key = '__express__' + req.originalUrll || req.url
+    let key = '__express__' + (req.originalUrll || req.url) + req.body
     let cachedbody = mcache.get(key)
     if(cachedbody) {
       res.send(cachedbody)
@@ -99,7 +99,7 @@ const API_URL_CITYLAB_SENSOR="http://portal.opendata.dk/api/3/action/datastore_s
 
 const fetch = require("node-fetch")
 
-app.get('/citylab', (req, res) => {
+app.get('/citylab', cache(3600), (req, res) => {
   fetch(API_URL_CITYLAB_SENSOR)
   .then((response) => response.json())
   .then((data) => res.send(data.result.records))
@@ -116,14 +116,14 @@ const HEADER_CITYPROBE2_SENSORS = {
   Authorization: "Bearer " + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTI0LCJpYXQiOjE2MTk2MzAwMzMsImV4cCI6MTkwOTcxNjQzM30.o2XZJEE9RE71Z-2z8oYLYD-9QANbi-fF1iTRvroTrx0"
 };
 
-app.get('/cityprobe2list', (req, res) => {
+app.get('/cityprobe2list', cache(3600), (req, res) => {
   fetch(API_URL_CITYPROBE2_SENSOR_LOCATION, {headers: HEADER_CITYPROBE2_SENSORS})
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(console.error());
 })
 
-app.get('/cityprobe2latest', (req, res) => {
+app.get('/cityprobe2latest', cache(3600), (req, res) => {
   fetch(API_URL_CITYPROBE2_SENSOR_LATEST, {headers: HEADER_CITYPROBE2_SENSORS})
   .then((response) => response.json())
   .then((data) => res.send(data))
@@ -137,7 +137,7 @@ app.get('/cityprobe2latest', (req, res) => {
 const API_URL_DMI_METOBS_STATIONS="https://dmigw.govcloud.dk/v2/metObs/collections/station/items"
 const API_KEY_DMI_METOBS = "03814681-8a26-4e7d-8aa6-dfac3c679f3f" 
 
-app.get('/dmimetobslist', (req, res) => {
+app.get('/dmimetobslist', cache(3600), (req, res) => {
   fetch(API_URL_DMI_METOBS_STATIONS + "?limit=100&datetime=2023-01-01T00:00:00Z&api-key=" + API_KEY_DMI_METOBS)
   .then((response) => response.json())
   .then((data) => res.send(data))
@@ -146,7 +146,7 @@ app.get('/dmimetobslist', (req, res) => {
 
 const API_URL_DMI_METOBS_COLLECTIONS = "https://dmigw.govcloud.dk/v2/metObs/collections/observation/items"
 
-app.get('/dmimetobs', (req, res) => {
+app.get('/dmimetobs', cache(3600), (req, res) => {
   fetch(API_URL_DMI_METOBS_COLLECTIONS + "?limit=500&datetime=2023-01-01T00:00:00Z&api-key=" + API_KEY_DMI_METOBS)
   .then((response => response.json()))
   .then((data) => res.send(data))
@@ -159,7 +159,7 @@ app.get('/dmimetobs', (req, res) => {
 
 const API_URL_SMARTCITIZEN_LOCATIONS="https://api.smartcitizen.me"
 
-app.get('/scklocations', (req, res) => {
+app.get('/scklocations', cache(3600), (req, res) => {
   fetch(API_URL_SMARTCITIZEN_LOCATIONS + "/devices?near=56.172592, 10.189799&distance=1000000")
   .then((response => response.json()))
   .then((data) => res.send(data))
@@ -171,9 +171,20 @@ app.get('/scklocations', (req, res) => {
 ////////////////////////////////////////////
 
 const API_URL_WIFI_LOCATIONS=`https://admin.opendata.dk/api/3/action/datastore_search_sql?sql=SELECT * from "5a4a9d62-b17e-4a7d-a249-f6a6bf11ef62"`
-app.get('/wifilocations', (req, res) => {
+app.get('/wifilocations', cache(3600), (req, res) => {
   fetch(API_URL_WIFI_LOCATIONS)
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(console.error())
+})
+
+////////////////////////////////
+// API Fetch kommuner GeoJSON //
+////////////////////////////////
+
+const API_URL_DATAFORSYNINGEN_JORDSTYKKER=`https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&per_side=500`
+app.get('/jordstykker', cache(3600), (req, res) => {
+  fetch(API_URL_DATAFORSYNINGEN_JORDSTYKKER)
+  .then((response) => response.json())
+  .then((featurecollection) => res.send(featurecollection))
 })
