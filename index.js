@@ -67,6 +67,7 @@ app.get('/locations', db.getFields)
 
 var mcache = require('memory-cache')
 
+// https://medium.com/the-node-js-collection/simple-server-side-cache-for-express-js-with-node-js-45ff296ca0f0
 // Data caching. Time is in seconds.
 var cache = (duration) => { 
   console.log("checking cache")
