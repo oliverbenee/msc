@@ -276,33 +276,46 @@ placeSensorDataMarker(56.1720735,10.0418602, testsensor2, testsensor2.iconUrl)
  * FETCH DATA FROM APIs. 
  */
 
+function handleErrors(response) {
+  if (!response.ok) {
+      throw Error(response.statusText);
+  }
+  return response;
+}
+
 // Fetch data for the CityProbe2 devices.
 async function fetchCityProbe2(){
   const urls = ['/cityprobe2list', '/cityprobe2latest']
   // use map() to perform a fetch and handle the response for each url
   Promise.all(urls.map(url =>
     fetch(url)
+      .then(handleErrors)
       .then(response => response.json())
       .catch(console.error)
   ))
   .then((values) => {
-    // locations
-    let locationdata = values[0]
-    // sensor data
-    let sensordata = values[1]
-    // Place CityProbe2 markers.
-    locationdata.forEach((item) => {
-      var location = item.id;
-      var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
-      //console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
-      if(!elemToUse[0]){
-        placeSensorDataMarker(item.latitude, item.longitude, nullSensorFactory.create())
-      } else {  
-        var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
-        var newSensor = cityProbe2Factory.create(paramsForCityProbe2Sensor);
-        sendPositionToDatabase(item.latitude, item.longitude, newSensor);
-      }
-    })
+    try {
+      console.log(values)
+      // locations
+      let locationdata = values[0]
+      // sensor data
+      let sensordata = values[1]
+      // Place CityProbe2 markers.
+      locationdata.forEach((item) => {
+        var location = item.id;
+        var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
+        //console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
+        if(!elemToUse[0]){
+          placeSensorDataMarker(item.latitude, item.longitude, nullSensorFactory.create())
+        } else {
+          var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
+          var newSensor = cityProbe2Factory.create(paramsForCityProbe2Sensor);
+          sendPositionToDatabase(item.latitude, item.longitude, newSensor);
+        }
+      })
+    } catch (e) {
+        console.log(e)
+    }
   })
   .catch(console.error)
 }
@@ -313,15 +326,15 @@ async function fetchDMIData() {
   const urls = ['/dmimetobslist', '/dmimetobs']
   // use map() to perform a fetch and handle the response for each url
   Promise.all(urls.map(url =>
-      fetch(url)
-      .then(response => response.json())
-      .catch(console.error)
+    fetch(url)
+    .then(handleErrors)
+    .then(response => response.json())
     ))
     .then((values) => {
-      // locations
+      // locations. features
       let features = values[0].features
       console.log(features)
-      // sensor data
+      // sensor data. features2
       let features2 = values[1].features
       console.log(features2)
       var noOfEmptyObservationStations = 0;
@@ -346,12 +359,14 @@ async function fetchDMIData() {
         }
       })
     })
-  //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
+    //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
+    .catch(console.error)
 }
 
 // Fetch Smart Citizen kits.
 async function fetchSCK(){
   fetch('/scklocations')
+  .then(handleErrors)
   .then(response => response.json())
   .catch(console.error)
   .then((data) => {
@@ -370,8 +385,10 @@ async function fetchSCK(){
   })
 }
 
+// Fetch locations of WiFi Routers. 
 async function fetchWiFi(){
   fetch('/wifilocations')
+  .then(handleErrors)
   .then(response => response.json())
   .catch(console.error)
   .then((data) => {
