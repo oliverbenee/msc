@@ -441,8 +441,9 @@ async function fetchDatabase(){
   }
 }
 
-// refresh databazz every 30 seconds
-let refreshTimer = 60000
+// refresh databazz every 60 seconds
+let second = 1000;
+let refreshTimer = 60 * second
 
 function fetchAll(){
   try {
