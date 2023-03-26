@@ -225,23 +225,16 @@ function placeSensorDataMarker(lat, lng, sensor){
       
       // for layer filtering.
       let publisher = sensorOptions.getPublisherMap(sensor.device_type)
-      if(publisher == "Montem"){
-        cityprobe2layer.addLayer(locationMarker)
-        cityprobe2layer.addLayer(createErrorCircle(lat, lng, sensorOptions.getRangeMap(sensor.device_type)))
-      } else if(publisher == "DMI"){
-        dmiLayer.addLayer(locationMarker)
-        dmiLayer.addLayer(createErrorCircle(lat, lng, sensorOptions.getRangeMap(sensor.device_type)))
-      } else if(publisher == "SmartCitizen"){
-        scklayer.addLayer(locationMarker)
-        scklayer.addLayer(createErrorCircle(lat, lng, sensorOptions.getRangeMap(sensor.device_type)))
-      } else if(publisher == "Aarhus Municipality"){
-        wifilayer.addLayer(locationMarker)
-        wifilayer.addLayer(createErrorCircle(lat, lng, sensorOptions.getRangeMap(sensor.device_type)))
-      } else if(publisher == "null"){
-        errorlayer.addLayer(locationMarker)
-      } else {
+      var layerToAddTo = errorlayer
+      if(publisher == "Montem"){layerToAddTo = cityprobe2layer}
+      if(publisher == "DMI"){layerToAddTo = dmiLayer}
+      if(publisher == "SmartCitizen"){layerToAddTo = scklayer}
+      if(publisher == "Aarhus Municipality"){layerToAddTo = wifilayer}
+      if(layerToAddTo == errorlayer){
         console.error("no layer found for: " + publisher)
         console.error("object: " + sensor)
+      } else {
+        layerToAddTo.addLayer(locationMarker)
       }
     }
     // clustering tool. 
