@@ -104,7 +104,7 @@ app.get('/citylab', cache(3600), (req, res) => {
   fetch(API_URL_CITYLAB_SENSOR)
   .then((response) => response.json())
   .then((data) => res.send(data.result.records))
-  .catch(console.error());
+  .catch(error => {console.log(error)});;
 })
 
 //////////////////////////////////////////
@@ -121,14 +121,14 @@ app.get('/cityprobe2list', cache(3600), (req, res) => {
   fetch(API_URL_CITYPROBE2_SENSOR_LOCATION, {headers: HEADER_CITYPROBE2_SENSORS})
   .then((response) => response.json())
   .then((data) => res.send(data))
-  .catch(console.error());
+  .catch(error => {console.log(error)});
 })
 
 app.get('/cityprobe2latest', cache(3600), (req, res) => {
   fetch(API_URL_CITYPROBE2_SENSOR_LATEST, {headers: HEADER_CITYPROBE2_SENSORS})
   .then((response) => response.json())
   .then((data) => res.send(data))
-  .catch(console.error());
+  .catch(error => {console.log(error)});
 })
 
 ////////////////////////////////
@@ -142,7 +142,7 @@ app.get('/dmimetobslist', cache(3600), (req, res) => {
   fetch(API_URL_DMI_METOBS_STATIONS + "?limit=100&datetime=2023-01-01T00:00:00Z&api-key=" + API_KEY_DMI_METOBS)
   .then((response) => response.json())
   .then((data) => res.send(data))
-  .catch(console.error())
+  .catch(error => {console.log(error)});
 })
 
 const API_URL_DMI_METOBS_COLLECTIONS = "https://dmigw.govcloud.dk/v2/metObs/collections/observation/items"
@@ -151,7 +151,7 @@ app.get('/dmimetobs', cache(3600), (req, res) => {
   fetch(API_URL_DMI_METOBS_COLLECTIONS + "?limit=500&datetime=2023-01-01T00:00:00Z&api-key=" + API_KEY_DMI_METOBS)
   .then((response => response.json()))
   .then((data) => res.send(data))
-  .catch(console.error())
+  .catch(error => {console.log(error)});
 })
 
 ///////////////////////////////////
@@ -164,7 +164,7 @@ app.get('/scklocations', cache(3600), (req, res) => {
   fetch(API_URL_SMARTCITIZEN_LOCATIONS + "/devices?near=56.172592, 10.189799&distance=1000000")
   .then((response => response.json()))
   .then((data) => res.send(data))
-  .catch(console.error())
+  .catch(error => {console.log(error)});
 })
 
 ////////////////////////////////////////////
@@ -176,7 +176,7 @@ app.get('/wifilocations', cache(3600), (req, res) => {
   fetch(API_URL_WIFI_LOCATIONS)
   .then((response) => response.json())
   .then((data) => res.send(data))
-  .catch(console.error())
+  .catch(error => {console.log(error)});
 })
 
 ////////////////////////////////
