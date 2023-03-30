@@ -1,5 +1,4 @@
 'use strict';
-//console.log("leafletmap script up")
 import { CityProbe2Factory, DMIFreeDataSensorFactory, SmartCitizenKitFactory, WiFiRouterFactory, NullSensorFactory, SensorOptions } from './sensorNodeFactory.js'
 let sensorOptions = new SensorOptions()
 let cityProbe2Factory = new CityProbe2Factory();
@@ -153,7 +152,8 @@ let overlaysObj = {
     "WiFi Locations": wifilayer
   },
   "Tools": {
-    "Cluster markers": markers
+    "Cluster markers": markers,
+    "Matrikelkort": matrikelkortlayer
   }
 }
 
@@ -178,12 +178,13 @@ map.on('overlayadd', (event) => {
 // add scalebar in meter to the map
 L.control.scale({metric: true}).addTo(map);
 
-// Place a marker, and add a pop-up to it. Still useful in case there is no data!
+
+
+// Place a marker, and add a pop-up to it.
 function placeSensorDataMarker(lat, lng, sensor){
   var iconUrl = "img/msql.png";
   let device_type = sensor.device_type
   iconUrl = sensorOptions.getIconMap(device_type)
-  //console.log("device type: '" + device_type + "', iconUrl: " + iconUrl)
 
   var sensorIcon = L.icon({
     iconUrl: iconUrl,
@@ -306,7 +307,6 @@ async function fetchCityProbe2(){
 
 // Fetch DMI free data. 
 async function fetchDMIData() {
-  //console.log("fetchdmi")
   const urls = ['/dmimetobslist', '/dmimetobs']
   // use map() to perform a fetch and handle the response for each url
   Promise.all(urls.map(url =>
@@ -315,14 +315,12 @@ async function fetchDMIData() {
     .then(response => response.json())
     ))
     .then((values) => {
-      // locations. features
-      let features = values[0].features
-      //console.log(features)
-      // sensor data. features2
-      let features2 = values[1].features
-      //console.log(features2)
+      // locations.
+      let locationFeatures = values[0].features
+      // sensor data.
+      let sensorFeatures = values[1].features
       var noOfEmptyObservationStations = 0;
-      features.forEach(item => {
+      locationFeatures.forEach(item => {
         // Identify associated station for the location.
         var latitude = item.geometry.coordinates[1]
         var longitude = item.geometry.coordinates[0]
@@ -330,13 +328,11 @@ async function fetchDMIData() {
         var stationType = item.properties.type
 
         // Now find the features for that sensor in the metobs. 
-        var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
+        var featuresForThatSensor = sensorFeatures.filter(feature => feature.properties.stationId == stationId)
         var hasFeatures = featuresForThatSensor.length != 0
         if (hasFeatures) {
           var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
-          //console.debug("found " + featuresForThatSensor.length + " features. ")
           paramsForDMISensor.stationType = stationType
-          //console.debug(paramsForDMISensor)
           sendPositionToDatabase(latitude, longitude, dmiFreeDataSensorFactory.create(paramsForDMISensor))
         } else {
           placeSensorDataMarker(latitude, longitude, nullSensorFactory.create())
@@ -407,21 +403,14 @@ async function fetchDatabase(){
     data.forEach(item => {
       var parsedObject = JSON.parse(item.geojson);
       let sensor = item;
-      // console.debug(sensor);
-
-      sensor.ORIGIN = "database";
 
       var newmarker = L.geoJSON(parsedObject, {
         coordsToLatLng: function (coords) { return new L.LatLng(coords[0], coords[1], coords[2]); },
         onEachFeature: function (feature, layer) {
-          //var mysqliconextension = L.Icon.extend({ options: { iconUrl: sensor.iconUrl, iconSize: [16, 16] } });
-          //mysqlicon = new mysqliconextension();
           placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor);
-          //var newMarker = L.marker([parsedObject.coordinates[0], parsedObject.coordinates[1]], {icon: mysqlicon}).addTo(map)
-          //newMarker.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor))
         }
-      });
-    });
+      })
+    })
   }
 }
 
@@ -459,7 +448,7 @@ function createErrorCircle(lat, lng, radius){
   return circle
 }
 
-/* LEAFLET DRAWING TOOLS.
+/*
  * Leaflet.js drawing tools.
  * Based on: https://tarekbagaa.medium.com/the-power-of-postgresql-with-leaflet-and-nodejs-express-e5a2a1f94611
  */
@@ -537,8 +526,6 @@ _table_.className="queryTable"
 
 // Builds the HTML Table out of myList json data from Ivy restful service.
 function buildHtmlTable(arr) {
-  console.debug("array: ")
-  console.debug(arr)
   var table = _table_.cloneNode(false),
   columns = addAllColumnHeaders(arr, table);
   for (var i = 0, maxi = arr.length; i < maxi; ++i) {
