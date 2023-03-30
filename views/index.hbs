@@ -7,6 +7,7 @@
 <style>
   #map { height: 650px; }
 </style>
+<!-- LEAFLET LIBRARIES. -->
 <!-- This is a roundabout way of adding jquery to leafletmap.js-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 <script type="module" src="/js/leafletmap.js"></script>
@@ -14,19 +15,15 @@
 <!-- drawing toolbar css and js files --> 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css">
 <script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-
 <!-- Geocoding. -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
-<!-- LIBRARIES -->
 <!-- Marker clusters. Files are stored in public/lib/leaflet-markercluster. Note, that they are copied from the npm install. --> 
 <link rel="stylesheet" href="/lib/leaflet-markercluster/MarkerCluster.css"/> 
 <link rel="stylesheet" href="/lib/leaflet-markercluster/MarkerCluster.Default.css"/> 
 <script src="/lib/leaflet-markercluster/leaflet.markercluster-src.js"></script>
 <script src="/lib/leaflet-markercluster/MarkerCluster.js"></script>
 <script src="/lib/leaflet-markercluster/MarkerCluster.Spiderfier.js"></script>
-
 <!-- Grouped layer control -->
 <link rel="stylesheet" href="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css"></script>
 <script src="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js"></script>
@@ -88,8 +85,10 @@
   </ul>
 </ul>
 <div id="map"></div>
+<p> hint: hold shift to select a certain view to lock into. </p>
 
-<table id="queryTable"></table>
+<h2> Selected objects. </h2>
+<table id="queryTable"><th> Nothing. </th></table>
 
 <h2> Query tool. </h2>
 

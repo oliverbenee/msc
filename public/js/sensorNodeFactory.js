@@ -37,19 +37,18 @@ iconMap.set("WiFi router", "img/msql.png")
 
 export class CityLabSensor {
   constructor(options){
-    this.device_id = options.device_id || 7 // Unique sensor id for identification.
-    this.sensorType = "CityLab" // Sensor type identifier.
+    this.device_id = options.device_id || 7
+    this.sensorType = "CityLab"
 
     // Data types. TODO: Update how data values are fetched.
-    this.air_temperature = options.air_temperature // Temperature data. 
-    this.humidity = options.humidity // humidity data. 
-    this.pressure = options.pressure // Pressure data.
-    this.lux = options.lux // Light data (lux).
+    this.air_temperature = options.air_temperature
+    this.humidity = options.humidity
+    this.pressure = options.pressure
+    this.lux = options.lux
     this.solar_radiation = options.solar_radiation
-    this.wind_speed = options.wind_speed // wind velocity
-    this.wind_vane = options.wind_vane // wind direction
-    this.rain = options.rain //rain data
-    //this.iconUrl='img/sensor_image.png'
+    this.wind_speed = options.wind_speed
+    this.wind_vane = options.wind_vane
+    this.rain = options.rain
   }
 }
 
@@ -144,7 +143,6 @@ export class DMIFreeDataSensor {
         else if(propertyname.includes("visib")){this.visibility.push(propertyvalue)}
 
         // Save a backup value for preservation. 
-        /*console.log("not pushed");*/ 
         this.jsonmap.set(propertyname, propertyvalue)
         //eval("this."+propertyname+"="+propertyvalue) // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
       }
@@ -295,7 +293,7 @@ export class NullSensor {
     this.sensorSource="null"
     this.sensorType = "null"
     this.device_id="null"
-    // save newest timestamp
+    // save newest timestamp. TODO: not sure if safe to delete.
     this.time = new Date().toISOString()
 
     this.description = "There is a known sensor location here, but there is no data for it. "
@@ -329,7 +327,6 @@ export class SensorOptions {
   */
 
   getRangeMap(key){
-    //console.log("K: " + key + ", " + typeof(key))
     return rangeMap.get(key);
   }
   getIconMap(key){

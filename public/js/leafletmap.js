@@ -8,29 +8,26 @@ let smartCitizenKitFactory = new SmartCitizenKitFactory();
 let wiFiRouterFactory = new WiFiRouterFactory();
 let nullSensorFactory = new NullSensorFactory();
 
-// Specify map data source. Use openstreetmap! The tiles are the "map fragments" you see. 
-let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+let openStreetMapTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 })
 
-// Initialize map, set its view on top of IT-byen, and xoom in.
 var map = L.map('map', {
-  layers: osm, 
+  layers: openStreetMapTileLayer, 
   center: [56.172196954673105, 10.188960985472951],
-  zoom: 13
+  zoom: 13,
+  preferCanvas: false
 })
 
 /*
   Geolocation
  */
 
-// Use html5's geolocation permission to fetch user position and navigate to that place. (Stay there). 
-navigator.geolocation.watchPosition(success, err);
+navigator.geolocation.watchPosition(onFoundUserPosition, onFailedToFindPosition);
 let userPosMarker, userPosCircle, foundUser;
 
-// Find and map user position, if we got position. 
-function success(pos){
+function onFoundUserPosition(pos){
   const lat = pos.coords.latitude;
   const lng = pos.coords.longitude;
   const acc = pos.coords.accuracy;
@@ -41,24 +38,23 @@ function success(pos){
     map.removeLayer(userPosCircle);
   }
 
-  // Create marker on map and accuracy circle.
   userPosMarker = L.marker([lat,lng], {icon: L.icon({iconUrl: "img/location.png", iconSize: [48,48]})}).addTo(map);
   userPosCircle = L.circle([lat,lng], {radius:acc}).addTo(map);
+  userPosMarker.bindPopup("You are here!")
 
   // Update view once user information has changed. (Only once.)
   if(!foundUser){
     map.fitBounds(userPosCircle.getBounds());
     foundUser = true;
   } 
-  //map.setView([lat, lng]); // see map.flyTo
 }
 
 // Error handling of not retrieving user position. 
-function err(pos){
-  if(err.code === 1) { // Geolocation request denied.
+function onFailedToFindPosition(pos){
+  if(onFailedToFindPosition.code === 1) { // Geolocation request denied.
     alert("please allow geolocation access thanks")
   } else {
-    alert("failed to retrieve location. Code: " + err.code)
+    alert("failed to retrieve location. Code: " + onFailedToFindPosition.code)
   }
 }
 
@@ -117,7 +113,7 @@ var OpenWeatherMap_Wind = L.tileLayer('http://{s}.tile.openweathermap.org/map/wi
 
 // let mbapik = pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ
 let basemaps = {
-  "OpenStreetMap": osm,
+  "OpenStreetMap": openStreetMapTileLayer,
   "CartoDB": CartoDB_Positron
 };
 
@@ -143,7 +139,7 @@ let cityprobe2layer = L.layerGroup()
 let scklayer = L.layerGroup()
 let errorlayer = L.layerGroup()
 let wifilayer = L.layerGroup()
-
+let matrikelkortlayer = L.layerGroup()
 let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer, wifilayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
@@ -153,7 +149,7 @@ let overlaysObj = {
     "CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer,
-    "SafeCast Radiation": SafeCast,
+    //"SafeCast Radiation": SafeCast,
     "WiFi Locations": wifilayer
   },
   "Tools": {
@@ -226,16 +222,25 @@ function placeSensorDataMarker(lat, lng, sensor){
       // for layer filtering.
       let publisher = sensorOptions.getPublisherMap(sensor.device_type)
       var layerToAddTo = errorlayer
-      if(publisher == "Montem"){layerToAddTo = cityprobe2layer}
-      if(publisher == "DMI"){layerToAddTo = dmiLayer}
-      if(publisher == "SmartCitizen"){layerToAddTo = scklayer}
-      if(publisher == "Aarhus Municipality"){layerToAddTo = wifilayer}
-      if(layerToAddTo == errorlayer){
-        console.error("no layer found for: " + publisher)
-        console.error("object: " + sensor)
-      } else {
-        layerToAddTo.addLayer(locationMarker)
+      // switch statements are faster than if-else. 
+      switch(publisher){
+        case "Montem": 
+          layerToAddTo = cityprobe2layer
+          break
+        case "DMI": 
+          layerToAddTo = dmiLayer
+          break
+        case "SmartCitizen": 
+          layerToAddTo = scklayer
+          break
+        case "Aarhus Municipality":
+          layerToAddTo = wifilayer
+          break
+        default: 
+          console.error("no layer found for: " + publisher)
+          console.error("object: " + sensor)
       }
+      layerToAddTo.addLayer(locationMarker)
     }
     // clustering tool. 
     layers.addLayer(locationMarker)
@@ -243,9 +248,7 @@ function placeSensorDataMarker(lat, lng, sensor){
   }
 }
 
-// send data to database.
 function sendPositionToDatabase(lat, lng, sensor){
-  // Add marker to databass.
   fetch('/locations', {
     method: 'POST',
     headers: {
@@ -255,15 +258,6 @@ function sendPositionToDatabase(lat, lng, sensor){
     body: JSON.stringify({ "coordinates": "POINT(" + lat + " " + lng + ")", "json": JSON.stringify(sensor) })
   })
 }
-
-// Test code for sensor factory. 
-
-/*
-const testsensor = SF.create({id: "This is a test", sensorType: "CityProbe2"})
-placeSensorDataMarker(56.172689, 10.042084, testsensor, testsensor.iconUrl)
-const testsensor2 = SF.create({device_id: "This is a test", sensorType: "CityLab"})
-placeSensorDataMarker(56.1720735,10.0418602, testsensor2, testsensor2.iconUrl)
-*/
 
 /*
  * FETCH DATA FROM APIs. 
@@ -288,10 +282,7 @@ async function fetchCityProbe2(){
   ))
   .then((values) => {
     try {
-      console.log(values)
-      // locations
       let locationdata = values[0]
-      // sensor data
       let sensordata = values[1]
       // Place CityProbe2 markers.
       locationdata.forEach((item) => {
@@ -315,7 +306,7 @@ async function fetchCityProbe2(){
 
 // Fetch DMI free data. 
 async function fetchDMIData() {
-  console.log("fetchdmi")
+  //console.log("fetchdmi")
   const urls = ['/dmimetobslist', '/dmimetobs']
   // use map() to perform a fetch and handle the response for each url
   Promise.all(urls.map(url =>
@@ -326,27 +317,28 @@ async function fetchDMIData() {
     .then((values) => {
       // locations. features
       let features = values[0].features
-      console.log(features)
+      //console.log(features)
       // sensor data. features2
       let features2 = values[1].features
-      console.log(features2)
+      //console.log(features2)
       var noOfEmptyObservationStations = 0;
       features.forEach(item => {
         // Identify associated station for the location.
-        var latitude = item.geometry.coordinates[1] // THIS IS LATITUDE
-        var longitude = item.geometry.coordinates[0] // THIS IS LONGITUDE
+        var latitude = item.geometry.coordinates[1]
+        var longitude = item.geometry.coordinates[0]
         var stationId = item.properties.stationId
         var stationType = item.properties.type
 
         // Now find the features for that sensor in the metobs. 
         var featuresForThatSensor = features2.filter(feature => feature.properties.stationId == stationId)
-        if (featuresForThatSensor.length != 0) {
+        var hasFeatures = featuresForThatSensor.length != 0
+        if (hasFeatures) {
           var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
           //console.debug("found " + featuresForThatSensor.length + " features. ")
           paramsForDMISensor.stationType = stationType
           //console.debug(paramsForDMISensor)
           sendPositionToDatabase(latitude, longitude, dmiFreeDataSensorFactory.create(paramsForDMISensor))
-        } else { // The sensor has no data. FIXME: This may be caused because we don't fetch all values from the API. 
+        } else {
           placeSensorDataMarker(latitude, longitude, nullSensorFactory.create())
           noOfEmptyObservationStations++;
         }
@@ -419,7 +411,6 @@ async function fetchDatabase(){
 
       sensor.ORIGIN = "database";
 
-      // parse geoJSON. 
       var newmarker = L.geoJSON(parsedObject, {
         coordsToLatLng: function (coords) { return new L.LatLng(coords[0], coords[1], coords[2]); },
         onEachFeature: function (feature, layer) {
@@ -434,9 +425,9 @@ async function fetchDatabase(){
   }
 }
 
-// refresh databazz every 60 seconds
+// refresh databazz every 300 seconds
 let second = 1000;
-let refreshTimer = 60 * second
+let refreshTimer = 300 * second
 
 function fetchAll(){
   try {
@@ -459,7 +450,6 @@ setInterval(() => {
 }, refreshTimer)
 
 function createErrorCircle(lat, lng, radius){
-  // error circle.
   var circle = L.circle([lat, lng], {
     color: 'yellow',
     fillcolor: '#ffc800',
@@ -531,8 +521,6 @@ function getMarkers(bounds){
     console.log(elem.sensor)
     console.log("lat: " + elem._latlng.lat + ", lng: " + elem._latlng.lng)
     sensorsToTable.push(elem.sensor)
-    
-    //console.log(conv)
   })
   let table = document.getElementById("queryTable")
   table.innerHTML = ""
