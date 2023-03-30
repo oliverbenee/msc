@@ -308,24 +308,6 @@ export class NullSensorFactory {
 }
 
 export class SensorOptions {
-  /*
-  // The other methods make more sense in my head. This requires reading the method every time and is dumb and stupid and also dumb. But leave it there for those... SPESHUL ones???? TODO: should this be deleted.
-  create (options) {
-    if(!options.sensorType) {return "no type specified"};
-
-    let sensor;
-    
-    if(options.sensorType === "CityLab"){sensor = new CityLabSensor(options);}
-    if(options.sensorType === "CityProbe2"){sensor = new CityProbe2Sensor(options);}
-  
-    sensor.sensorType = options.sensorType;
-    return sensor;
-  }
-  createCityLabSensor(options) {
-    return new CityLabSensor(options);
-  }
-  */
-
   getRangeMap(key){
     return rangeMap.get(key);
   }
@@ -335,7 +317,7 @@ export class SensorOptions {
   getPublisherMap(key){
     return publisherMap.get(key);
   }
-};
+}
 
 function test(){
   const sensorfactory = new SensorFactory();
