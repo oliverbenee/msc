@@ -11,7 +11,7 @@ const client = new Pool({
   database: "postgres",
 })
 
-client.connect(); // connect to client. 
+client.connect();
 
 // -------------------------------------------
 
@@ -68,7 +68,7 @@ function createTable(){
     })
   client.end
 }
-createTable() // just ensures, that the table will exists, so stuff doesn't break. 
+createTable()
 
 //TODO: FIX. 
 function findOutliers(request, response){ 
@@ -141,7 +141,6 @@ const createLocation = (request, response) => {
   const device_id = json.device_id
   const sensor_type = json.sensorType
 
-  //console.log("-----------------------------------------------------")
   var query;
 
   // NOTICE: LOCATION IS WORKING AS IT SHOULD. 
@@ -155,8 +154,6 @@ const createLocation = (request, response) => {
       return
     } else {
       if(json.sensorSource == "Montem"){
-        //console.log("MONTEM")
-        //console.log(JSON.stringify(json, null, 2))
         query = `INSERT INTO cityprobe2(device_id, time, aPS, b, h, l, mP1, mP2, mP4, mPX, nA, nMa, nMi, nS, nP1, nP2, nP4, nPX, p, t) VALUES 
         ('${device_id}','${json.time}', '${json.avg_particle_size__mcm}', '${json.battery_level__pct}', '${json.humidity__pct}', '${json.luminosity__lx}', 
         '${json.PM1__mcgPERcm3}', '${json.PM2_5__mcgPERcm3}', '${json.PM4__mcgPERcm3}', '${json.PM10__mcgPERcm3}', '${json.average__dB_A}', 
@@ -168,13 +165,10 @@ const createLocation = (request, response) => {
         nMa='${json.maximum__dB_A}', nMi='${json.minimum__dB_A}', nS='${json.standarddeviation}', 
         nP1='${json.pc_1__cm3}', nP2='${json.pc_2_5__cm3}', nP4='${json.pc_4__cm3}', nPX='${json.p_conc__cm3}', p='${json.pressure__hPa}', t='${json.temperature__celcius}'`
       } else if(json.sensorSource == "DMI"){
-        //console.log("DMI")
-        //console.log(JSON.stringify(json, null, 2))
         query = `INSERT INTO dmisensor(device_id, time, t, h, p, radia_glob, wind_dir, wind_speed, precip, sun, visibility, json) 
         VALUES ('${device_id}', '${json.time}', '${json.temperature__celcius}', '${json.humidity__pct}', '${json.pressure__hPa}', '${json.radia_glob}', '${json.wind_dir}', '${json.wind_speed}', '${json.precip}', '${json.sun}', '${json.visibility}', '${json.jsonmap}')
         ON CONFLICT(device_id) DO UPDATE SET 
         time = '${json.time}', t = '${json.temperature__celcius}', h ='${json.humidity__pct}', p='${json.pressure__hPa}', radia_glob='${json.radia_glob}',wind_dir='${json.wind_dir}',wind_speed='${json.wind_speed}',precip='${json.precip}',sun='${json.sun}',visibility= '${json.visibility}', json='${json.jsonmap}'`    
-        //console.log(query)
       } else if(json.sensorSource == "SmartCitizen"){
         query = `
         INSERT INTO smartcitizen (device_id, time, l, nA, t, h, p, mP2, mPX, mP1, eCO2, TVOC) VALUES
@@ -186,14 +180,12 @@ const createLocation = (request, response) => {
         h=${json.mHumidity}, p=${json.mDigitalBarometricPressureSensor}, mP2=${json.mParticleMatterPM2_5}, mPX=${json.mParticleMatterPM10},
         mP1=${json.mParticleMatterPM1}, eCO2=${json.mEquivalentCarbonDioxideDigitalIndoorSensor}, TVOC=${json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor}`
       } else if(json.sensorSource == "Open Data Aarhus WiFi Routers"){
-        //console.log(json)
         query = `INSERT INTO wifilocations(device_id, city, name, zip, street, department, houseno)
         VALUES ('${device_id}', '${json.city}', '${json.name}', '${json.zip}', '${json.street}', '${json.department}', '${json.no}')
         ON CONFLICT(device_id) DO UPDATE SET 
         city='${json.city}', name='${json.name}', zip='${json.zip}', street='${json.street}', department='${json.department}', houseno='${json.no}'`  
       } else {
         console.log("Unknown sensor source: " + json.sensorSource)
-        //console.log("Unknown sensor source: '" + JSON.stringify(json, null, 2) + "'")
         query = null;
         return
       }
@@ -214,8 +206,6 @@ const createLocation = (request, response) => {
 const getFields = (request, response) => {
   console.log(request)
   console.log(" using fields.")
-  //let tables = request.header.querySource
-  //console.log(tables)
 
   let params = request.query
   console.log("params")
@@ -232,7 +222,6 @@ const getFields = (request, response) => {
   if(params.clause){
     query += ` WHERE ${params.clause.replace('%3D',' =')} `
   }
-  //console.log(query)
   client.query(query, (error, results) => {
     if (error) {
       throw error
