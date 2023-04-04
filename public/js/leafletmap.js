@@ -139,6 +139,8 @@ let scklayer = L.layerGroup()
 let errorlayer = L.layerGroup()
 let wifilayer = L.layerGroup()
 let matrikelkortlayer = L.layerGroup()
+let trueMatLayer = L.layerGroup()
+let aggMatLayer = L.layerGroup()
 let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer, wifilayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
@@ -178,7 +180,20 @@ map.on('overlayadd', (event) => {
 // add scalebar in meter to the map
 L.control.scale({metric: true}).addTo(map);
 
-
+// From: https://leafletjs.com/examples/zoom-levels/example-setzoom.html
+const ZoomViewer = L.Control.extend({
+  onAdd() {
+    const gauge = L.DomUtil.create('div');
+    gauge.style.width = '200px';
+    gauge.style.background = 'rgba(255,255,255,0.5)';
+    gauge.style.textAlign = 'left';
+    map.on('zoomstart zoom zoomend', (ev) => {
+      gauge.innerHTML = `Zoom level: ${map.getZoom()}`;
+    });
+    return gauge;
+  }
+});
+const zoomViewer = (new ZoomViewer()).addTo(map);
 
 // Place a marker, and add a pop-up to it.
 function placeSensorDataMarker(lat, lng, sensor){
@@ -381,6 +396,191 @@ async function fetchWiFi(){
   })
 }
 
+/* 
+ * Fetch multiple pages and concatenate them. This is old, and wrong. Only use for archival. 
+//https://dawadocs.dataforsyningen.dk/dok/api/jordstykke#s%C3%B8gning
+// https://observablehq.com/@xari/paginated_fetch
+let max_pages = 100 // max: 5000 units at a time i think. Sometimes you just get "Bad requests". 100 pages seems to work fine. 2 pages doesn't lag at all
+function paginated_fetch_geojson(
+  url = is_required("url"), // Improvised required argument in JS
+  page = 1, previousGeoJson = {"features": ""}) {
+  return fetch(`${url}&side=${page}`) // Append the page number to the base URL
+    .then(response => response.json())
+    .then(newResponse => {
+      //console.log(previousGeoJson)
+      //console.log(newResponse)
+      if (newResponse.length !== 0 && newResponse.type !== "QueryParameterFormatError") { // dataforsyningen caps API fetches at 50 pages.
+        if (max_pages == undefined || page < max_pages) {
+          //const response = [...previousResponse, ...newResponse.features]; // Combine the two arrays
+          let newGeoJson = {
+            "type": "FeatureCollection",
+            "crs": {
+              "type": "name",
+              "properties": {
+                "name": "EPSG:4326"
+              }
+            },
+            "features": [...previousGeoJson.features, ...newResponse.features]
+          }
+          page++;
+          return paginated_fetch_geojson(url, page, newGeoJson);
+        }
+      }
+      return previousGeoJson
+    });
+}
+//const geojsonFetched = await paginated_fetch_geojson('https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&per_side=500')
+*/
+
+/*
+ * MATRIKELKORTET. 
+ */
+
+// kommunekode: https://danmarksadresser.dk/adressedata/kodelister/kommunekodeliste
+
+let defaultstyle = {
+  fillOpacity: 0.3,
+  weight: 1,
+  fillColor: "#f59042",
+  color: "#f59042",
+  dashArray: '3'
+}
+let highlightStyle = {weight: 5,
+  color: '#666',
+  dashArray: '',
+  fillOpacity: 0.7
+}
+
+function highlightFeature(e) {
+  var layer = e.target;
+  layer.setStyle(highlightStyle);
+  layer.bringToFront();
+  info.update(layer.feature.properties)
+}
+function resetHighlight(e) {
+  console.log("mouseout")
+  let layer = e.target
+  layer.setStyle(defaultstyle)
+}
+function zoomToFeature(e) {
+  console.log("click")
+    map.fitBounds(e.target.getBounds());
+}
+
+// https://gis.stackexchange.com/questions/183725/leaflet-pop-up-does-not-work-with-geojson-data
+// https://gis.stackexchange.com/questions/229723/displaying-properties-of-geojson-in-popup-on-leaflet
+// https://leafletjs.com/examples/geojson/
+function onEachFeature(feature, layer){
+  layer.on({
+    //mouseover: highlightFeature,
+    //mouseout: resetHighlight,
+    mouseclick: zoomToFeature
+  })
+  //let popupContent = `<p> ${JSON.stringify(feature.properties)}</p>`
+  let popupContent = tableHTML(feature.properties.visueltcenter_x, feature.properties.visueltcenter_y, feature.properties)
+  layer.bindPopup(popupContent);
+}
+
+// https://www.youtube.com/watch?v=xerlQ3tE8Ew <-- large geojson
+// https://www.youtube.com/watch?v=1SGbqlo19HQ <-- other, the one you used
+// style guide: https://leafletjs.com/reference.html#path-option
+
+
+let vtoptions = {
+  maxZoom: 16, // max zoom to preserve detail on
+  tolerance: 5, // more simplification = better performance.
+  style: defaultstyle,
+  buffer: 3, // tile buffer, pre-rendering outside the area expected of the user to go.
+  debug: 1,
+  solidChildren: true,
+  onEachFeature: onEachFeature // oneachfeature doesn't work on geojson.vt
+}
+
+function fetchGeojson(){
+  var startTime = performance.now()
+  console.log("fetch")
+  fetch(`https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&polygon=[[[10.230232293107784, 56.18303091786568],
+  [10.256998318307586, 56.16888887943998],
+  [10.250478389092224, 56.13351098726795],
+  [10.21170196796946, 56.11150290519495],
+  [10.145473213308414, 56.11877653389602],
+  [10.125227117323934, 56.15321188662785],
+  [10.145130059139174, 56.18035579663258],
+  [10.171896084338977, 56.18627902871378], [10.230232293107784, 56.18303091786568]]]`)
+  .then(response => response.json())
+  .then(data => {
+    console.log("dataa")
+    L.geoJson(data, vtoptions)
+    .addTo(trueMatLayer) // makes the map run faster when zoomed out.
+    L.geoJSON.vt(data, vtoptions)
+    .addTo(aggMatLayer)
+    // var vectorGrid = L.vectorGrid.slicer(data, {
+    //   rendererFactory: L.svg.tile,
+    //   vectorTileLayerStyles: {
+    //     sliced: function(properties, zoom) {
+    //       return {
+    //         fillColor: '#800026',
+    //         fillOpacity: 0.5,
+    //          //fillOpacity: 1,
+    //         stroke: true,
+    //         fill: true,
+    //         color: 'black',
+    //            //opacity: 0.2,
+    //         weight: 0,
+    //       }
+    //     }
+    //   },
+    //   interactive: true
+    // })
+    //console.log(vectorGrid)
+    // vectorGrid.on('mouseover', function(e) {
+    //   console.log("YES.")
+    //   var properties = e.layer.properties;
+    //   console.log("set up popup which fails")
+    //   L.popup()
+    //     .setContent("BWOAH")
+    //     .setLatLng(e.latlng)
+    //     .openOn(map);
+    //   console.log("call clearhighlight")
+    //   clearHighlight();
+    //   var style = {
+    //     fillColor: '#800026',
+    //     fillOpacity: 0.5,
+    //     stroke: true,
+    //     fill: true,
+    //     color: 'red',
+    //     opacity: 1,
+    //     weight: 2,
+    //   };
+    //   console.log("specified popup")
+    //   vectorGrid.setFeatureStyle(properties.wb_a3, style);
+    // })
+  })
+  .catch(console.error)
+  aggMatLayer.addTo(matrikelkortlayer)
+  var endTime = performance.now()
+  console.log(`Call to fetchGeojson took ${endTime - startTime} milliseconds`)
+}
+fetchGeojson()
+
+
+// use vector tiles at far-level zoom to improve performance.
+map.on("zoomend", () => {
+  if (map.hasLayer(matrikelkortlayer)) {
+    let zoomLevel = map.getZoom()
+    let minLevelToAggregate = 16
+    if(zoomLevel >= minLevelToAggregate){
+      matrikelkortlayer.removeLayer(aggMatLayer)
+      matrikelkortlayer.addLayer(trueMatLayer)
+    } else {
+      if(matrikelkortlayer.hasLayer(trueMatLayer)){
+        matrikelkortlayer.removeLayer(trueMatLayer)
+        matrikelkortlayer.addLayer(aggMatLayer)
+      }
+    }
+  }
+})
+
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
   const response = await fetch('/locations/dmi')
@@ -415,28 +615,28 @@ async function fetchDatabase(){
 }
 
 // refresh databazz every 300 seconds
-let second = 1000;
-let refreshTimer = 300 * second
+// let second = 1000;
+// let refreshTimer = 300 * second
 
-function fetchAll(){
-  try {
-    setTimeout(() => {
-      fetchCityProbe2()
-      fetchDMIData()
-      fetchSCK()
-      fetchWiFi()
-    }, refreshTimer - 7000)
-  } catch(error) {
-    console.error("failed to fetch data.")
-    console.error(error)
-  }
-  fetchDatabase()
-}
-fetchAll()
+// function fetchAll(){
+//   try {
+//     setTimeout(() => {
+//       fetchCityProbe2()
+//       fetchDMIData()
+//       fetchSCK()
+//       fetchWiFi()
+//     }, refreshTimer - 7000)
+//   } catch(error) {
+//     console.error("failed to fetch data.")
+//     console.error(error)
+//   }
+//   fetchDatabase()
+// }
+// fetchAll()
 
-setInterval(() => {
-  fetchAll()
-}, refreshTimer)
+// setInterval(() => {
+//   fetchAll()
+// }, refreshTimer)
 
 function createErrorCircle(lat, lng, radius){
   var circle = L.circle([lat, lng], {
@@ -488,6 +688,7 @@ map.on('draw:created', (event) => {
   }
   // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
   drawnItems.addLayer(layer);
+  console.log(layer)
 });
 
 function getMarkers(bounds){
