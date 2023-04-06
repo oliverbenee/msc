@@ -70,19 +70,6 @@ function createTable(){
 }
 createTable()
 
-//TODO: FIX. 
-function findOutliers(request, response){ 
-  var coordinates = request.body.coordinates
-  coordinates = 'POINT(-4.6314 540887)'
-  client.query(`SELECT *, st_asgeojson(geometry) AS geojson FROM locations WHERE ST_DWithin('${coordinates}')::geography, ST_MakePoint(long, lat)`, (error, results) => {
-    if(error){
-      throw error
-    }
-    response.status(200).send(results.rows)
-  })
-  client.end
-}
-
 const getDmi = (request, response) => {
   client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations JOIN dmisensor ON locations.device_id = dmisensor.device_id ORDER BY geometry ASC', (error, results) => {
     if (error) {
@@ -232,23 +219,6 @@ const getFields = (request, response) => {
   client.end 
 }
 
-// Unnecessary, since we can just write over the location. TODO: Delete. 
-const updateLocation = (request, response) => {
-  const json = request.body.json
-  const coordinates = request.body.coordinates
- 
-  let query = 
-  client.query(`UPDATE locations SET json = '${json}', geometry = '${coordinates}' WHERE id = '${id}'`,
-    (error, results) => {
-      if (error) {
-        throw error
-      }
-      response.status(200).send(`Location modified.`)
-    }
-  )
-  client.end
-}
-
 const deleteLocation = (request, response) => {
   const id = parseInt(request.params.id)
 
@@ -277,8 +247,6 @@ module.exports = {
   getLocationById,
   getFields,
   createLocation,
-  updateLocation,
   deleteLocation,
   nukeTable
 }
- 

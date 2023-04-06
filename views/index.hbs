@@ -42,7 +42,7 @@
   <li> <a href="https://www.youtube.com/@gissolutions4604/videos"> GIS SOLUTIONS </a></li>
   <!--li> [ OK ] Time series and scale. <a href="https://dba.stackexchange.com/questions/294292/database-architecture-of-high-frequency-sensor-values"> LINK </a></li>
   <li> [ OK ] Leaflet tips and tricks. <a href="https://leanpub.com/leaflet-tips-and-tricks/read#leanpub-auto-adjust-the-markers-transparency"> LINK </a></li -->
-  <li> [ ] Leaflet tips based on AngularJS. <a href="https://tombatossals.github.io/angular-leaflet-directive/examples/0000-viewer.html#/basic/double-map-toggle-example"> LINK </a></li>
+  <!--li> [ ] Leaflet tips based on AngularJS. <a href="https://tombatossals.github.io/angular-leaflet-directive/examples/0000-viewer.html#/basic/double-map-toggle-example"> LINK </a></li-->
   <!--ul> LAYER CONTROL
     <li> [ OK ] Tag filter button? <a href="https://maydemirx.github.io/leaflet-tag-filter-button/"> LINK </a></li>
     <li> [ OK ] Togglable overlays <a href="https://gis.stackexchange.com/questions/169011/leaflet-how-to-create-toggleable-overlays-from-a-single-geojson-featurecollecti"> LINK</a> </li>
@@ -73,9 +73,9 @@
     <li> [ ] Height of water vejle. <a href="https://www.opendata.dk/city-of-vejle/vandstandsstationer-med-online-malinger">LINK</a></li>
     <li> [ ] VERY GOOD SENSORS FROM SPAIN. <a href="https://data.europa.eu/data/datasets/http-datos-santander-es-catalogo-sensores-ambientales?locale=da">LINK</a>
   </ul>
-  <li> SOLVE TASKS FROM REPORT
+  <!--li> SOLVE TASKS FROM REPORT </li>
   <ul>
-    <!--li> [OK] What are the sensor types and their values in general? </li-->
+    <!li> [OK] What are the sensor types and their values in general? </li-->
     <ul><li> Find markers/features - find by attribute. <a href="https://www.youtube.com/watch?v=WnPcSGlh0eQ"> LINK </a></li></ul>
     <!--li> [OK] Which sensors are contained in this area, and what do they record? </li-->
     <!--li> \item (follow-up) Would it be a good idea to set up a sensor here? - This is a question, we can't answer.</li-->
@@ -102,7 +102,7 @@
 Testing for finding nearest sensors. 
 In the future, this form won't actually just do SQL injection, but provide a curated set of interactions, that will produce a table of information. 
 I want to use the drawing tools in leaflet to affect these queries. 
-<form method="GET" action="/locations">
+<form method="PUT" action="/locations">
   <label for="queryType">Fields</label>
   <select name="fields" id="fields" multiple>
     <option value="geometry">Geometry</option>

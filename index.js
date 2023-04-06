@@ -57,13 +57,12 @@ app.get('/locations/sck', db.getSCK)
 app.get('/locations/wifi', db.getWiFi)
 app.get('/locations/:id', db.getLocationById)
 app.post('/locations', db.createLocation)
-
-app.put('/locations/:id', db.updateLocation)
 app.delete('/locations/:id', db.deleteLocation)
 app.purge('/locations', db.nukeTable)
 
-// Fetch dht data for the table
+// Fetch data for the table
 app.get('/locations', db.getFields)
+app.put('/locations', db.getFields)
 
 var mcache = require('memory-cache')
 
@@ -104,7 +103,7 @@ app.get('/citylab', cache(3600), (req, res) => {
   fetch(API_URL_CITYLAB_SENSOR)
   .then((response) => response.json())
   .then((data) => res.send(data.result.records))
-  .catch(error => {console.log(error)});;
+  .catch(error => {console.log(error)})
 })
 
 //////////////////////////////////////////
@@ -179,13 +178,26 @@ app.get('/wifilocations', cache(3600), (req, res) => {
   .catch(error => {console.log(error)});
 })
 
-////////////////////////////////
-// API Fetch kommuner GeoJSON //
-////////////////////////////////
+///////////////////////////////////
+// API Fetch jordstykker GeoJSON //
+///////////////////////////////////
 
 const API_URL_DATAFORSYNINGEN_JORDSTYKKER=`https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&per_side=500`
 app.get('/jordstykker', cache(3600), (req, res) => {
   fetch(API_URL_DATAFORSYNINGEN_JORDSTYKKER)
   .then((response) => response.json())
   .then((featurecollection) => res.send(featurecollection))
+  .catch(error => {console.log(error)})
+})
+
+///////////////////////////////////////
+// API Fetch opendata.dk speedtraps. //
+///////////////////////////////////////
+
+const API_URL_SPEEDTRAPS=`https://admin.opendata.dk/api/3/action/datastore_search_sql?sql=SELECT * from "c3097987-c394-4092-ad1d-ad86a81dbf37"`
+app.get('/speedtraps', cache(3600), (req, res) => {
+  fetch(API_URL_SPEEDTRAPS)
+  .then((response) => response.json())
+  .then((data) => res.send(data.result.records))
+  .catch(error => {console.log(error)})
 })

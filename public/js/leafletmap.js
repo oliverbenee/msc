@@ -81,6 +81,9 @@ function tableHTML(lat, lng, sensor){                                           
  * ADDITIONAL MAP LAYERS
  */ 
 
+let arcGISMapTileLayer = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19
+})
 var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 	subdomains: 'abcd',
@@ -112,8 +115,9 @@ var OpenWeatherMap_Wind = L.tileLayer('http://{s}.tile.openweathermap.org/map/wi
 
 // let mbapik = pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ
 let basemaps = {
-  "OpenStreetMap": openStreetMapTileLayer,
-  "CartoDB": CartoDB_Positron
+  "OpenStreetMap: Standard": openStreetMapTileLayer,
+  "Positron by CartoDB: Standard": CartoDB_Positron,
+  "MapServer by ArcGIS Online: Satellite": arcGISMapTileLayer
 };
 
 /*
@@ -141,6 +145,7 @@ let wifilayer = L.layerGroup()
 let matrikelkortlayer = L.layerGroup()
 let trueMatLayer = L.layerGroup()
 let aggMatLayer = L.layerGroup()
+let speedTrapLayer = L.layerGroup()
 let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer, wifilayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
@@ -151,7 +156,8 @@ let overlaysObj = {
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer,
     //"SafeCast Radiation": SafeCast,
-    "WiFi Locations": wifilayer
+    "WiFi Locations": wifilayer,
+    "Speedtraps": speedTrapLayer
   },
   "Tools": {
     "Cluster markers": markers,
@@ -484,8 +490,6 @@ function onEachFeature(feature, layer){
 // https://www.youtube.com/watch?v=xerlQ3tE8Ew <-- large geojson
 // https://www.youtube.com/watch?v=1SGbqlo19HQ <-- other, the one you used
 // style guide: https://leafletjs.com/reference.html#path-option
-
-
 let vtoptions = {
   maxZoom: 16, // max zoom to preserve detail on
   tolerance: 5, // more simplification = better performance.
@@ -498,7 +502,6 @@ let vtoptions = {
 
 function fetchGeojson(){
   var startTime = performance.now()
-  console.log("fetch")
   fetch(`https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&polygon=[[[10.230232293107784, 56.18303091786568],
   [10.256998318307586, 56.16888887943998],
   [10.250478389092224, 56.13351098726795],
@@ -509,7 +512,7 @@ function fetchGeojson(){
   [10.171896084338977, 56.18627902871378], [10.230232293107784, 56.18303091786568]]]`)
   .then(response => response.json())
   .then(data => {
-    console.log("dataa")
+    // console.log("dataa")
     L.geoJson(data, vtoptions)
     .addTo(trueMatLayer) // makes the map run faster when zoomed out.
     L.geoJSON.vt(data, vtoptions)
@@ -563,6 +566,23 @@ function fetchGeojson(){
 }
 fetchGeojson()
 
+function fetchSpeedTraps(){
+  fetch('/speedtraps')
+  .then(handleErrors)
+  .then(response => response.json())
+  .then(data => {
+    console.log(data)
+    data.forEach(elem => {
+      let latlngs = [[elem.POINT_1_LAT, elem.POINT_1_LNG], [elem.POINT_2_LAT, elem.POINT_2_LNG]]
+      L.polyline(latlngs, {
+        color: 'red'
+      })
+      .bindPopup(tableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem))
+      .addTo(speedTrapLayer)
+    })
+  })
+}
+fetchSpeedTraps()
 
 // use vector tiles at far-level zoom to improve performance.
 map.on("zoomend", () => {
@@ -583,21 +603,14 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-  const response = await fetch('/locations/dmi')
-  const data = await response.json()
-  addMarkersToMap(data);
-  const response2 = await fetch('/locations/cityprobe2')
-  if(response2[0] != '<'){
-    const data2  = await response2.json()
-    addMarkersToMap(data2);
-  } 
-  const response3 = await fetch('locations/sck')
-  const data3 = await response3.json()
-  addMarkersToMap(data3);
-  const response4 = await fetch('/locations/wifi')
-  const data4 = await response4.json()
-  addMarkersToMap(data4);
-
+  let sources=  ['dmi', 'cityprobe2', 'sck', 'wifi']
+  Promise.all(sources.map(url =>
+    fetch('/locations/' + url)
+      .then(handleErrors)
+      .then(response => response.json())
+      .then((values) => addMarkersToMap(values))
+      .catch(console.error)
+  ))
 
   function addMarkersToMap(data) {
     data.forEach(item => {
@@ -613,26 +626,23 @@ async function fetchDatabase(){
     })
   }
 }
+fetchDatabase()
 
 // refresh databazz every 300 seconds
 // let second = 1000;
 // let refreshTimer = 300 * second
 
-// function fetchAll(){
-//   try {
-//     setTimeout(() => {
-//       fetchCityProbe2()
-//       fetchDMIData()
-//       fetchSCK()
-//       fetchWiFi()
-//     }, refreshTimer - 7000)
-//   } catch(error) {
-//     console.error("failed to fetch data.")
-//     console.error(error)
-//   }
-//   fetchDatabase()
-// }
-// fetchAll()
+function fetchAll(){
+  new Promise((resolve, reject) => {
+    fetchCityProbe2()
+    fetchDMIData()
+    fetchSCK()
+    fetchWiFi()
+  })
+  .then(fetchDatabase())
+  .catch((error) => console.log(error))
+}
+fetchAll()
 
 // setInterval(() => {
 //   fetchAll()
@@ -696,7 +706,7 @@ function getMarkers(bounds){
   var layers = [];
 
     markers.eachLayer((layer) => { 
-      if(layer instanceof L.Marker){
+      if(layer instanceof L.Marker || layer instanceof L.polyline){
         if(bounds.contains(layer.getLatLng())){
           layers.push(layer)
         }
