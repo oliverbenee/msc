@@ -59,9 +59,41 @@ function onFailedToFindPosition(pos){
 
 /*
  * Geocoding
+ * https://github.com/perliedman/leaflet-control-geocoder/blob/master/demo/index.html
+ * 
+ * Note: not directly DAWA. Can be found here... https://github.com/kjoller/leaflet-control-geocoder-dawa/blob/new/demo/index.html
  */
 
-//L.Control.geocoder().addTo(map);
+var gcpoly
+var geocoder = L.Control.Geocoder.nominatim();
+if (typeof URLSearchParams !== 'undefined' && location.search) {
+  // parse /?geocoder=nominatim from URL
+  var params = new URLSearchParams(location.search);
+  var geocoderString = params.get('geocoder');
+  if (geocoderString && L.Control.Geocoder[geocoderString]) {
+    console.log('Using geocoder', geocoderString);
+    geocoder = L.Control.Geocoder[geocoderString]();
+  } else if (geocoderString) {
+    console.warn('Unsupported geocoder', geocoderString);
+  }
+}
+
+var control = L.Control.geocoder({
+  query: 'Moon',
+  placeholder: 'Search here...',
+  geocoder: geocoder
+})
+.on('markgeocode', (e) => { 
+  var bbox = e.geocode.bbox;
+  gcpoly = L.polygon([
+    bbox.getSouthEast(),
+    bbox.getNorthEast(),
+    bbox.getNorthWest(),
+    bbox.getSouthWest()
+  ]).addTo(map)
+  map.fitBounds(gcpoly.getBounds())
+})
+.addTo(map);
 
 // Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
 function tableHTML(lat, lng, sensor){                                                                                         //padding order: top, right, down, left // outer border for table
