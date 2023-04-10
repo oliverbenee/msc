@@ -164,11 +164,9 @@ let overlaysObj = {
     "Matrikelkort": matrikelkortlayer
   }
 }
-
 let overlayOptions= {
   groupCheckboxes: true,
 }
-
 var control = L.control.groupedLayers(basemaps, overlaysObj, overlayOptions).addTo(map);
 
 /*
@@ -259,8 +257,7 @@ function placeSensorDataMarker(lat, lng, sensor){
           layerToAddTo = wifilayer
           break
         default: 
-          console.error("no layer found for: " + publisher)
-          console.error("object: " + sensor)
+          console.warn("no layer found. Will be added to the error layer.", JSON.stringify(sensor))
       }
       layerToAddTo.addLayer(locationMarker)
     }
@@ -287,7 +284,7 @@ function sendPositionToDatabase(lat, lng, sensor){
 
 function handleErrors(response) {
   if (!response.ok) {
-      throw Error(response.statusText);
+    return Promise.reject(response)
   }
   return response;
 }
@@ -300,30 +297,27 @@ async function fetchCityProbe2(){
     fetch(url)
       .then(handleErrors)
       .then(response => response.json())
-      .catch(console.error)
+      .catch((error) => console.error(error))
   ))
+  .then(handleErrors)
   .then((values) => {
-    try {
-      let locationdata = values[0]
-      let sensordata = values[1]
-      // Place CityProbe2 markers.
-      locationdata.forEach((item) => {
-        var location = item.id;
-        var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
-        //console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
-        if(!elemToUse[0]){
-          placeSensorDataMarker(item.latitude, item.longitude, nullSensorFactory.create())
-        } else {
-          var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
-          var newSensor = cityProbe2Factory.create(paramsForCityProbe2Sensor);
-          sendPositionToDatabase(item.latitude, item.longitude, newSensor);
-        }
-      })
-    } catch (e) {
-        console.log(e)
-    }
+    let locationdata = values[0]
+    let sensordata = values[1]
+    // Place CityProbe2 markers.
+    locationdata.forEach((item) => {
+      var location = item.id;
+      var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
+      //console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
+      if(!elemToUse[0]){
+        placeSensorDataMarker(item.latitude, item.longitude, nullSensorFactory.create())
+      } else {
+        var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
+        var newSensor = cityProbe2Factory.create(paramsForCityProbe2Sensor);
+        sendPositionToDatabase(item.latitude, item.longitude, newSensor);
+      }
+    })
   })
-  .catch(console.error)
+  .catch((error) => console.error(error))
 }
 
 // Fetch DMI free data. 
@@ -362,7 +356,6 @@ async function fetchDMIData() {
       })
     })
     //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
-    .catch(console.error)
 }
 
 // Fetch Smart Citizen kits.
@@ -370,20 +363,19 @@ async function fetchSCK(){
   fetch('/scklocations')
   .then(handleErrors)
   .then(response => response.json())
-  .catch(console.error)
-  .then((data) => {
-    data.forEach((item) => {
-      if(item.system_tags.indexOf("offline") !== -1){
-        var latitude = item.data.location.latitude
-        var longitude = item.data.location.longitude
+  .then((kit) => {
+    try {
+      if (kit.system_tags.indexOf("offline") !== -1) {
+        var latitude = kit.data.location.latitude
+        var longitude = kit.data.location.longitude
         let sensors = new Map();
-        item.data.sensors.forEach((sensor) => {
-          let sensorName = sensor.unit
-          let sensorValue = sensor.value
-        })
-       sendPositionToDatabase(latitude, longitude, smartCitizenKitFactory.create(item))
+        sendPositionToDatabase(latitude, longitude, smartCitizenKitFactory.create(kit))
+      } else {
+        console.log("Found dead sensor: ", item.id)
       }
-    })
+    } catch (e) { 
+      console.log("skipping a sensor without data.", e) 
+    }
   })
 }
 
@@ -392,7 +384,6 @@ async function fetchWiFi(){
   fetch('/wifilocations')
   .then(handleErrors)
   .then(response => response.json())
-  .catch(console.error)
   .then((data) => {
     data.result.records.forEach(record =>{
       let latitude = record.lat
@@ -400,43 +391,13 @@ async function fetchWiFi(){
       sendPositionToDatabase(latitude, longitude, wiFiRouterFactory.create(record))
     })
   })
+  .catch(error => console.error(error))
 }
 
 /* 
  * Fetch multiple pages and concatenate them. This is old, and wrong. Only use for archival. 
-//https://dawadocs.dataforsyningen.dk/dok/api/jordstykke#s%C3%B8gning
-// https://observablehq.com/@xari/paginated_fetch
-let max_pages = 100 // max: 5000 units at a time i think. Sometimes you just get "Bad requests". 100 pages seems to work fine. 2 pages doesn't lag at all
-function paginated_fetch_geojson(
-  url = is_required("url"), // Improvised required argument in JS
-  page = 1, previousGeoJson = {"features": ""}) {
-  return fetch(`${url}&side=${page}`) // Append the page number to the base URL
-    .then(response => response.json())
-    .then(newResponse => {
-      //console.log(previousGeoJson)
-      //console.log(newResponse)
-      if (newResponse.length !== 0 && newResponse.type !== "QueryParameterFormatError") { // dataforsyningen caps API fetches at 50 pages.
-        if (max_pages == undefined || page < max_pages) {
-          //const response = [...previousResponse, ...newResponse.features]; // Combine the two arrays
-          let newGeoJson = {
-            "type": "FeatureCollection",
-            "crs": {
-              "type": "name",
-              "properties": {
-                "name": "EPSG:4326"
-              }
-            },
-            "features": [...previousGeoJson.features, ...newResponse.features]
-          }
-          page++;
-          return paginated_fetch_geojson(url, page, newGeoJson);
-        }
-      }
-      return previousGeoJson
-    });
-}
-//const geojsonFetched = await paginated_fetch_geojson('https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&per_side=500')
-*/
+//
+
 
 /*
  * MATRIKELKORTET. 
@@ -464,13 +425,13 @@ function highlightFeature(e) {
   info.update(layer.feature.properties)
 }
 function resetHighlight(e) {
-  console.log("mouseout")
+  console.info("mouseout")
   let layer = e.target
   layer.setStyle(defaultstyle)
 }
 function zoomToFeature(e) {
-  console.log("click")
-    map.fitBounds(e.target.getBounds());
+  console.info("click")
+  map.fitBounds(e.target.getBounds());
 }
 
 // https://gis.stackexchange.com/questions/183725/leaflet-pop-up-does-not-work-with-geojson-data
@@ -500,6 +461,7 @@ let vtoptions = {
   onEachFeature: onEachFeature // oneachfeature doesn't work on geojson.vt
 }
 
+// https://dawadocs.dataforsyningen.dk/dok/api/jordstykke#s%C3%B8gning
 function fetchGeojson(){
   var startTime = performance.now()
   fetch(`https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&polygon=[[[10.230232293107784, 56.18303091786568],
@@ -510,9 +472,9 @@ function fetchGeojson(){
   [10.125227117323934, 56.15321188662785],
   [10.145130059139174, 56.18035579663258],
   [10.171896084338977, 56.18627902871378], [10.230232293107784, 56.18303091786568]]]`)
+  .then(handleErrors)
   .then(response => response.json())
   .then(data => {
-    // console.log("dataa")
     L.geoJson(data, vtoptions)
     .addTo(trueMatLayer) // makes the map run faster when zoomed out.
     L.geoJSON.vt(data, vtoptions)
@@ -559,19 +521,17 @@ function fetchGeojson(){
     //   vectorGrid.setFeatureStyle(properties.wb_a3, style);
     // })
   })
-  .catch(console.error)
+  .catch(error => console.error(error))
   aggMatLayer.addTo(matrikelkortlayer)
   var endTime = performance.now()
   console.log(`Call to fetchGeojson took ${endTime - startTime} milliseconds`)
 }
-fetchGeojson()
 
 function fetchSpeedTraps(){
   fetch('/speedtraps')
   .then(handleErrors)
   .then(response => response.json())
   .then(data => {
-    console.log(data)
     data.forEach(elem => {
       let latlngs = [[elem.POINT_1_LAT, elem.POINT_1_LNG], [elem.POINT_2_LAT, elem.POINT_2_LNG]]
       L.polyline(latlngs, {
@@ -582,7 +542,6 @@ function fetchSpeedTraps(){
     })
   })
 }
-fetchSpeedTraps()
 
 // use vector tiles at far-level zoom to improve performance.
 map.on("zoomend", () => {
@@ -609,7 +568,7 @@ async function fetchDatabase(){
       .then(handleErrors)
       .then(response => response.json())
       .then((values) => addMarkersToMap(values))
-      .catch(console.error)
+      .catch(error => console.error(error))
   ))
 
   function addMarkersToMap(data) {
@@ -628,7 +587,6 @@ async function fetchDatabase(){
 }
 fetchDatabase()
 
-// refresh databazz every 300 seconds
 // let second = 1000;
 // let refreshTimer = 300 * second
 
@@ -640,7 +598,9 @@ function fetchAll(){
     fetchWiFi()
   })
   .then(fetchDatabase())
-  .catch((error) => console.log(error))
+  .catch((error) => console.error(error))
+  fetchGeojson()
+  fetchSpeedTraps()
 }
 fetchAll()
 
@@ -696,7 +656,6 @@ map.on('draw:created', (event) => {
     console.debug("drawn Rectangle")
     getMarkers(layer.getBounds())
   }
-  // Each time we create a feature(point, line or polygon), we add this feature to the feature group wich is drawnItems in this case
   drawnItems.addLayer(layer);
   console.log(layer)
 });

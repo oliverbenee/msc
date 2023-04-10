@@ -191,11 +191,10 @@ const createLocation = (request, response) => {
 } 
 
 const getFields = (request, response) => {
-  console.log(request)
-  console.log(" using fields.")
+  console.log("----------------------------------------------------------------")
 
   let params = request.query
-  console.log("params")
+  console.log("FORM:")
   console.log(params)
   var query = `SELECT ${params.fields} FROM ${params.source}`
   if(params.source.length >= 1 && params.source.length < 3){
@@ -209,12 +208,14 @@ const getFields = (request, response) => {
   if(params.clause){
     query += ` WHERE ${params.clause.replace('%3D',' =')} `
   }
+  console.log(query)
   client.query(query, (error, results) => {
     if (error) {
-      throw error
+      console.log(error)
+      response.status(400).send(error)
+    } else {
+      response.status(200).json(results.rows) 
     }
-    console.log(results.rows)
-    response.status(200).json(results.rows) 
   })
   client.end 
 }

@@ -35,6 +35,8 @@ iconMap.set("SCK 2.1 GPS", "img/smartcitizen.png")
 
 iconMap.set("WiFi router", "img/msql.png")
 
+iconMap.set("null", "img/sensor_image.png")
+
 export class CityLabSensor {
   constructor(options){
     this.device_id = options.device_id || 7
@@ -245,6 +247,8 @@ export class SmartCitizenKitDevice {
       }
     })
 
+    this.json = options
+
     /*
     this.battery_level__pct = options.b
     this.measurements = "----------"
@@ -291,7 +295,7 @@ export class WiFiRouterFactory {
 export class NullSensor {
   constructor(options){
     this.sensorSource="null"
-    this.sensorType = "null"
+    this.device_type = "null"
     this.device_id="null"
     // save newest timestamp. TODO: not sure if safe to delete.
     this.time = new Date().toISOString()
