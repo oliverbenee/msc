@@ -96,18 +96,28 @@ var control = L.Control.geocoder({
 .addTo(map);
 
 // Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
-function tableHTML(lat, lng, sensor){                                                                                         //padding order: top, right, down, left // outer border for table
-  const style = "<style>thead, tbody {display: block;} tbody {max-height: 150px; overflow: auto; width: 100%; max-width: 300px; font-size: 1em; padding: 0.5em 0em 0.5em 0.5em; border: 1px solid #ddd; margin-bottom: 1em; } </style>"
-  const loc = "<table><thead><tr><th>Location</th><th>(" + lat + ", " + lng + ")</th></tr></thead><tbody>"
-
-  var tableListOutput = "<tr><td>Most recent data<br></td></tr> "
+function getPopupTableHTML(lat, lng, sensor){
+  const loc = `<table><thead><tr><th>(${lat},${lng})</tr></th></thead><tbody>`
+  var tableListOutput;
   Object.entries(sensor).forEach(([key, value]) => {
-    tableListOutput += "<tr><td>" + `${key}` + "</td><td>" + `${value}` + "</td></tr>"
+    if(value != null){
+      tableListOutput += "<tr><td>" + `${key}` + "</td><td>" + `${value}` + "</td></tr>"
+    }
   })
   var tableListEnd = "</tbody></table>"
 
-  return style+loc+tableListOutput+tableListEnd
+  return loc+tableListOutput+tableListEnd
 }
+
+/*
+ * Add SideBar
+ */
+
+var sidebar = L.control.sidebar('sidebar', {
+  position: 'left',
+  autoPan: true
+});
+map.addControl(sidebar)
 
 /* 
  * ADDITIONAL MAP LAYERS
@@ -252,7 +262,8 @@ function placeSensorDataMarker(lat, lng, sensor){
       if(layer instanceof L.Marker){
         if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
           //console.log("UPDATEEEE" + sensor.sensorType + "ID: " + sensor.device_id)
-          layer.bindPopup(tableHTML(lat, lng, sensor) /*"UPDATED"*/)
+          sidebar.setContent(getPopupTableHTML(lat,lng,sensor)).show();
+          //layer.bindPopup(tableHTML(lat, lng, sensor) /*"UPDATED"*/)
           layer.sensor = sensor
           isUpdated = true
         }
@@ -269,7 +280,10 @@ function placeSensorDataMarker(lat, lng, sensor){
       //markers.addLayer(circle)
       // Pop-ups for data. 
       locationMarker.sensor = sensor
-      locationMarker.bindPopup(tableHTML(lat, lng, sensor))
+      locationMarker.on('click', () => {
+        sidebar.setContent(getPopupTableHTML(lat, lng, sensor)).show()
+      })
+      //locationMarker.bindPopup(tableHTML(lat, lng, sensor))
       
       // for layer filtering.
       let publisher = sensorOptions.getPublisherMap(sensor.device_type)
@@ -459,6 +473,7 @@ function resetHighlight(e) {
 function zoomToFeature(e) {
   console.info("click")
   map.fitBounds(e.target.getBounds());
+  sidebar.setContent(e.target.popupContent)
 }
 
 // https://gis.stackexchange.com/questions/183725/leaflet-pop-up-does-not-work-with-geojson-data
@@ -471,8 +486,7 @@ function onEachFeature(feature, layer){
     mouseclick: zoomToFeature
   })
   //let popupContent = `<p> ${JSON.stringify(feature.properties)}</p>`
-  let popupContent = tableHTML(feature.properties.visueltcenter_x, feature.properties.visueltcenter_y, feature.properties)
-  layer.bindPopup(popupContent);
+  let popupContent = getPopupTableHTML(feature.properties.visueltcenter_x, feature.properties.visueltcenter_y, feature.properties)
 }
 
 // https://www.youtube.com/watch?v=xerlQ3tE8Ew <-- large geojson
@@ -564,7 +578,9 @@ function fetchSpeedTraps(){
       L.polyline(latlngs, {
         color: 'red'
       })
-      .bindPopup(tableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem))
+      .on('click', () => {
+        sidebar.setContent(getPopupTableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem)).show()
+      })
       .addTo(speedTrapLayer)
     })
   })
