@@ -426,11 +426,6 @@ async function fetchWiFi(){
   .catch(error => console.error(error))
 }
 
-/* 
- * Fetch multiple pages and concatenate them. This is old, and wrong. Only use for archival. 
-//
-
-
 /*
  * MATRIKELKORTET. 
  */

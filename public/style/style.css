@@ -1,6 +1,4 @@
-h1, h2 {
-  font-family:"Arial"
-}
+h1, h2 { font-family:"Arial" }
 
 /* Allow responsive web map. */
 html, body, #map{
