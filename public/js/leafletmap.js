@@ -246,7 +246,14 @@ const zoomViewer = (new ZoomViewer()).addTo(map);
 function placeSensorDataMarker(lat, lng, sensor){
   var iconUrl = "img/msql.png";
   let device_type = sensor.device_type
-  iconUrl = sensorOptions.getIconMap(device_type)
+  if(device_type != undefined){
+    iconUrl = sensorOptions.getIconMap(device_type)
+    if(!iconUrl){
+      console.log("no icon found for: " + device_type)
+    }
+  } else {
+    console.error("bad sensor type. Setting as an error sensor.", sensor)
+  }
 
   var sensorIcon = L.icon({
     iconUrl: iconUrl,
@@ -629,7 +636,6 @@ async function fetchDatabase(){
     })
   }
 }
-fetchDatabase()
 
 // let second = 1000;
 // let refreshTimer = 300 * second
@@ -777,6 +783,7 @@ function addAllColumnHeaders(arr, table) {
   table.appendChild(tr);
   return columnSet;
 }
+
 /*
  * Quick'n'dirty way of getting values from select.
  */

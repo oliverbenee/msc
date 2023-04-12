@@ -59,10 +59,10 @@
     <li> [ OK ] Marker cluster overlay <a href="https://gis.stackexchange.com/questions/437459/leaflet-toggle-marker-clustering-with-overlay">LINK</a></li>
   </ul>
   <li> [ OK ] make leaflet markers refresh </li-->
-  <li>drawing tools: </li>
+  <!--li>drawing tools: </li>
    <ul>
-    <!--li> [ OK ] Draw an area to get information about the selected elements. I.e. a table below the map. <a href="https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat"> LINK </a></li-->
-    <li> [ ] This query tool is good inspiration. <a href="https://www.youtube.com/watch?v=KfljXu9xmSE"> LINK </a></li>
+    <li> [ OK ] Draw an area to get information about the selected elements. I.e. a table below the map. <a href="https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat"> LINK </a></li>
+    <li> [ OK ] This query tool is good inspiration. <a href="https://www.youtube.com/watch?v=KfljXu9xmSE"> LINK </a></li>
   </ul>
   <li> Nearest neighbor stuff. QUERIES. </li-->
   <ul> QUESTION: How well do i know about pollution/sensor information *right here*? And would it be a good idea to set up a sensor here?
@@ -104,11 +104,12 @@
 
 <form name="queryForm" class="queryForm" onsubmit="javascript:queryMap();">
 
+  <p> Fields </p>  
   <select name="fields" id="fields" multiple>
-    <option value="st_asgeojson(geometry)">Geometry</option>
+    <option value="st_asgeojson(geometry) as geometry">Geometry</option>
     <option value="device_type">Device Type</option>
-    <option value="*">ALL</option>
     <option value="locations.device_id">Device ID</option>
+    <option value="*">Measurements</option>
   </select>
 
   <p> Source </p>
@@ -126,7 +127,6 @@
     <option value="device_id">device_id</option>
     <option value="time">time</option>
   </select>
-
   <select class="orderSelect" name="orderType" id="orderType">
     <option value="asc">ASC</option>
     <option value="desc">DESC</option>
