@@ -188,7 +188,8 @@ let matrikelkortlayer = L.layerGroup()
 let trueMatLayer = L.layerGroup()
 let aggMatLayer = L.layerGroup()
 let speedTrapLayer = L.layerGroup()
-let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer, wifilayer]
+let dbQueryLayer = L.layerGroup()
+let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer, wifilayer, dbQueryLayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
@@ -776,3 +777,91 @@ function addAllColumnHeaders(arr, table) {
   table.appendChild(tr);
   return columnSet;
 }
+/*
+ * Quick'n'dirty way of getting values from select.
+ */
+
+function getSelect(selectId){
+  return Array.from(document.getElementById(selectId).options).filter(option => option.selected).map(option => option.value);
+}
+
+/* 
+ * Query database based on form input
+ */
+
+let queryLayer = L.layerGroup();
+
+function queryMap(){
+  let fields = getSelect("fields")
+  let source = getSelect("source")
+  let clause = document.getElementById("clause").value
+  let orderSource = getSelect("orderSource")
+  let orderType = getSelect("orderType")
+  let limit = document.getElementById("inputLimit").value
+
+  let QueryParams = {
+    fields: fields,
+    source: source,
+    clause: clause,
+    orderSource: orderSource,
+    orderType: orderType,
+    limit: limit
+  }
+
+  fetch('/locations', {
+    method: 'PUT',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({"data": QueryParams })
+  })
+  .then(response => { 
+    if(response.status != 400){
+      response.json()
+      .then(data => { 
+        // console.log(data);
+        // show on table.
+        let table = document.getElementById("queryTable")
+        table.innerHTML = ""
+        table.appendChild(buildHtmlTable(data))
+
+        // Clear query layer.
+        queryLayer.clearLayers()
+
+        // show on map if geometry is selected.
+        if (data[0].geometry) {
+          data.forEach((elem) => {
+            console.log(elem)
+            let parsedObject = JSON.parse(elem.geometry)
+            console.log("element", elem)
+            console.log("parsedObject", parsedObject)
+            var newmarker = L.geoJSON(parsedObject, {
+                pointToLayer: function (feature, latlng) {
+                  return L.circleMarker(latlng, {
+                    radius: 8,
+                    fillColor: "#ff7800",
+                    color: "#000",
+                  }).addTo(map)
+                },
+                coordsToLatLng: function (coords) {
+                  return new L.LatLng(coords[0], coords[1], coords[2]);
+                }
+              })
+              .on('click', () => {
+                sidebar.setContent(getPopupTableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], elem)).show()
+              })
+              //.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], elem))
+              .addTo(queryLayer)
+          })
+        }
+
+        control.addOverlay(queryLayer, "Query Results", "SQL")
+      })
+    } else {
+      console.error(response.statusText)
+      alert("Error", response.body)
+    }
+  })
+}
+document.getElementById('updateBtn').onclick = queryMap

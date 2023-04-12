@@ -64,14 +64,14 @@
     <!--li> [ OK ] Draw an area to get information about the selected elements. I.e. a table below the map. <a href="https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat"> LINK </a></li-->
     <li> [ ] This query tool is good inspiration. <a href="https://www.youtube.com/watch?v=KfljXu9xmSE"> LINK </a></li>
   </ul>
-  <!--li> Nearest neighbor stuff. QUERIES. </li-->
+  <li> Nearest neighbor stuff. QUERIES. </li-->
   <ul> QUESTION: How well do i know about pollution/sensor information *right here*? And would it be a good idea to set up a sensor here?
     <li> [ ] Get all sensors within range. <a href="https://stackoverflow.com/questions/51889155/getting-all-buildings-in-range-of-5-miles-from-specified-coordinates/51889638#51889638"> LINK</li>
     <li> [ ] Other queries. <a href="https://www.bostongis.com/?content_name=postgis_tut02#21"> LINK </a></li>
   </ul>
   <li>Data to add: </li>
   <ul> 
-    <li> [ ] Traffic data. <a href="https://www.opendata.dk/city-of-aarhus/realtids-trafikdata"> LINK </a></li>
+    <!--li> [ OK ] Traffic data. <a href="https://www.opendata.dk/city-of-aarhus/realtids-trafikdata"> LINK </a></li-->
     <!--li> [ OK ] WiFi locations. IMPORTANT! <a href="https://www.opendata.dk/city-of-aarhus/wifi-i-aarhus-kommune"> LINK </a></li-->
     <li> [ ] Air quality. <a href="https://envs2.au.dk/Luftdata/Presentation/table/Aarhus/AARH3"> LINK </a> <a href="https://www.opendata.dk/city-of-aarhus/luftkvaliteten-i-danmark"> LINK </a></li>
     <li> [ ] Height of water vejle. <a href="https://www.opendata.dk/city-of-vejle/vandstandsstationer-med-online-malinger">LINK</a></li>
@@ -81,7 +81,7 @@
   <!--li> SOLVE TASKS FROM REPORT </li>
   <ul>
     <!li> [OK] What are the sensor types and their values in general? </li-->
-    <ul><li> Find markers/features - find by attribute. <a href="https://www.youtube.com/watch?v=WnPcSGlh0eQ"> LINK </a></li></ul>
+    <!--ul><li> Find markers/features - find by attribute. <a href="https://www.youtube.com/watch?v=WnPcSGlh0eQ"> LINK </a></li></ul-->
     <!--li> [OK] Which sensors are contained in this area, and what do they record? </li-->
     <!--li> \item (follow-up) Would it be a good idea to set up a sensor here? - This is a question, we can't answer.</li-->
     <li> \item From this point, what is the closest sensor data in PROXIMITY, and what does it read? </li>
@@ -100,31 +100,45 @@
 <div id="sidebar"></div>
 <p> hint: hold shift to select a certain view to lock into. </p>
 
-<h2> Selected objects. </h2>
-<table id="queryTable"><th> Nothing. </th></table>
-
 <h2> Query tool. </h2>
 
-Testing for finding nearest sensors. 
-In the future, this form won't actually just do SQL injection, but provide a curated set of interactions, that will produce a table of information. 
-I want to use the drawing tools in leaflet to affect these queries. 
-<form method="PUT" action="/locations">
-  <label for="queryType">Fields</label>
+<form name="queryForm" class="queryForm" onsubmit="javascript:queryMap();">
+
   <select name="fields" id="fields" multiple>
-    <option value="geometry">Geometry</option>
+    <option value="st_asgeojson(geometry)">Geometry</option>
     <option value="device_type">Device Type</option>
-    <option value="device_id">Device ID</option>
     <option value="*">ALL</option>
+    <option value="locations.device_id">Device ID</option>
   </select>
-  <label for="querySource">Source</label>
+
+  <p> Source </p>
   <select name="source" id="source" multiple>
     <option value="cityprobe2">cityprobe2</option>
     <option value="dmisensor">dmisensor</option>
     <option value="smartcitizen">smartcitizen</option>
   </select>
-  <label for="queryClause">Clause</label>
+
+  <p> Clause </p>
   <input type="text" id="clause" name="clause">
-  <input type="submit" value="Submit">
+  <br></br>
+  <label> Order by </label>
+  <select class="orderSelect" name="orderSource" id="orderSource">
+    <option value="device_id">device_id</option>
+    <option value="time">time</option>
+  </select>
+
+  <select class="orderSelect" name="orderType" id="orderType">
+    <option value="asc">ASC</option>
+    <option value="desc">DESC</option>
+  </select>
+  <br></br>
+  <label> Limit </label>
+  <input type="number" id="inputLimit" class="inputLimit">
+  <br></br>
+  <input type="button" value="update" id="updateBtn">
 </form>
   
 <p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple options.</p>
+
+<h2> Selected objects. </h2>
+<table id="queryTable"><th> Nothing. </th></table>

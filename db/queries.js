@@ -192,22 +192,32 @@ const createLocation = (request, response) => {
 
 const getFields = (request, response) => {
   console.log("----------------------------------------------------------------")
+  let params = request.body.data
 
-  let params = request.query
-  console.log("FORM:")
-  console.log(params)
-  var query = `SELECT ${params.fields} FROM ${params.source}`
-  if(params.source.length >= 1 && params.source.length < 3){
-    query = `SELECT ${params.fields} FROM locations`
-    for(let i=0; i<params.source.length; i++){
-      query += ` LEFT JOIN ${params.source[i]} ON locations.device_id = ${params.source[i]}.device_id`
-    }
-    console.log(params.source.length)
+  // console.log("FORM:")
+  // console.log(params)
+
+  // No query inserted or the form wasn't filled correctly. Basic form checking. 
+  if(Object.keys(params).length === 0){
+    console.log("no params")
+    return response.status(400).send("no params");
   }
 
+  var query
+  query = `SELECT ${params.fields} FROM locations`
+  for(let i=0; i<params.source.length; i++){
+    query += ` LEFT JOIN ${params.source[i]} ON locations.device_id = ${params.source[i]}.device_id`
+  }
   if(params.clause){
-    query += ` WHERE ${params.clause.replace('%3D',' =')} `
+    query += ` WHERE ${params.clause.replace('%3D',' =')}`
   }
+  if(params.orderSource && params.orderType){ 
+    query += ` ORDER BY ${params.source[0]}.${params.orderSource} ${params.orderType}`
+  }
+  if(params.limit){
+    query += ` LIMIT ${params.limit}`
+  }
+
   console.log(query)
   client.query(query, (error, results) => {
     if (error) {
