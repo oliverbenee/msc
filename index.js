@@ -61,7 +61,6 @@ app.delete('/locations/:id', db.deleteLocation)
 app.purge('/locations', db.nukeTable)
 
 // Fetch data for the table
-app.get('/locations', db.getFields)
 app.put('/locations', db.getFields)
 
 var mcache = require('memory-cache')
