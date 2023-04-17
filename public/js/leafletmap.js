@@ -77,7 +77,6 @@ if (typeof URLSearchParams !== 'undefined' && location.search) {
     console.warn('Unsupported geocoder', geocoderString);
   }
 }
-
 var control = L.Control.geocoder({
   query: 'Moon',
   placeholder: 'Search here...',
@@ -92,8 +91,7 @@ var control = L.Control.geocoder({
     bbox.getSouthWest()
   ]).addTo(map)
   map.fitBounds(gcpoly.getBounds())
-})
-.addTo(map);
+}).addTo(map);
 
 // Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
 function getPopupTableHTML(lat, lng, sensor){
@@ -211,19 +209,6 @@ let overlayOptions= {
   groupCheckboxes: true,
 }
 var control = L.control.groupedLayers(basemaps, overlaysObj, overlayOptions).addTo(map);
-
-/*
-map.on('overlayadd', (event) => {
-  if(event.name == "All Points"){
-    if(!map.hasLayer(dmiLayer)){map.addLayer(dmiLayer);}
-    if(!map.hasLayer(cityprobe2layer)){map.addLayer(cityprobe2layer);}
-    if(!map.hasLayer(scklayer)){map.addLayer(scklayer)}
-  } else if(event.name == "DMI" || "CityProbe2" || "Smart Citizen Kit"){
-    map.removeLayer(markers)
-  }
-})
-*/
-
 // add scalebar in meter to the map
 L.control.scale({metric: true}).addTo(map);
 
@@ -330,6 +315,11 @@ function sendPositionToDatabase(lat, lng, sensor){
     },
     body: JSON.stringify({ "coordinates": "POINT(" + lat + " " + lng + ")", "json": JSON.stringify(sensor) })
   })
+  .then(response => {
+    if(response.status != 200){
+      console.error("failed to send to database", response.json())
+    }
+  })
 }
 
 /*
@@ -342,8 +332,6 @@ function handleErrors(response) {
   }
   return response;
 }
-
-// Fetch data for the CityProbe2 devices.
 async function fetchCityProbe2(){
   const urls = ['/cityprobe2list', '/cityprobe2latest']
   // use map() to perform a fetch and handle the response for each url
@@ -373,8 +361,6 @@ async function fetchCityProbe2(){
   })
   .catch((error) => console.error(error))
 }
-
-// Fetch DMI free data. 
 async function fetchDMIData() {
   const urls = ['/dmimetobslist', '/dmimetobs']
   // use map() to perform a fetch and handle the response for each url
@@ -411,8 +397,6 @@ async function fetchDMIData() {
     })
     //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
-
-// Fetch Smart Citizen kits.
 async function fetchSCK(){
   fetch('/scklocations')
   .then(handleErrors)
@@ -435,8 +419,6 @@ async function fetchSCK(){
   })
   })
 }
-
-// Fetch locations of WiFi Routers. 
 async function fetchWiFi(){
   fetch('/wifilocations')
   .then(handleErrors)
@@ -453,9 +435,8 @@ async function fetchWiFi(){
 
 /*
  * MATRIKELKORTET. 
+ * kommunekode: https://danmarksadresser.dk/adressedata/kodelister/kommunekodeliste
  */
-
-// kommunekode: https://danmarksadresser.dk/adressedata/kodelister/kommunekodeliste
 
 let defaultstyle = {
   fillOpacity: 0.3,
@@ -489,7 +470,6 @@ function zoomToFeature(e) {
 
 // https://gis.stackexchange.com/questions/183725/leaflet-pop-up-does-not-work-with-geojson-data
 // https://gis.stackexchange.com/questions/229723/displaying-properties-of-geojson-in-popup-on-leaflet
-// https://leafletjs.com/examples/geojson/
 function onEachFeature(feature, layer){
   layer.on({
     //mouseover: highlightFeature,
@@ -502,7 +482,6 @@ function onEachFeature(feature, layer){
 
 // https://www.youtube.com/watch?v=xerlQ3tE8Ew <-- large geojson
 // https://www.youtube.com/watch?v=1SGbqlo19HQ <-- other, the one you used
-// style guide: https://leafletjs.com/reference.html#path-option
 let vtoptions = {
   maxZoom: 16, // max zoom to preserve detail on
   tolerance: 5, // more simplification = better performance.
@@ -640,9 +619,6 @@ async function fetchDatabase(){
   }
 }
 
-// let second = 1000;
-// let refreshTimer = 300 * second
-
 function fetchAll(){
   new Promise((resolve, reject) => {
     fetchCityProbe2()
@@ -656,10 +632,6 @@ function fetchAll(){
   fetchSpeedTraps()
 }
 fetchAll()
-
-// setInterval(() => {
-//   fetchAll()
-// }, refreshTimer)
 
 function createErrorCircle(lat, lng, radius){
   var circle = L.circle([lat, lng], {
@@ -830,7 +802,6 @@ function queryMap(){
     if(response.status != 400){
       response.json()
       .then(data => { 
-        // console.log(data);
         // show on table.
         let table = document.getElementById("queryTable")
         table.innerHTML = ""
