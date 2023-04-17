@@ -26,11 +26,11 @@
 <!-- Grouped layer control -->
 <link rel="stylesheet" href="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css"></script>
 <script src="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js"></script>
-
 <!-- geoJSON-vt is a performance library, that helps with solving lag for using large geojson objects by slicing the vector tiles. --> 
 <script src="https://unpkg.com/geojson-vt@3.2.0/geojson-vt.js"></script>
 <script src="/lib/leaflet-geojson-vt/src/leaflet-geojson-vt.js"></script>
-	<script type="text/javascript"  src="https://unpkg.com/leaflet.vectorgrid@1.2.0"></script>
+<!-- More performance libraries. -->
+<script type="text/javascript"  src="https://unpkg.com/leaflet.vectorgrid@1.2.0"></script>
 
 <!-- leaflet SideBars -->
 <link rel="stylesheet" href="/lib/leaflet-sidebar/src/L.Control.Sidebar.css">
@@ -104,7 +104,7 @@
 
 <form name="queryForm" class="queryForm" onsubmit="javascript:queryMap();">
 
-  <p> Fields </p>  
+  <p> Fields </p>
   <select name="fields" id="fields" multiple>
     <option value="st_asgeojson(geometry) as geometry">Geometry</option>
     <option value="device_type">Device Type</option>
@@ -122,7 +122,7 @@
   <p> Clause </p>
   <input type="text" id="clause" name="clause">
   <br></br>
-  <label> Order by </label>
+  <p> Order by </p>
   <select class="orderSelect" name="orderSource" id="orderSource">
     <option value="device_id">device_id</option>
     <option value="time">time</option>
@@ -132,8 +132,7 @@
     <option value="desc">DESC</option>
   </select>
   <br></br>
-  <label> Limit </label>
-  <input type="number" id="inputLimit" class="inputLimit">
+  Limit <input type="number" id="inputLimit" class="inputLimit">
   <br></br>
   <input type="button" value="update" id="updateBtn">
 </form>

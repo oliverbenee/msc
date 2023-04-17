@@ -221,7 +221,7 @@ export class SmartCitizenKitDevice {
   constructor(options){
     this.sensorSource = "SmartCitizen"
     this.sensorType = options.kit.name
-    this.device_id = options.kit.uuid
+    this.device_id = options.id // FINTE: options.kit.uuid er et mærkat for sensor typen og det er forkert!!!
     this.time = options.updated_at
 
     this.mDigitalAmbientLightSensor = null
