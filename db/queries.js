@@ -124,13 +124,13 @@ const getLocationById = (request, response) => {
 
 const createLocation = (request, response) => {
   const coordinates = request.body.coordinates
+  // console.log(coordinates)
   const json = JSON.parse(request.body.json)
   const device_id = json.device_id
   const sensor_type = json.sensorType
 
   var query;
 
-  // NOTICE: LOCATION IS WORKING AS IT SHOULD. 
   // insert new location observation. If the geometry already exists, overwrite the JSON to the newest value. 
   // https://stackoverflow.com/questions/1109061/insert-on-duplicate-update-in-postgresql
   // https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT
@@ -194,8 +194,8 @@ const getFields = (request, response) => {
   console.log("----------------------------------------------------------------")
   let params = request.body.data
 
-  // console.log("FORM:")
-  // console.log(params)
+  console.log("FORM:")
+  console.log(params)
 
   // No query inserted or the form wasn't filled correctly. Basic form checking. 
   if(Object.keys(params).length === 0){

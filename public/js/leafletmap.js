@@ -178,7 +178,7 @@ var markerClusterGroupingTool = L.markerClusterGroup({
 markers.addLayer(markerClusterGroupingTool) // A little cheat, that lets us ignore the layers control. 
 
 let dmiLayer = L.layerGroup()
-let cityprobe2layer = L.layerGroup()
+//let cityprobe2layer = L.layerGroup()
 let scklayer = L.layerGroup()
 let errorlayer = L.layerGroup()
 let wifilayer = L.layerGroup()
@@ -187,13 +187,13 @@ let trueMatLayer = L.layerGroup()
 let aggMatLayer = L.layerGroup()
 let speedTrapLayer = L.layerGroup()
 let dbQueryLayer = L.layerGroup()
-let markerlayers = [dmiLayer, cityprobe2layer, scklayer, errorlayer, wifilayer, dbQueryLayer]
+let markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
   "Sensors": {
     "DMI": dmiLayer,
-    "CityProbe2": cityprobe2layer,
+    //"CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer,
     //"SafeCast Radiation": SafeCast,
@@ -283,9 +283,9 @@ function placeSensorDataMarker(lat, lng, sensor){
       var layerToAddTo = errorlayer
       // switch statements are faster than if-else. 
       switch(publisher){
-        case "Montem": 
-          layerToAddTo = cityprobe2layer
-          break
+        // case "Montem": 
+        //   layerToAddTo = cityprobe2layer
+        //   break
         case "DMI": 
           layerToAddTo = dmiLayer
           break
@@ -335,35 +335,40 @@ function handleErrors(response) {
   }
   return response;
 }
-async function fetchCityProbe2(){
-  const urls = ['/cityprobe2list', '/cityprobe2latest']
-  // use map() to perform a fetch and handle the response for each url
-  Promise.all(urls.map(url =>
-    fetch(url)
-      .then(handleErrors)
-      .then(response => response.json())
-      .catch((error) => console.error(error))
-  ))
-  .then(handleErrors)
-  .then((values) => {
-    let locationdata = values[0]
-    let sensordata = values[1]
-    // Place CityProbe2 markers.
-    locationdata.forEach((item) => {
-      var location = item.id;
-      var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
-      //console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
-      if(!elemToUse[0]){
-        placeSensorDataMarker(item.latitude, item.longitude, nullSensorFactory.create())
-      } else {
-        var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
-        var newSensor = cityProbe2Factory.create(paramsForCityProbe2Sensor);
-        sendPositionToDatabase(item.latitude, item.longitude, newSensor);
-      }
-    })
-  })
-  .catch((error) => console.error(error))
-}
+
+/*
+  UPDATE 18-04-2023:
+  Unfortunately, it appears, that the founders of Montem A/S has shut down their business. The code here is preserved for documentation purposes. 
+*/
+// async function fetchCityProbe2(){
+//   const urls = ['/cityprobe2list', '/cityprobe2latest']
+//   // use map() to perform a fetch and handle the response for each url
+//   Promise.all(urls.map(url =>
+//     fetch(url)
+//       .then(handleErrors)
+//       .then(response => response.json())
+//       .catch((error) => console.error(error))
+//   ))
+//   .then(handleErrors)
+//   .then((values) => {
+//     let locationdata = values[0]
+//     let sensordata = values[1]
+//     // Place CityProbe2 markers.
+//     locationdata.forEach((item) => {
+//       var location = item.id;
+//       var elemToUse = sensordata["150"].filter(function(data){ return data.device_id == location})
+//       //console.debug("For location: " + location + ", ElemToUse: " + JSON.stringify(elemToUse[0]))
+//       if(!elemToUse[0]){
+//         placeSensorDataMarker(item.latitude, item.longitude, nullSensorFactory.create())
+//       } else {
+//         var paramsForCityProbe2Sensor = jQuery.extend(elemToUse[0], item)
+//         var newSensor = cityProbe2Factory.create(paramsForCityProbe2Sensor);
+//         sendPositionToDatabase(item.latitude, item.longitude, newSensor);
+//       }
+//     })
+//   })
+//   .catch((error) => console.error(error))
+// }
 async function fetchDMIData() {
   const urls = ['/dmimetobslist', '/dmimetobs']
   // use map() to perform a fetch and handle the response for each url
@@ -598,12 +603,15 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-  let sources=  ['dmi', 'cityprobe2', 'sck', 'wifi']
+  let sources=  ['dmi', 'sck', 'wifi']
   Promise.all(sources.map(url =>
     fetch('/locations/' + url)
       .then(handleErrors)
       .then(response => response.json())
-      .then((values) => addMarkersToMap(values))
+      .then((values) => {
+        console.log(values)
+        addMarkersToMap(values)
+      })
       .catch(error => console.error(error))
   ))
 
@@ -624,7 +632,6 @@ async function fetchDatabase(){
 
 function fetchAll(){
   new Promise((resolve, reject) => {
-    fetchCityProbe2()
     fetchDMIData()
     fetchSCK()
     fetchWiFi()

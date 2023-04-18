@@ -54,6 +54,10 @@ export class CityLabSensor {
   }
 }
 
+/*
+  UPDATE 18-04-2023:
+  Unfortunately, it appears, that the founders of Montem A/S has shut down their business. The code here is preserved for documentation purposes. 
+*/
 export class CityProbe2Sensor { 
   // Translation for values found at:
   // https://docs.cityflow.live/#get-device-types

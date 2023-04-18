@@ -109,6 +109,11 @@ app.get('/citylab', cache(3600), (req, res) => {
 // API Fetch cityflow.live sensor data. //
 //////////////////////////////////////////
 
+/*
+  UPDATE 18-04-2023:
+  Unfortunately, it appears, that the founders of Montem A/S has shut down their business. The code here is preserved for documentation purposes. 
+*/
+
 const API_URL_CITYPROBE2_SENSOR_LOCATION="https://api.cityflow.live/devices"
 const API_URL_CITYPROBE2_SENSOR_LATEST="https://api.cityflow.live/measurements/latest"
 const HEADER_CITYPROBE2_SENSORS = {
@@ -116,17 +121,23 @@ const HEADER_CITYPROBE2_SENSORS = {
 };
 
 app.get('/cityprobe2list', cache(3600), (req, res) => {
+  /*
   fetch(API_URL_CITYPROBE2_SENSOR_LOCATION, {headers: HEADER_CITYPROBE2_SENSORS})
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});
+  */
+  res(204).send("Sorry, there is no data here.")
 })
 
 app.get('/cityprobe2latest', cache(3600), (req, res) => {
+  /*
   fetch(API_URL_CITYPROBE2_SENSOR_LATEST, {headers: HEADER_CITYPROBE2_SENSORS})
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});
+  */
+ res(204).send("Sorry, there is no data here.")
 })
 
 ////////////////////////////////
