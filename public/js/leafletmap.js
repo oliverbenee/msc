@@ -316,7 +316,10 @@ function sendPositionToDatabase(lat, lng, sensor){
     body: JSON.stringify({ "coordinates": "POINT(" + lat + " " + lng + ")", "json": JSON.stringify(sensor) })
   })
   .then(response => {
-    if(response.status != 200){
+    if(response.status == 400){
+      console.warn("key exists in database", response.json())
+    }
+    if(response.status == 500){
       console.error("failed to send to database", response.json())
     }
   })
