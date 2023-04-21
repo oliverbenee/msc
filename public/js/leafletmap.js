@@ -296,7 +296,7 @@ function placeSensorDataMarker(lat, lng, sensor){
           layerToAddTo = wifilayer
           break
         default: 
-          console.warn("no layer found. Will be added to the error layer.", sensor.device_type)
+          console.error("no layer found. Will be added to the error layer.", sensor.device_type)
       }
       layerToAddTo.addLayer(locationMarker)
     }
@@ -406,6 +406,7 @@ async function fetchDMIData() {
     //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
 async function fetchSCK(){
+  console.log("fetchsck")
   fetch('/scklocations')
   .then(handleErrors)
   .then(response => response.json())
@@ -419,7 +420,7 @@ async function fetchSCK(){
         let device = smartCitizenKitFactory.create(kit)
         sendPositionToDatabase(latitude, longitude, device)
       } else {
-        console.log("Found dead sensor: ", item.id)
+        console.log("Found dead sensor.")
       }
     } catch (e) { 
       console.log("skipping a sensor without data.", e) 

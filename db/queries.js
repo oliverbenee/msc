@@ -252,7 +252,7 @@ const nukeTable = (request, response) => {
 
 module.exports = {
   getDmi,
-  getCityProbe,
+  //getCityProbe,
   getSCK,
   getWiFi,
   getLocationById,

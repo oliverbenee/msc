@@ -52,7 +52,7 @@ app.use(
 // Database queries. 
 const db = require('./db/queries')
 app.get('/locations/dmi', db.getDmi)
-app.get('/locations/cityprobe2', db.getCityProbe)
+//app.get('/locations/cityprobe2', db.getCityProbe)
 app.get('/locations/sck', db.getSCK)
 app.get('/locations/wifi', db.getWiFi)
 app.get('/locations/:id', db.getLocationById)
@@ -112,7 +112,7 @@ app.get('/citylab', cache(3600), (req, res) => {
 /*
   UPDATE 18-04-2023:
   Unfortunately, it appears, that the founders of Montem A/S has shut down their business. The code here is preserved for documentation purposes. 
-*/
+
 
 const API_URL_CITYPROBE2_SENSOR_LOCATION="https://api.cityflow.live/devices"
 const API_URL_CITYPROBE2_SENSOR_LATEST="https://api.cityflow.live/measurements/latest"
@@ -126,7 +126,6 @@ app.get('/cityprobe2list', cache(3600), (req, res) => {
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});
-  */
   res(204).send("Sorry, there is no data here.")
 })
 
@@ -136,9 +135,9 @@ app.get('/cityprobe2latest', cache(3600), (req, res) => {
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});
-  */
  res(204).send("Sorry, there is no data here.")
 })
+*/
 
 ////////////////////////////////
 // API Fetch DMI sensor data. //
