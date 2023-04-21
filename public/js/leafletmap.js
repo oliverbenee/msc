@@ -1,7 +1,7 @@
 'use strict';
-import { CityProbe2Factory, DMIFreeDataSensorFactory, SmartCitizenKitFactory, WiFiRouterFactory, NullSensorFactory, SensorOptions } from './sensorNodeFactory.js'
+import { DMIFreeDataSensorFactory, SmartCitizenKitFactory, WiFiRouterFactory, NullSensorFactory, SensorOptions } from './sensorNodeFactory.js'
 let sensorOptions = new SensorOptions()
-let cityProbe2Factory = new CityProbe2Factory();
+//let cityProbe2Factory = new CityProbe2Factory();
 let dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory();
 let smartCitizenKitFactory = new SmartCitizenKitFactory();
 let wiFiRouterFactory = new WiFiRouterFactory();
@@ -369,6 +369,7 @@ function handleErrors(response) {
 //   })
 //   .catch((error) => console.error(error))
 // }
+
 async function fetchDMIData() {
   const urls = ['/dmimetobslist', '/dmimetobs']
   // use map() to perform a fetch and handle the response for each url
