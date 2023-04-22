@@ -118,17 +118,17 @@ export class DMIFreeDataSensor {
     delete options.stationType
     this.sensorType = ST
     this.device_id=options[0].properties.stationId.toString()
-    this.time = options[0].properties.observed
+    this.time = options[0].properties.created // seems to be changing between created and observed every so often????
 
-    this.temperature__celcius = []
-    this.humidity__pct = []
-    this.pressure__hPa = []
-    this.radia_glob = []
-    this.wind_dir = []
-    this.wind_speed = []
-    this.precip = []
-    this.sun = []
-    this.visibility = []
+    this.temperature__celcius = [0]
+    this.humidity__pct = [0]
+    this.pressure__hPa = [0]
+    this.radia_glob = [0]
+    this.wind_dir = [0]
+    this.wind_speed = [0]
+    this.precip = [0]
+    this.sun = [0]
+    this.visibility = [0]
 
     this.jsonmap = new Map()
 
@@ -137,81 +137,46 @@ export class DMIFreeDataSensor {
       if (Object.hasOwnProperty.call(options, element)) {
         var thing = options[element].properties;
         var propertyname = thing.parameterId
-        var propertyvalue = parseFloat(thing.value)
+        var propertyvalue = thing.value
         //console.log("name: " + propertyname + ", value: " + propertyvalue)
-        if(propertyname.includes("temp") && !propertyname.includes("min") && !propertyname.includes("max") &&propertyvalue != Infinity){this.temperature__celcius.push(parseFloat(propertyvalue));}
-        else if(propertyname.includes("hum")){this.humidity__pct.push(propertyvalue)}
-        else if(propertyname.includes("pressure")){this.pressure__hPa.push(propertyvalue)} 
-        else if(propertyname.includes("radia")){this.radia_glob.push(propertyvalue)}
-        else if(propertyname.includes("wind_dir")){this.wind_dir.push(propertyvalue)}
-        else if(propertyname.includes("wind_speed")){this.wind_speed.push(propertyvalue)}
-        else if(propertyname.includes("precip") && !propertyname.includes("dur")){this.precip.push(propertyvalue)}
+        if(propertyname.includes("temp") && propertyvalue != Infinity){this.temperature__celcius.push(parseFloat(propertyvalue));}
+        else if(propertyname.includes("hum")){this.humidity__pct.push(parseFloat(propertyvalue))}
+        else if(propertyname.includes("pressure")){this.pressure__hPa.push(parseFloat(propertyvalue))} 
+        else if(propertyname.includes("radia")){this.radia_glob.push(parseInt(propertyvalue))}
+        else if(propertyname.includes("wind_dir")){this.wind_dir.push(parseInt(propertyvalue))}
+        else if(propertyname.includes("wind") && !propertyname.includes("dir")){this.wind_speed.push(parseFloat(propertyvalue))}
+        else if(propertyname.includes("precip") && !propertyname.includes("dur")){this.precip.push(parseFloat(propertyvalue))}
         else if(propertyname.includes("sun")){this.sun.push(propertyvalue)}
-        else if(propertyname.includes("visib")){this.visibility.push(propertyvalue)}
+        else if(propertyname.includes("visib")){this.visibility.push(parseInt(propertyvalue))}
 
         // Save a backup value for preservation. 
         this.jsonmap.set(propertyname, propertyvalue)
         //eval("this."+propertyname+"="+propertyvalue) // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
       }
     }
-    //console.log("----------------------------")
-    //console.log("JSONMAP")
-    //console.log(this.jsonmap)
-    //console.log("Now convert to JSON.")
     this.jsonmap = JSON.stringify(Object.fromEntries(this.jsonmap))
 
-
-    var length = this.temperature__celcius.length
-    if(length > 1){
-      //console.log("temp: " + this.temperature__celcius)
-      this.temperature__celcius = this.temperature__celcius.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.temperature__celcius = 0}
-    length = this.humidity__pct.length
-    if(length > 1){
-      //console.log("hum: " + this.humidity__pct)
-      this.humidity__pct = this.humidity__pct.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.humidity__pct = 0}
-    length = this.pressure__hPa.length
-    if(length > 1){
-      //console.log("pre: " + this.pressure__hPa)
-      this.pressure__hPa = this.pressure__hPa.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.pressure__hPa = 0}
-    length = this.radia_glob.length
-    if(length > 1){
-      //console.log("rad: " + this.radia_glob)
-      this.radia_glob = this.radia_glob.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.radia_glob = 0}
-    length = this.wind_dir.length
-    if(length > 1){
-      //console.log("wnd: " + this.wind_dir)
-      this.wind_dir = this.wind_dir.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.wind_dir = 0}
-    length = this.wind_speed.length
-    if(length > 1){
-      //console.log("wsp: " + this.wind_speed)
-      this.wind_speed = this.wind_speed.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.wind_speed = 0}
-    length = this.precip.length
-    if(length > 1){
-      //console.log("cip: " + this.precip)
-      this.precip = this.precip.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.precip = 0}
-    length = this.sun.length
-    if(length > 1){
-      //console.log("sun: " + this.sun)
-      this.sun = this.sun.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.sun = 0}
-    length = this.visibility.length
-    if(length > 1){
-      //console.log("vis: " + this.visibility)
-      this.visibility = this.visibility.reduce((acc, cv) => {return acc += parseFloat(cv)}, 0)/length
-    } if(length == 0){this.visibility = 0}
+    this.temperature__celcius = average(this.temperature__celcius)
+    this.humidity__pct = average(this.humidity__pct)
+    this.pressure__hPa = average(this.pressure__hPa)
+    this.radia_glob = average(this.radia_glob)
+    this.wind_dir = average(this.wind_dir)
+    this.wind_speed = average(this.wind_speed)
+    this.precip = average(this.precip)
+    this.sun = average(this.sun)
+    this.visibility = average(this.visibility)
     
-    //console.log("VALUES:")
-    //console.log("t:" + this.temperature__celcius + ", h:"+ this.humidity__pct +", p:" + this.pressure__hPa+ ", r:" + this.radia_glob+", w:"+ this.wind_dir+ ", ws:"+ this.wind_speed+", pre:"+ this.precip+", s:"+ this.sun+", v:"+ this.visibility)
+    //console.log("insert", "t:" + this.temperature__celcius + ", h:"+ this.humidity__pct +", p:" + this.pressure__hPa+ ", r:" + this.radia_glob+", w:"+ this.wind_dir+ ", ws:"+ this.wind_speed+", pre:"+ this.precip+", s:"+ this.sun+", v:"+ this.visibility)
     this.explaination_of_values = "<a href=https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476621> link </a>" 
     this.parameters = "<a href=https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476616> link </a>"
   }
+}
+
+function average(array) {
+  let AL = array.length-1
+  let sum = array.reduce((acc, cv) => {return acc += cv}, 0)
+  let avg = (sum/AL) || 0
+  return avg;
 }
 
 export class DMIFreeDataSensorFactory {
