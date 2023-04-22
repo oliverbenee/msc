@@ -97,10 +97,14 @@ var control = L.Control.geocoder({
 function getPopupTableHTML(lat, lng, sensor){
   const loc = `<table><thead><tr><th>(${lat},${lng})</tr></th></thead><tbody>`
   var tableListOutput;
+  console.log(sensor)
   Object.entries(sensor).forEach(([key, value]) => {
-    if(value != null){
-      tableListOutput += "<tr><td>" + `${key}` + "</td><td>" + `${value}` + "</td></tr>"
-    }
+      if(key == "json"){
+        tableListOutput += "<tr><td>------------json--------------</td></tr>"
+        Object.entries(value).forEach((K) => {tableListOutput += "<tr><td>" + `${K[0]}` + "</td><td>" + `${K[1]}` + "</td></tr>"})
+      } else {
+        tableListOutput += "<tr><td>" + `${key}` + "</td><td>" + `${value}` + "</td></tr>"
+      }
   })
   var tableListEnd = "</tbody></table>"
 
@@ -255,8 +259,6 @@ function placeSensorDataMarker(lat, lng, sensor){
       if(layer instanceof L.Marker){
         if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
           //console.log("UPDATEEEE" + sensor.sensorType + "ID: " + sensor.device_id)
-          sidebar.setContent(getPopupTableHTML(lat,lng,sensor)).show();
-          //layer.bindPopup(tableHTML(lat, lng, sensor) /*"UPDATED"*/)
           layer.sensor = sensor
           isUpdated = true
         }
@@ -296,7 +298,7 @@ function placeSensorDataMarker(lat, lng, sensor){
           layerToAddTo = wifilayer
           break
         default: 
-          console.error("no layer found. Will be added to the error layer.", sensor.device_type)
+          //console.error("no layer found. Will be added to the error layer.", sensor)
       }
       layerToAddTo.addLayer(locationMarker)
     }
@@ -316,11 +318,13 @@ function sendPositionToDatabase(lat, lng, sensor){
     body: JSON.stringify({ "coordinates": "POINT(" + lat + " " + lng + ")", "json": JSON.stringify(sensor) })
   })
   .then(response => {
-    if(response.status == 400){
-      console.warn("key exists in database", response.json())
-    }
+    // 400 and 500 are bad.
     if(response.status == 500){
       console.error("failed to send to database", response.json())
+    }
+    if(response.status == 200){
+      //console.log("data was sent to db", sensor)
+      // console.log("OK", response.json())
     }
   })
 }
@@ -475,7 +479,7 @@ function resetHighlight(e) {
 function zoomToFeature(e) {
   console.info("click")
   map.fitBounds(e.target.getBounds());
-  sidebar.setContent(e.target.popupContent)
+  sidebar.setContent(e.target.popupContent).show()
 }
 
 // https://gis.stackexchange.com/questions/183725/leaflet-pop-up-does-not-work-with-geojson-data
@@ -565,7 +569,7 @@ function fetchGeojson(){
   .catch(error => console.error(error))
   aggMatLayer.addTo(matrikelkortlayer)
   var endTime = performance.now()
-  console.log(`Call to fetchGeojson took ${endTime - startTime} milliseconds`)
+  //console.log(`Call to fetchGeojson took ${endTime - startTime} milliseconds`)
 }
 
 function fetchSpeedTraps(){
@@ -579,7 +583,7 @@ function fetchSpeedTraps(){
         color: 'red'
       })
       .on('click', () => {
-        sidebar.setContent(getPopupTableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem)).show()
+        sidebar.setContent(getPopupTableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem))
       })
       .addTo(speedTrapLayer)
     })
