@@ -147,7 +147,7 @@ const API_URL_DMI_METOBS_STATIONS="https://dmigw.govcloud.dk/v2/metObs/collectio
 const API_KEY_DMI_METOBS = "03814681-8a26-4e7d-8aa6-dfac3c679f3f" 
 
 app.get('/dmimetobslist', cache(3600), (req, res) => {
-  fetch(API_URL_DMI_METOBS_STATIONS + "?limit=100&datetime=2023-01-01T00:00:00Z&api-key=" + API_KEY_DMI_METOBS)
+  fetch(API_URL_DMI_METOBS_STATIONS + "?limit=100&status=Active&api-key=" + API_KEY_DMI_METOBS)
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});
@@ -156,7 +156,7 @@ app.get('/dmimetobslist', cache(3600), (req, res) => {
 const API_URL_DMI_METOBS_COLLECTIONS = "https://dmigw.govcloud.dk/v2/metObs/collections/observation/items"
 
 app.get('/dmimetobs', cache(3600), (req, res) => {
-  fetch(API_URL_DMI_METOBS_COLLECTIONS + "?limit=500&datetime=2023-01-01T00:00:00Z&api-key=" + API_KEY_DMI_METOBS)
+  fetch(API_URL_DMI_METOBS_COLLECTIONS + "?api-key=" + API_KEY_DMI_METOBS)
   .then((response => response.json()))
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});

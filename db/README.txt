@@ -10,3 +10,6 @@ sql // A variety of SQL test files.
 ///////////////////////////////////////////////////////////////////////////////
 knexfile.js // contains the settings to connect to PostgreSQL
 queries.js // contains the "real" select queries to access database information.
+
+
+https://www.youtube.com/watch?v=wfrn21E2NaU
