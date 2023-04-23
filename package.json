@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate": "knex migrate:latest --knexfile db/knexfile.js",
+    "seed": "knex seed:run --knexfile db/knexfile.js",
     "start": "nodemon index.js",
+    "reset": "npm run migrate; npm run seed; npm run start",
     "help": " echo \"Commands: 'test, start, help'. \" "
   },
   "author": "Oliver Medoc Benee Petersen",
@@ -15,6 +18,8 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.1",
     "express-handlebars": "^6.0.6",
+    "knex": "^2.4.2",
+    "knex-postgis": "^0.14.3",
     "leaflet": "^1.9.3",
     "leaflet-geojson-vt": "^1.1.0",
     "leaflet-groupedlayercontrol": "^0.6.1",

@@ -1,125 +1,85 @@
-// https://www.youtube.com/watch?v=_n-Ai30C1qs
-// https://blog.logrocket.com/crud-rest-api-node-js-express-postgresql/#what-crud-api
+const knexfile = require('./knexfile')
+const knex = require('knex')(knexfile.development)
 
-const { Pool } = require('pg')
-// This should mimic your server settings in PostGreSQL. 
-const client = new Pool({
-  host: "localhost",
-  user: "postgres",
-  password: "g37TbukJZ",
-  port: 5432,
-  database: "postgres",
-})
-
-client.connect();
-
-// -------------------------------------------
-
-function setupPostGIS(){
-  client.query(`CREATE EXTENSION IF NOT EXISTS postgis; 
-  CREATE EXTENSION IF NOT EXISTS postgis_topology;
-  SELECT postgis_full_version();`, (err, res) => { 
-    if(err) throw err;
-  })
-  client.end
-}
-setupPostGIS()
-
-//----------------------------------
+const knexPostgis = require('knex-postgis')
+const st = knexPostgis(knex) 
 
 // NOTE: latitude and longitude are primary key. This prevents dupes when fetching from database.
 // 1. It makes updating the API very simple (only have to write, as the old version will be overwritten)
 // 2. Places with the same latitude and longitude won't work in leaflet.js anyway. 
 // https://dev.mysql.com/doc/refman/8.0/en/json.html
 
-// Create all tables in order, otherwise you will have to restart a couple of times. 
-function createTable(){
-  client.query(`CREATE TABLE IF NOT EXISTS public.locations(
-    geometry GEOGRAPHY(Point) UNIQUE NOT NULL,
-    device_type VARCHAR,
-    device_id VARCHAR PRIMARY KEY);
-    
-    CREATE TABLE IF NOT EXISTS public.cityprobe2(
-    device_id VARCHAR UNIQUE NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE, 
-    time TIMESTAMP, 
-    aPS float(4), b float(5), h float(5), l float(5), mP1 float(5), mP2 float(5), mP4 float(5), mPX float(5), nA float(5), 
-    nMa float(5), nMi float(5), nS float(5), nP1 float(5), nP2 float(5), nP4 float(5), nPX float(5), p float(6), t float(5));
-    
-    CREATE TABLE IF NOT EXISTS public.dmisensor(
-    device_id VARCHAR UNIQUE NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE, 
-    time TIMESTAMP, 
-    t float(5), h float(5), p float(6), radia_glob float(5), wind_dir float(5), wind_speed float(5), precip float(5), sun float(5), visibility float(5),
-    json JSON);
-    
-    CREATE TABLE IF NOT EXISTS public.smartcitizen(
-      device_id VARCHAR UNIQUE NOT NULL,
-      FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE,
-      time TIMESTAMP,
-      l float(5), nA float(5), t float(5), h float(5), p float(6), mP2 float(5), mPX float(5), mP1 float(5), eCO2 float(5), TVOC float(5));
-
-    CREATE TABLE IF NOT EXISTS public.wifilocations(
-      device_id VARCHAR UNIQUE NOT NULL,
-      FOREIGN KEY (device_id) REFERENCES locations(device_id) ON DELETE CASCADE,
-      city VARCHAR, name VARCHAR, zip VARCHAR, street VARCHAR, department VARCHAR, houseno VARCHAR);
-    `, (err, res) => {
-      if(err) throw err
-    })
-  client.end
-}
-createTable()
-
 const getDmi = (request, response) => {
-  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations JOIN dmisensor ON locations.device_id = dmisensor.device_id ORDER BY geometry ASC', (error, results) => {
-    if (error) {
-      throw error
-    }
-    response.status(200).json(results.rows)
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('dmisensor', 'locations.device_id', 'dmisensor.device_id')
+  .then((result) => { 
+    response.status(200).json(result)
+    return
+  }, (error) => {
+    response.status(500).json(error)
+    return
   })
-  client.end
 }
 
-const getCityProbe = (request, response) => {
-  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations JOIN cityprobe2 ON locations.device_id = cityprobe2.device_id ORDER BY geometry ASC', (error, results) => {
-    if(error) {
-      throw error
-    }
-    response.status(200).send(results.rows)
-  })
-  client.end
-}
+// const getCityProbe = (request, response) => {
+//   knex('locations')
+//   .withSchema('public')
+//   .select('*', st.asGeoJSON('geometry').as('geojson'))
+//   .join('cityprobe2', 'locations.device_id', 'cityprobe2.device_id')
+//   .then((result) => { 
+//     response.status(200).json(result)
+//     return
+//   }, (error) => {
+//     response.status(500).json(err)
+//     return
+//   })
+// }
 
 const getSCK = (request, response) => {
-  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations JOIN smartcitizen ON locations.device_id = smartcitizen.device_id ORDER BY geometry ASC', (error, results) => {
-    if(error){
-      throw error
-    }
-    response.status(200).send(results.rows)
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('smartcitizen', 'locations.device_id', 'smartcitizen.device_id')
+  .then((result) => { 
+    response.status(200).json(result)
+    return
+  }, (error) => {
+    response.status(500).json(error)
+    return
   })
-  client.end
 }
 
 const getWiFi = (request, response) => {
-  client.query('SELECT *, st_asgeojson(geometry) AS geojson FROM locations JOIN wifilocations ON locations.device_id = wifilocations.device_id ORDER BY geometry ASC', (error, results) => {
-    if(error){
-      throw error
-    }
-    response.status(200).send(results.rows)
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('wifilocations', 'locations.device_id', 'wifilocations.device_id')
+  .then((result) => { 
+    response.status(200).json(result)
+    return
+  }, (error) => {
+    response.status(500).json(error)
+    return
   })
-  client.end
 }
 
 const getLocationById = (request, response) => {
-  const id = parseInt(request.params.id)
-  let query = `SELECT *, st_asgeojson(geom) AS geojson FROM locations WHERE id = ${id}`
-  client.query(query, (error, results) => {
-    if (error) {
-      throw error
-    }
-    response.status(200).json(results.rows)
+  knex('locations')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('dmisensor', 'locations.device_id', 'dmisensor.device_id')
+  .join('cityprobe2', 'locations.device_id', 'cityprobe2.device_id')
+  .join('smartcitizen', 'locations.device_id', 'smartcitizen.device_id')
+  .join('wifilocations', 'locations.device_id', 'wifilocations.device_id')
+  .where('id','=', id)
+  .then((result) => { 
+    response.status(200).json(result)
+    return
+  }, (error) => {
+    response.status(500).json(error)
+    return
   })
-  client.end
 }
 
 const createLocation = (request, response) => {
@@ -131,63 +91,51 @@ const createLocation = (request, response) => {
 
   var query;
 
+  console.log("json:", json)
+
   // insert new location observation. If the geometry already exists, overwrite the JSON to the newest value. 
   // https://stackoverflow.com/questions/1109061/insert-on-duplicate-update-in-postgresql
   // https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT
-  client.query(`INSERT INTO locations(geometry, device_type, device_id) values('${coordinates}', '${sensor_type}', '${device_id}') ON CONFLICT(device_id) DO UPDATE SET geometry='${coordinates}', device_type='${sensor_type}'`, (err, res) => {
-    if(err && !err.message.includes("duplicate")){
-      console.log("FAILED TO INSERT: " + device_id)
-      response.send("failed to insert: " + device_id)
-      return
-    } else {
-      if(json.sensorSource == "Montem"){
-        query = `INSERT INTO cityprobe2(device_id, time, aPS, b, h, l, mP1, mP2, mP4, mPX, nA, nMa, nMi, nS, nP1, nP2, nP4, nPX, p, t) VALUES 
-        ('${device_id}','${json.time}', '${json.avg_particle_size__mcm}', '${json.battery_level__pct}', '${json.humidity__pct}', '${json.luminosity__lx}', 
-        '${json.PM1__mcgPERcm3}', '${json.PM2_5__mcgPERcm3}', '${json.PM4__mcgPERcm3}', '${json.PM10__mcgPERcm3}', '${json.average__dB_A}', 
-        '${json.maximum__dB_A}', '${json.minimum__dB_A}', '${json.standarddeviation}', 
-        '${json.pc_1__cm3}', '${json.pc_2_5__cm3}', '${json.pc_4__cm3}', '${json.p_conc__cm3}', '${json.pressure__hPa}', '${json.temperature__celcius}')
-        ON CONFLICT(device_id) DO UPDATE SET 
-        time='${json.time}', aPS='${json.avg_particle_size__mcm}', b='${json.battery_level__pct}', h='${json.humidity__pct}', l='${json.luminosity__lx}', 
-        mP1='${json.PM1__mcgPERcm3}', mP2='${json.PM2_5__mcgPERcm3}', mP4='${json.PM4__mcgPERcm3}', mPX='${json.PM10__mcgPERcm3}', nA='${json.average__dB_A}', 
-        nMa='${json.maximum__dB_A}', nMi='${json.minimum__dB_A}', nS='${json.standarddeviation}', 
-        nP1='${json.pc_1__cm3}', nP2='${json.pc_2_5__cm3}', nP4='${json.pc_4__cm3}', nPX='${json.p_conc__cm3}', p='${json.pressure__hPa}', t='${json.temperature__celcius}'`
-      } else if(json.sensorSource == "DMI"){
-        query = `INSERT INTO dmisensor(device_id, time, t, h, p, radia_glob, wind_dir, wind_speed, precip, sun, visibility, json) 
-        VALUES ('${device_id}', '${json.time}', '${json.temperature__celcius}', '${json.humidity__pct}', '${json.pressure__hPa}', '${json.radia_glob}', '${json.wind_dir}', '${json.wind_speed}', '${json.precip}', '${json.sun}', '${json.visibility}', '${json.jsonmap}')
-        ON CONFLICT(device_id) DO UPDATE SET 
-        time = '${json.time}', t = '${json.temperature__celcius}', h ='${json.humidity__pct}', p='${json.pressure__hPa}', radia_glob='${json.radia_glob}',wind_dir='${json.wind_dir}',wind_speed='${json.wind_speed}',precip='${json.precip}',sun='${json.sun}',visibility= '${json.visibility}', json='${json.jsonmap}'`    
-      } else if(json.sensorSource == "SmartCitizen"){
-        query = `
-        INSERT INTO smartcitizen (device_id, time, l, nA, t, h, p, mP2, mPX, mP1, eCO2, TVOC) VALUES
-        ('${json.device_id}', '${json.time}', ${json.mDigitalAmbientLightSensor}, ${json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm},
-        ${json.mTemperature}, ${json.mHumidity}, ${json.mDigitalBarometricPressureSensor}, ${json.mParticleMatterPM2_5}, ${json.mParticleMatterPM10},
-        ${json.mParticleMatterPM1}, ${json.mEquivalentCarbonDioxideDigitalIndoorSensor}, ${json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor})
-        ON CONFLICT(device_id) DO UPDATE SET
-        l=${json.mDigitalAmbientLightSensor}, nA=${json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm}, t=${json.mTemperature},
-        h=${json.mHumidity}, p=${json.mDigitalBarometricPressureSensor}, mP2=${json.mParticleMatterPM2_5}, mPX=${json.mParticleMatterPM10},
-        mP1=${json.mParticleMatterPM1}, eCO2=${json.mEquivalentCarbonDioxideDigitalIndoorSensor}, TVOC=${json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor}`
-      } else if(json.sensorSource == "Open Data Aarhus WiFi Routers"){
-        query = `INSERT INTO wifilocations(device_id, city, name, zip, street, department, houseno)
-        VALUES ('${device_id}', '${json.city}', '${json.name}', '${json.zip}', '${json.street}', '${json.department}', '${json.no}')
-        ON CONFLICT(device_id) DO UPDATE SET 
-        city='${json.city}', name='${json.name}', zip='${json.zip}', street='${json.street}', department='${json.department}', houseno='${json.no}'`  
-      } else {
-        console.log("Unknown sensor source: " + json.sensorSource)
-        query = null;
-        return
-      }
-      if(query){
-        client.query(query, (error, results) => {
-          if (error) {console.log(error); response.send(error) } 
-          else {
-            //console.log("location added."); 
-            response.status(201).send(`Location added!`)
-          }
-        })
-      }
+
+  knex('locations')
+  //.withSchema('public')
+  .insert({geometry: coordinates, device_type: sensor_type, device_id: device_id})
+  .onConflict("device_id", "geometry")
+  .merge({geometry: coordinates, device_type: sensor_type}) // FIXME: this merge is being ignored. Not sure why. 
+  .then(() => {
+    if(json.sensorSource == "DMI"){
+      console.log(json)
+      knex('dmisensor')
+      .insert({device_id: device_id, time: json.time, t: json.temperature__celcius, h: json.humidity__pct, p: json.pressure__hPa, 
+        radia_glob: json.radia_glob, wind_dir: json.wind_dir, wind_speed: json.wind_speed, precip: json.precip, sun: json.sun, 
+        visibility: json.visibility, json: json.jsonmap})
+      .then(() => {console.log("inserted into dmisensor.")})
+    } else if(json.sensorSource == "SmartCitizen"){
+      knex('smartcitizen')
+      .insert({device_id: device_id, time: json.time, l: json.mDigitalAmbientLightSensor, nA: json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm,
+      t: json.mTemperature, h: json.mHumidity, p: json.mDigitalBarometricPressureSensor, mP2: json.mParticleMatterPM2_5, mPX: json.mParticleMatterPM10,
+      mP1: json.mParticleMatterPM1, eCO2: json.mEquivalentCarbonDioxideDigitalIndoorSensor, TVOC: json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor})
+      .then(() => {console.log("inserted into smartcitizen")})
+    } else if(json.sensorSource == "Open Data Aarhus WiFi Routers"){
+      knex('wifilocations')
+      .insert({device_id: device_id, city: json.city, name: json.name, zip: json.zip, street: json.street, department: json.department, houseno: json.no})
+      .onConflict("device_id").merge({device_id: device_id, city: json.city, name: json.name, zip: json.zip, street: json.street, department: json.department, houseno: json.no})
+      .then(() => {console.log("inserted into wifilocations")})
     }
   })
-  client.end
+  .then((result) => {
+    response.status(200).send("Location added!")
+    return
+  }, (error) => {
+    if(error.constraint && error.constraint == 'locations_geometry_key'){
+      response.status(400).send(error)
+    } else {
+      //console.error("failed to insert ", device_id)
+      console.error(error)
+      response.status(500).send(error)
+    }
+    return
+  })
 } 
 
 const getFields = (request, response) => {
@@ -203,22 +151,47 @@ const getFields = (request, response) => {
     return response.status(400).send("no params");
   }
 
-  var query
-  query = `SELECT ${params.fields} FROM locations`
-  for(let i=0; i<params.source.length; i++){
-    query += ` LEFT JOIN ${params.source[i]} ON locations.device_id = ${params.source[i]}.device_id`
-  }
-  if(params.clause){
-    query += ` WHERE ${params.clause.replace('%3D',' =')}`
-  }
-  if(params.orderSource && params.orderType){ 
-    query += ` ORDER BY ${params.source[0]}.${params.orderSource} ${params.orderType}`
-  }
-  if(params.limit){
-    query += ` LIMIT ${params.limit}`
+  var q = knex('locations')
+  .withSchema('public')
+  
+  for (const FL in params.fields) {
+    const element = params.fields[FL];
+    if(element == "geometry"){ // force geometry into geojson format.
+      q.select(st.asGeoJSON('geometry')) // https://github.com/jfgodoy/knex-postgis/blob/master/tests/functions.js
+    } else {
+      q.select(element)
+    }
   }
 
-  console.log(query)
+  for (let i=0; i<params.source.length; i++) {
+    q.leftJoin(params.source[i], `${params.source[i]}.device_id`, '=', 'locations.device_id')
+  }
+  if(params.clause){
+    //q.where(params.clause.replace('%3D',' ='))
+    console.log(params.clause)
+  }
+  if(params.orderSource && params.orderType){ 
+    q.orderBy(`${params.source[0]}.${params.orderSource}`, `${params.orderType}`)
+  }
+  if(params.limit){
+    q.limit(10)
+  }
+
+  console.log("STATEMENTS.")
+  console.log(q._statements)
+  console.log("SQL.")
+  console.log(q.toSQL())
+  q
+  .then((rows) => {
+    console.log("ROWS:")
+    console.log(rows)
+    response.status(200).json(rows)
+  }, (error) => {
+    response.status(500).send(error)
+    return
+  })
+
+  /*
   client.query(query, (error, results) => {
     if (error) {
       console.log(error)
@@ -228,10 +201,12 @@ const getFields = (request, response) => {
     }
   })
   client.end 
+  */
 }
 
 const deleteLocation = (request, response) => {
   const id = parseInt(request.params.id)
+  /*
 
   client.query(`DELETE FROM locations WHERE id = '${id}' CASCADE`, (error, results) => {
     if (error) {
@@ -239,20 +214,22 @@ const deleteLocation = (request, response) => {
     }
     response.status(200).send(`Location deleted with ID: ${id}`)
   })
+  */
 }
 
 const nukeTable = (request, response) => {
+  /*
   client.query(`truncate table locations CASCADE`, (error, results) => {
     if(error) {
       throw error
     }
     response.status(200).send(`Truncated all data.`)
   })
+  */
 }
 
 module.exports = {
   getDmi,
-  //getCityProbe,
   getSCK,
   getWiFi,
   getLocationById,
