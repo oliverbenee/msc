@@ -19,14 +19,18 @@ publisherMap.set("GIWS", "DMI")
 publisherMap.set("SmartCitizen Kit 1.1", "SmartCitizen")
 publisherMap.set("SCK 2.1", "SmartCitizen")
 publisherMap.set("SCK 2.1 GPS", "SmartCitizen")
+publisherMap.set("Tide-gauge-primary", "DMI")
+publisherMap.set("Tide-gauge-secondary", "DMI")
 
 publisherMap.set("WiFi router", "Aarhus Municipality")
 
 const iconMap = new Map();
 iconMap.set("CityProbe2", "img/montem_logo.jpg")
-iconMap.set("Synop", "img/dmi_logo.png")
-iconMap.set("Pluvio", "img/dmi_logo.png")
-iconMap.set("GIWS", "img/dmi_logo.png")
+iconMap.set("Synop", "img/dmi_metobs.png")
+iconMap.set("Pluvio", "img/dmi_metobs.png")
+iconMap.set("GIWS", "img/dmi_metobs.png")
+iconMap.set("Tide-gauge-primary", "img/dmi_oceanobs.png")
+iconMap.set("Tide-gauge-secondary", "img/dmi_oceanobs.png")
 
 // all the smartCitizen ones
 iconMap.set("SmartCitizen Kit 1.1", "img/smartcitizen.png")
@@ -139,7 +143,8 @@ export class DMIFreeDataSensor {
         var propertyname = thing.parameterId
         var propertyvalue = thing.value
         //console.log("name: " + propertyname + ", value: " + propertyvalue)
-        if(propertyname.includes("temp") && propertyvalue != Infinity){this.temperature__celcius.push(parseFloat(propertyvalue));}
+        let isTemp = (propertyname.includes("temp") || propertyname.includes("tw"))
+        if(isTemp && propertyvalue != Infinity){this.temperature__celcius.push(parseFloat(propertyvalue));}
         else if(propertyname.includes("hum")){this.humidity__pct.push(parseFloat(propertyvalue))}
         else if(propertyname.includes("pressure")){this.pressure__hPa.push(parseFloat(propertyvalue))} 
         else if(propertyname.includes("radia")){this.radia_glob.push(parseInt(propertyvalue))}

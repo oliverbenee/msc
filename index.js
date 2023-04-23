@@ -143,20 +143,37 @@ app.get('/cityprobe2latest', cache(3600), (req, res) => {
 // API Fetch DMI sensor data. //
 ////////////////////////////////
 
-const API_URL_DMI_METOBS_STATIONS="https://dmigw.govcloud.dk/v2/metObs/collections/station/items"
 const API_KEY_DMI_METOBS = "03814681-8a26-4e7d-8aa6-dfac3c679f3f" 
+const API_URL_DMI_METOBS_STATIONS="https://dmigw.govcloud.dk/v2/metObs/collections/station/items"
+const API_URL_DMI_METOBS_COLLECTIONS = "https://dmigw.govcloud.dk/v2/metObs/collections/observation/items"
 
-app.get('/dmimetobslist', cache(3600), (req, res) => {
+const API_KEY_DMI_OCEANOBS="7ad6421d-2820-456e-b643-9031f5d97f00"
+const API_URL_DMI_OCEANOBS_STATIONS="https://dmigw.govcloud.dk/v2/oceanObs/collections/station/items"
+const API_URL_DMI_OCEANOBS_COLLECTIONS = "https://dmigw.govcloud.dk/v2/oceanObs/collections/observation/items"
+
+app.get('/dmi/list/metobs', cache(3600), (req, res) => {
   fetch(API_URL_DMI_METOBS_STATIONS + "?limit=100&status=Active&api-key=" + API_KEY_DMI_METOBS)
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});
 })
 
-const API_URL_DMI_METOBS_COLLECTIONS = "https://dmigw.govcloud.dk/v2/metObs/collections/observation/items"
-
-app.get('/dmimetobs', cache(3600), (req, res) => {
+app.get('/dmi/obs/metobs', cache(3600), (req, res) => {
   fetch(API_URL_DMI_METOBS_COLLECTIONS + "?api-key=" + API_KEY_DMI_METOBS)
+  .then((response => response.json()))
+  .then((data) => res.send(data))
+  .catch(error => {console.log(error)});
+})
+
+app.get('/dmi/list/oceanobs', cache(3600), (req, res) => {
+  fetch(API_URL_DMI_OCEANOBS_STATIONS + "?limit=100&status=Active&api-key=" + API_KEY_DMI_OCEANOBS)
+  .then((response) => response.json())
+  .then((data) => res.send(data))
+  .catch(error => {console.log(error)})
+})
+
+app.get('/dmi/obs/oceanobs', cache(3600), (req, res) => {
+  fetch(API_URL_DMI_OCEANOBS_COLLECTIONS + "?api-key=" + API_KEY_DMI_OCEANOBS)
   .then((response => response.json()))
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});

@@ -97,7 +97,7 @@ var control = L.Control.geocoder({
 function getPopupTableHTML(lat, lng, sensor){
   const loc = `<table><thead><tr><th>(${lat},${lng})</tr></th></thead><tbody>`
   var tableListOutput;
-  console.log(sensor)
+  //console.log(sensor)
   Object.entries(sensor).forEach(([key, value]) => {
       if(key == "json"){
         tableListOutput += "<tr><td>------------json--------------</td></tr>"
@@ -298,7 +298,7 @@ function placeSensorDataMarker(lat, lng, sensor){
           layerToAddTo = wifilayer
           break
         default: 
-          //console.error("no layer found. Will be added to the error layer.", sensor)
+          console.error("no layer found. Will be added to the error layer.", sensor)
       }
       layerToAddTo.addLayer(locationMarker)
     }
@@ -374,15 +374,23 @@ function handleErrors(response) {
 //   .catch((error) => console.error(error))
 // }
 
-async function fetchDMIData() {
-  const urls = ['/dmimetobslist', '/dmimetobs']
-  // use map() to perform a fetch and handle the response for each url
-  Promise.all(urls.map(url =>
-    fetch(url)
+async function fetchDMI() {
+  const metobsUrls = ['/dmi/list/metobs', '/dmi/obs/metobs']
+  // // use map() to perform a fetch and handle the response for each url
+  fetchDMIFreeData(metobsUrls);
+    //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
+  const oceanobsUrls = ['/dmi/list/oceanobs', 'dmi/obs/oceanobs']
+  fetchDMIFreeData(oceanobsUrls)
+}
+
+function fetchDMIFreeData(urls) {
+  Promise.all(urls.map(url => fetch(url)
     .then(handleErrors)
     .then(response => response.json())
     ))
     .then((values) => {
+      console.log("done fetching. ")
+      console.log(values)
       // locations.
       let locationFeatures = values[0].features
       // sensor data.
@@ -408,7 +416,6 @@ async function fetchDMIData() {
         }
       })
     })
-    //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
 }
 async function fetchSCK(){
   console.log("fetchsck")
@@ -609,7 +616,7 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-  let sources=  ['dmi', 'sck', 'wifi']
+let sources=  ['dmi', 'sck', 'wifi']
   Promise.all(sources.map(url =>
     fetch('/locations/' + url)
       .then(handleErrors)
