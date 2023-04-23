@@ -54,14 +54,6 @@ exports.up = function (knex) {
           table.varchar("department")
           table.varchar("houseno")
         })
-    }).then(() => {
-      return knex.schema
-      .createTableIfNotExists("dmiocean", table => { 
-        table.string('device_id').unique({ useConstraint: true })
-        table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
-        table.float("t", 5)
-        table.integer("sealevel")
-      })
     })
 
   /*
