@@ -24,6 +24,8 @@ publisherMap.set("Tide-gauge-secondary", "DMI")
 
 publisherMap.set("WiFi router", "Aarhus Municipality")
 
+publisherMap.set("Instruments from HC Oersted Institute", "HC Oersted Institute")
+
 const iconMap = new Map();
 iconMap.set("CityProbe2", "img/montem_logo.jpg")
 iconMap.set("Synop", "img/dmi_metobs.png")
@@ -40,6 +42,8 @@ iconMap.set("SCK 2.1 GPS", "img/smartcitizen.png")
 iconMap.set("WiFi router", "img/msql.png")
 
 iconMap.set("null", "img/sensor_image.png")
+
+iconMap.set("Instruments from HC Oersted Institute", "img/kobkomm.jpg")
 
 export class CityLabSensor {
   constructor(options){
@@ -297,6 +301,46 @@ export class SensorOptions {
     return publisherMap.get(key);
   }
 }
+
+
+// https://www.opendata.dk/city-of-copenhagen/meteorologi#resource-hc-oersted-institutet-meteorologi.csv
+export class CopenhagenMeterologySensor {
+  constructor(options){
+    console.log("OPTIONS", options)
+
+    this.device_type = "Instruments from HC Oersted Institute"
+
+    this.id = undefined
+    this.date = undefined
+    this.time = undefined
+    this.wind_dir = undefined
+    this.wind_speed = undefined
+    this.temperature__celcius = undefined
+    this.humidity__pct = undefined
+    this.GSwm2 = undefined
+
+    for (const key in options) {
+      console.log("data for key '" + key + "' is '" + options[key] + "'")
+      let K2 = key.toString().replace(" ","").replace(" ","").replace("(","").replace(")","").replace("%","").replace("/","").trim()
+      if(K2 == '_id'){this.id=options[key]}
+      else if(K2 == 'Dato'){this.date=options[key]}
+      else if(K2 == 'Tid'){this.time=options[key]}
+      else if(K2 == 'VRgrader'){this.wind_dir=options[key]}
+      else if(K2 == 'VHms'){this.wind_speed=options[key]}
+      else if(K2 == 'TgraderC'){this.temperature__celcius=options[key]}
+      else if(K2 == 'RH'){this.humidity__pct=options[key]}
+      else if(K2 == 'GSwm2'){this.GSwm2=options[key]}
+      else{console.log("actual K2 is: '" + K2 + "'")}
+    }
+  }
+}
+
+export class CopenhagenMeterologySensorFactory {
+  create(options){
+    return new CopenhagenMeterologySensor(options)
+  }
+}
+
 
 function test(){
   const sensorfactory = new SensorFactory();

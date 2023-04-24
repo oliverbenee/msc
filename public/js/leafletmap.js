@@ -198,7 +198,8 @@ let speedTrapLayer = L.layerGroup()
 let dbQueryLayer = L.layerGroup()
 let metNoAirLayer = L.layerGroup()
 let envZoneLayer = L.layerGroup()
-let markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer]
+let variousUniversitiesLayer = L.layerGroup()
+let markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer, variousUniversitiesLayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
@@ -210,7 +211,8 @@ let overlaysObj = {
     "SafeCast Radiation": SafeCast,
     "WiFi Locations": wifilayer,
     "Speedtraps": speedTrapLayer,
-    "MET.no Air Quality Sensor": metNoAirLayer
+    "MET.no Air Quality Sensor": metNoAirLayer,
+    "Various universities": variousUniversitiesLayer
   },
   "Tools": {
     "Cluster markers": markers,
@@ -305,8 +307,11 @@ function placeSensorDataMarker(lat, lng, sensor){
         case "Aarhus Municipality":
           layerToAddTo = wifilayer
           break
+        case "HC Oersted Institute": 
+          layerToAddTo = variousUniversitiesLayer
+          break
         default: 
-          console.error("no layer found. Will be added to the error layer.", sensor)
+          console.error("no layer found. Will be added to the error layer. '", sensor.sensorSource, "'")
       }
       layerToAddTo.addLayer(locationMarker)
     }
@@ -461,6 +466,20 @@ async function fetchWiFi(){
   })
   .catch(error => console.error(error))
 }
+
+const API_URL_OD_COPENHAGEN_METEROLOGY = 'https://admin.opendata.dk/api/3/action/datastore_search?resource_id=315bf474-2fb1-49f1-8ae0-32c4b74e6b07'
+function fetchODCMet(){
+  fetch(API_URL_OD_COPENHAGEN_METEROLOGY)
+  .then(handleErrors)
+  .then(response => response.json())
+  .then(data => {
+    var IN = data.result.records[0]
+    let CMS = copenhagenMeterologySensorFactory.create(IN)
+    // the location here is a "best guess using: https://www.opendata.dk/city-of-copenhagen/meteorologi"
+    placeSensorDataMarker(55.0421, 12.03341, CMS)
+  })
+}
+fetchODCMet()
 
 /*
  * MATRIKELKORTET. 
@@ -653,7 +672,7 @@ let sources=  ['dmi', 'sck', 'wifi']
 
 function fetchAll(){
   new Promise((resolve, reject) => {
-    fetchDMIData()
+    fetchDMI()
     fetchSCK()
     fetchWiFi()
   })
