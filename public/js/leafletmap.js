@@ -1,11 +1,16 @@
 'use strict';
-import { DMIFreeDataSensorFactory, SmartCitizenKitFactory, WiFiRouterFactory, NullSensorFactory, SensorOptions } from './sensorNodeFactory.js'
+import {
+  DMIFreeDataSensorFactory, SmartCitizenKitFactory, WiFiRouterFactory, NullSensorFactory, 
+  SensorOptions, MetNoAirQualitySensorFactory, CopenhagenMeterologySensorFactory
+} from './sensorNodeFactory.js'
 let sensorOptions = new SensorOptions()
 //let cityProbe2Factory = new CityProbe2Factory();
 let dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory();
 let smartCitizenKitFactory = new SmartCitizenKitFactory();
 let wiFiRouterFactory = new WiFiRouterFactory();
 let nullSensorFactory = new NullSensorFactory();
+let metNoAirQualitySensorFactory = new MetNoAirQualitySensorFactory();
+let copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory();
 
 let openStreetMapTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -14,8 +19,8 @@ let openStreetMapTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}
 
 var map = L.map('map', {
   layers: openStreetMapTileLayer, 
-  center: [56.172196954673105, 10.188960985472951],
-  zoom: 13,
+  center: [58.25602,8.35935],
+  zoom: 7,
   preferCanvas: false
 })
 
@@ -191,7 +196,9 @@ let trueMatLayer = L.layerGroup()
 let aggMatLayer = L.layerGroup()
 let speedTrapLayer = L.layerGroup()
 let dbQueryLayer = L.layerGroup()
-let markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer]
+let metNoAirLayer = L.layerGroup()
+let envZoneLayer = L.layerGroup()
+let markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
@@ -200,9 +207,10 @@ let overlaysObj = {
     //"CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer,
-    //"SafeCast Radiation": SafeCast,
+    "SafeCast Radiation": SafeCast,
     "WiFi Locations": wifilayer,
-    "Speedtraps": speedTrapLayer
+    "Speedtraps": speedTrapLayer,
+    "MET.no Air Quality Sensor": metNoAirLayer
   },
   "Tools": {
     "Cluster markers": markers,
@@ -238,10 +246,10 @@ function placeSensorDataMarker(lat, lng, sensor){
   if(device_type != undefined){
     iconUrl = sensorOptions.getIconMap(device_type)
     if(!iconUrl){
-      console.log("no icon found for: " + device_type)
+      console.log("No icon found for" + device_type)
     }
   } else {
-    console.error("bad sensor type. Setting as an error sensor.", sensor)
+    console.error("No icon found for", sensor)
   }
 
   var sensorIcon = L.icon({
@@ -590,7 +598,7 @@ function fetchSpeedTraps(){
         color: 'red'
       })
       .on('click', () => {
-        sidebar.setContent(getPopupTableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem))
+        sidebar.setContent(getPopupTableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem)).show()
       })
       .addTo(speedTrapLayer)
     })
