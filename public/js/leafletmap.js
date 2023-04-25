@@ -247,9 +247,7 @@ function placeSensorDataMarker(lat, lng, sensor){
   let device_type = sensor.device_type
   if(device_type != undefined){
     iconUrl = sensorOptions.getIconMap(device_type)
-    if(!iconUrl){
-      console.log("No icon found for" + device_type)
-    }
+    //console.log(device_type)
   } else {
     console.error("No icon found for", sensor)
   }
@@ -307,11 +305,15 @@ function placeSensorDataMarker(lat, lng, sensor){
         case "Aarhus Municipality":
           layerToAddTo = wifilayer
           break
+        case "MET.no": 
+          layerToAddTo = metNoAirLayer
+          break
         case "HC Oersted Institute": 
           layerToAddTo = variousUniversitiesLayer
           break
         default: 
-          console.error("no layer found. Will be added to the error layer. '", sensor.sensorSource, "'")
+          console.warn("no layer found. Will be added to the error layer. ", sensor)
+          layerToAddTo = errorlayer
       }
       layerToAddTo.addLayer(locationMarker)
     }
@@ -467,6 +469,49 @@ async function fetchWiFi(){
   .catch(error => console.error(error))
 }
 
+const API_URL_METNO_AIRQUALITYFORECAST = 'https://api.met.no/weatherapi/airqualityforecast/0.1/'
+
+async function fetchMetNoAQ() {
+  fetch(API_URL_METNO_AIRQUALITYFORECAST + 'stations')
+  .then(handleErrors)
+  .then(response => response.json())
+  .then(values => {
+    let locationFeatures = values
+    locationFeatures.forEach(feature => {
+      let stationData = {
+        device_id: feature.eoi,
+        location_name: feature.name,
+        height: feature.height,
+        municipality: feature.kommune.name
+      }
+
+      fetch(API_URL_METNO_AIRQUALITYFORECAST + 'met?station=' + stationData.device_id)
+      .then(response => response.json())
+      .then((res) => {
+        // console.log("--------------------------------")
+        var finalStationData = stationData
+        let observations = res.data.time[0].variables
+        // console.log("observations:", observations)
+        // un-nest JSON.
+        try {
+        for (const key in observations) {
+          if (Object.hasOwnProperty.call(observations, key)) {
+            const element = observations[key].value;
+            finalStationData[key] = element
+          }
+        }
+        let sensor = metNoAirQualitySensorFactory.create(finalStationData)
+        sendPositionToDatabase(feature.latitude, feature.longitude, sensor)
+        //console.log("lat: ", feature.latitude, "lng: ", feature.longitude, "SD:", stationData, "OB: ", sensor)
+        } catch(e){console.log(e)}
+      }, (error) => {
+        console.warn("MET.no has no observations for station of id: ", stationData.device_id)
+      }).catch((error) => console.error(error))
+    })
+  })
+}
+
+// outdated data.
 const API_URL_OD_COPENHAGEN_METEROLOGY = 'https://admin.opendata.dk/api/3/action/datastore_search?resource_id=315bf474-2fb1-49f1-8ae0-32c4b74e6b07'
 function fetchODCMet(){
   fetch(API_URL_OD_COPENHAGEN_METEROLOGY)
@@ -479,7 +524,6 @@ function fetchODCMet(){
     placeSensorDataMarker(55.0421, 12.03341, CMS)
   })
 }
-fetchODCMet()
 
 /*
  * MATRIKELKORTET. 
@@ -643,7 +687,7 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-let sources=  ['dmi', 'sck', 'wifi']
+let sources=  ['dmi', 'sck', 'wifi', 'metno']
   Promise.all(sources.map(url =>
     fetch('/locations/' + url)
       .then(handleErrors)
@@ -675,6 +719,7 @@ function fetchAll(){
     fetchDMI()
     fetchSCK()
     fetchWiFi()
+    fetchMetNoAQ()
   })
   .then(fetchDatabase())
   .catch((error) => console.error(error))

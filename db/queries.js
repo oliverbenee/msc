@@ -23,6 +23,20 @@ const getDmi = (request, response) => {
   })
 }
 
+const getMetNo = (request, response) => {
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('metdotno', 'locations.device_id', 'metdotno.device_id')
+  .then((result) => {
+    response.status(200).json(result)
+    return
+  }, (error) => {
+    response.status(500).json(error)
+    return
+  })
+}
+
 // const getCityProbe = (request, response) => {
 //   knex('locations')
 //   .withSchema('public')
@@ -91,7 +105,7 @@ const createLocation = (request, response) => {
 
   var query;
 
-  console.log("json:", json)
+  //console.log("json:", json)
 
   // insert new location observation. If the geometry already exists, overwrite the JSON to the newest value. 
   // https://stackoverflow.com/questions/1109061/insert-on-duplicate-update-in-postgresql
@@ -121,6 +135,16 @@ const createLocation = (request, response) => {
       .insert({device_id: device_id, city: json.city, name: json.name, zip: json.zip, street: json.street, department: json.department, houseno: json.no})
       .onConflict("device_id").merge({device_id: device_id, city: json.city, name: json.name, zip: json.zip, street: json.street, department: json.department, houseno: json.no})
       .then(() => {console.log("inserted into wifilocations")})
+    } else if(json.sensorSource == "MET.no"){
+      console.log("is met.no")
+      knex('metdotno')
+      .insert({device_id: device_id, name: json.name, municipality: json.municipality, height: json.height, t: json.temperature__celcius, 
+        h: json.humidity__pct, wind_speed: json.wind_speed, wind_dir: json.wind_dir, p: json.pressure__hPa, precip: json.precip, 
+        json: json.jsonmap})
+      .onConflict("device_id").merge({device_id: device_id, name: json.name, municipality: json.municipality, height: json.height, t: json.temperature__celcius, 
+        h: json.humidity__pct, wind_speed: json.wind_speed, wind_dir: json.wind_dir, p: json.pressure__hPa, precip: json.precip, 
+        json: json.jsonmap})
+      .then(() => {console.log("inserted into metdotno")})
     }
   })
   .then((result) => {
@@ -232,6 +256,7 @@ module.exports = {
   getDmi,
   getSCK,
   getWiFi,
+  getMetNo,
   getLocationById,
   getFields,
   createLocation,
