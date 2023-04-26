@@ -1,7 +1,7 @@
 'use strict';
 import {
   DMIFreeDataSensorFactory, SmartCitizenKitFactory, WiFiRouterFactory, NullSensorFactory, 
-  SensorOptions, MetNoAirQualitySensorFactory, CopenhagenMeterologySensorFactory
+  SensorOptions, MetNoAirQualitySensorFactory, CopenhagenMeterologySensorFactory, AarhusUniversityAirqualitySensorFactory
 } from './sensorNodeFactory.js'
 let sensorOptions = new SensorOptions()
 //let cityProbe2Factory = new CityProbe2Factory();
@@ -11,6 +11,7 @@ let wiFiRouterFactory = new WiFiRouterFactory();
 let nullSensorFactory = new NullSensorFactory();
 let metNoAirQualitySensorFactory = new MetNoAirQualitySensorFactory();
 let copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory();
+let aarhusUniversityAirqualitySensorFactory = new AarhusUniversityAirqualitySensorFactory();
 
 let openStreetMapTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -30,7 +31,6 @@ var map = L.map('map', {
 
 navigator.geolocation.watchPosition(onFoundUserPosition, onFailedToFindPosition);
 let userPosMarker, userPosCircle, foundUser;
-
 function onFoundUserPosition(pos){
   const lat = pos.coords.latitude;
   const lng = pos.coords.longitude;
@@ -52,7 +52,6 @@ function onFoundUserPosition(pos){
     foundUser = true;
   } 
 }
-
 // Error handling of not retrieving user position. 
 function onFailedToFindPosition(pos){
   if(onFailedToFindPosition.code === 1) { // Geolocation request denied.
@@ -208,7 +207,6 @@ let overlaysObj = {
     //"CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer,
-    "SafeCast Radiation": SafeCast,
     "WiFi Locations": wifilayer,
     "Speedtraps": speedTrapLayer,
     "MET.no Air Quality Sensor": metNoAirLayer,
@@ -216,6 +214,7 @@ let overlaysObj = {
   },
   "Tools": {
     "Cluster markers": markers,
+    "SafeCast Radiation": SafeCast,
     "Matrikelkort": matrikelkortlayer
   }
 }
@@ -266,7 +265,7 @@ function placeSensorDataMarker(lat, lng, sensor){
     ML.eachLayer((layer) => { 
       if(layer instanceof L.Marker){
         if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
-          //console.log("UPDATEEEE" + sensor.sensorType + "ID: " + sensor.device_id)
+          //console.log("UPDATEEEE" + sensor.device_type + "ID: " + sensor.device_id)
           layer.sensor = sensor
           isUpdated = true
         }
@@ -308,11 +307,11 @@ function placeSensorDataMarker(lat, lng, sensor){
         case "MET.no": 
           layerToAddTo = metNoAirLayer
           break
-        case "HC Oersted Institute": 
+        case "Aarhus Universitet": 
           layerToAddTo = variousUniversitiesLayer
           break
         default: 
-          console.warn("no layer found. Will be added to the error layer. ", sensor)
+          console.warn(`no layer found. Will be added to the error layer. publisher: '${publisher}' `, sensor)
           layerToAddTo = errorlayer
       }
       layerToAddTo.addLayer(locationMarker)
@@ -397,7 +396,6 @@ async function fetchDMI() {
   const oceanobsUrls = ['/dmi/list/oceanobs', 'dmi/obs/oceanobs']
   fetchDMIFreeData(oceanobsUrls)
 }
-
 function fetchDMIFreeData(urls) {
   Promise.all(urls.map(url => fetch(url)
     .then(handleErrors)
@@ -470,7 +468,6 @@ async function fetchWiFi(){
 }
 
 const API_URL_METNO_AIRQUALITYFORECAST = 'https://api.met.no/weatherapi/airqualityforecast/0.1/'
-
 async function fetchMetNoAQ() {
   fetch(API_URL_METNO_AIRQUALITYFORECAST + 'stations')
   .then(handleErrors)
@@ -523,6 +520,103 @@ function fetchODCMet(){
     // the location here is a "best guess using: https://www.opendata.dk/city-of-copenhagen/meteorologi"
     placeSensorDataMarker(55.0421, 12.03341, CMS)
   })
+}
+
+// Cross-reffed using: https://envs.au.dk/faglige-omraader/luftforurening-udledninger-og-effekter/overvaagningsprogrammet/maalestationer
+// and google maps,
+// with: https://envs2.au.dk/Luftdata/Presentation/table/Aarhus/AARH3
+// this list is not exhaustive, but includes the most important ones. 
+
+let AUStationLatLngs = new Map()
+let AUStationdevids = new Map()
+function setupAUStations() {
+  AUStationLatLngs.set("banegaardsgade", [56.150556, 10.200833]);
+  AUStationdevids.set("banegaardsgade", "AARH3"); // OK.
+  AUStationLatLngs.set("botaniskhave", [56.159573, 10.193892]); // botanisk have "AARH6". CANT BE IMPROVED
+  AUStationdevids.set("botaniskhave", "AARH6"); // OK.
+  //AUStationLatLngs.set("AARH4", [56.159509, 10.193597]) // valdemarsgade. An old one, the one they moved to botanisk have. "AARH4"
+
+  AUStationLatLngs.set("vesterbro", [57.052222, 9.917500]);
+  AUStationdevids.set("vesterbro", "AALB4"); // OK. 
+  AUStationLatLngs.set("oesterbro", [57.046667, 9.930833]);
+  AUStationdevids.set("oesterbro", "AALB5"); // OK. 
+
+  AUStationLatLngs.set("groennelykkevej", [55.397222, 10.366667]);
+  AUStationdevids.set("groennelykkevej", "ODEN6"); // OK.
+  AUStationLatLngs.set("raadhus", [55.396389, 10.389167]);
+  AUStationdevids.set("raadhus", "ODEN2"); // OK.
+
+  AUStationLatLngs.set("hcandersensboulevard", [55.675024, 12.569641]);
+  AUStationdevids.set("hcandersensboulevard", "HCAB"); // OK. 
+  AUStationLatLngs.set("hcoerstedinstitute", [55.7011638, 12.5586069]);
+  AUStationdevids.set("hcoerstedinstitute", "HCØ"); // OK. 
+  AUStationLatLngs.set("hvidovre", [55.631678, 12.462922]);
+  AUStationdevids.set("hvidovre", "HVID"); // OK. 
+  AUStationLatLngs.set("jagtvej", [55.6995582, 12.5536595]);
+  AUStationdevids.set("jagtvej", "JAGT1"); // OK. 
+
+  //------
+  AUStationLatLngs.set("anholt");
+  AUStationdevids.set("anholt", "ANHO");
+  AUStationLatLngs.set("foellesbjerg");
+  AUStationdevids.set("foellesbjerg", "FOEL");
+  AUStationLatLngs.set("risoe");
+  AUStationdevids.set("risoe", "RISOE");
+  AUStationLatLngs.set("ulborg");
+  AUStationdevids.set("ulborg", "ULBG");
+}
+setupAUStations();
+function fetchAARH(location) {
+  fetch('/AUluft/' + location)
+    .then(response => { return response.text() })
+    .then(string => {
+      console.log("found a place")
+      let $table = $(string)
+      var header = [];
+      var rows = [];
+      
+      // build json headers from table headers. 
+      $table.find("thead th").each(function () {
+        // The format is made in html "correct" for Danish typing. 
+        // Convert to be usable in JSON. 
+        header.push($(this).html().trim()
+        .replace("Målt (starttid)", "time")
+        .replace("CO","co")
+        .replace("NO<sub>2</sub>", "no2")
+        .replace("NO<sub>X</sub>","nox")
+        .replace("PM<sub>10</sub> Teom", "mpx"));
+      });
+    
+      // convert each row of the table body to json entries.
+      $table.find("tbody tr").each(function () {
+        var row = {};
+        $(this).find("td").each(function (i) {
+            var key = header[i]
+            .replace("SO<sub>2</sub>", "so2")
+            .replace("O<sub>3</sub>", "o3")
+            .replace("PM<sub>2.5</sub> Teom","pm25"),
+            value = $(this).html().trim().replace(",",".")
+
+            row[key] = value;
+        });
+        rows.push(row);
+      });
+      let LM = rows[0]
+      // console.log("latest", LM)
+      // console.log("rows", rows)
+      console.log("sending latlng: ", [AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1]])
+      console.log("and sensor: ", LM)
+      sendPositionToDatabase(AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1],
+        aarhusUniversityAirqualitySensorFactory.create({device_id: AUStationdevids.get(location), latest: LM})
+      )     
+    })
+}
+function fetchAUSensor(){
+  fetchAARH("banegaardsgade")
+  fetchAARH("botaniskhave")
+  fetchAARH("hcandersensboulevard")
+  fetchAARH("oesterbro")
+  fetchAARH("vesterbro")
 }
 
 /*
@@ -687,7 +781,7 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-let sources=  ['dmi', 'sck', 'wifi', 'metno']
+let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor']
   Promise.all(sources.map(url =>
     fetch('/locations/' + url)
       .then(handleErrors)
@@ -720,6 +814,7 @@ function fetchAll(){
     fetchSCK()
     fetchWiFi()
     fetchMetNoAQ()
+    fetchAUSensor()
   })
   .then(fetchDatabase())
   .catch((error) => console.error(error))

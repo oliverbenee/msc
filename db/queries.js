@@ -79,6 +79,20 @@ const getWiFi = (request, response) => {
   })
 }
 
+const getAUSensor = (request, response) => {
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('ausensor', 'locations.device_id', 'ausensor.device_id')
+  .then((result) => { 
+    response.status(200).json(result)
+    return
+  }, (error) => {
+    response.status(500).json(error)
+    return
+  })
+}
+
 const getLocationById = (request, response) => {
   knex('locations')
   .select('*', st.asGeoJSON('geometry').as('geojson'))
@@ -101,7 +115,7 @@ const createLocation = (request, response) => {
   // console.log(coordinates)
   const json = JSON.parse(request.body.json)
   const device_id = json.device_id
-  const sensor_type = json.sensorType
+  const sensor_type = json.device_type
 
   var query;
 
@@ -118,7 +132,7 @@ const createLocation = (request, response) => {
   .merge({geometry: coordinates, device_type: sensor_type}) // FIXME: this merge is being ignored. Not sure why. 
   .then(() => {
     if(json.sensorSource == "DMI"){
-      console.log(json)
+      //console.log(json)
       knex('dmisensor')
       .insert({device_id: device_id, time: json.time, t: json.temperature__celcius, h: json.humidity__pct, p: json.pressure__hPa, 
         radia_glob: json.radia_glob, wind_dir: json.wind_dir, wind_speed: json.wind_speed, precip: json.precip, sun: json.sun, 
@@ -145,6 +159,13 @@ const createLocation = (request, response) => {
         h: json.humidity__pct, wind_speed: json.wind_speed, wind_dir: json.wind_dir, p: json.pressure__hPa, precip: json.precip, 
         json: json.jsonmap})
       .then(() => {console.log("inserted into metdotno")})
+    } else if(json.sensorSource == "Aarhus Universitet"){
+      knex('ausensor')
+      .insert({device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.mp2, mpx: json.mpx, json: json.jsonmap})
+      .onConflict("device_id").merge({device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.mp2, mpx: json.mpx, json: json.jsonmap})
+      .then(() => {console.log("inserted into ausensor")})
+    } else {
+      console.log("no sensorsource accepts ", json.sensorSource)
     }
   })
   .then((result) => {
@@ -257,6 +278,7 @@ module.exports = {
   getSCK,
   getWiFi,
   getMetNo,
+  getAUSensor,
   getLocationById,
   getFields,
   createLocation,

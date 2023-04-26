@@ -56,6 +56,8 @@ app.get('/locations/dmi', db.getDmi)
 app.get('/locations/sck', db.getSCK)
 app.get('/locations/wifi', db.getWiFi)
 app.get('/locations/metno', db.getMetNo)
+app.get('/locations/ausensor', db.getAUSensor)
+
 app.get('/locations/:id', db.getLocationById)
 app.post('/locations', db.createLocation)
 app.delete('/locations/:id', db.deleteLocation)
@@ -228,3 +230,57 @@ app.get('/speedtraps', cache(3600), (req, res) => {
   .then((data) => res.send(data.result.records))
   .catch(error => {console.log(error)})
 })
+
+///////////////////////////////////////
+// API Fetch AU.dk air measurements. //
+///////////////////////////////////////
+
+var myHeaders = new fetch.Headers();
+myHeaders.append("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+myHeaders.append("Origin", "https://envs2.au.dk");
+myHeaders.append("Cookie", "CookieScriptConsent={action:reject,categories:^[^],key:284a4681-d2c9-45c9-b58b-a46c4fd6d999}; mitstudie-login=true; allow_cookies=true; __RequestVerificationToken_L0x1ZnRkYXRhL1ByZXNlbnRhdGlvbg2=Z35qSPoidytIPQsf4dMmnBB4s80eOT-3gffAGnotpMODHi0INdYHFUcXr6EGqa0K55w0unEHem_ATWd0pRJ-Mj5GXiftrT1wwpLrPNqI2Qo1");
+var raw = "__RequestVerificationToken=8L5V1DUKuKh6JGZlcUI4whnegPbWkYedTXJS8MMuo5QenVCEjERTOIkyyMdFU7ARUpGxah0szVNdv0RyRgiQ_rd9umLLVRj2UQRryd1IUcc1";
+var requestOptions = {
+  method: 'POST',
+  headers: myHeaders,
+  body: raw,
+  redirect: 'follow'
+};
+
+const API_URL_AULUFTDATA = "https://envs2.au.dk/Luftdata/Presentation/table/MainTable/"
+
+app.get('/AUluft/banegaardsgade', (req, res) => {
+  fetch(API_URL_AULUFTDATA + "Aarhus/AARH3", requestOptions)
+    .then(response => response.text())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error));
+})
+
+app.get('/AUluft/botaniskhave', (req, res) => {
+  fetch(API_URL_AULUFTDATA + "Aarhus/AARH6", requestOptions)
+    .then(response => response.text())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error));
+})
+
+app.get('/AUluft/hcandersensboulevard', (req, res) => {
+  fetch(API_URL_AULUFTDATA + "Copenhagen/HCAB", requestOptions)
+    .then(response => response.text())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error))
+})
+
+app.get('/AUluft/oesterbro', (req, res) => {
+  fetch(API_URL_AULUFTDATA + "Aalborg/AALB5", requestOptions)
+    .then(response => response.text())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error))
+})
+
+app.get('/AUluft/vesterbro', (req, res) => {
+  fetch(API_URL_AULUFTDATA + "Aalborg/AALB4", requestOptions)
+    .then(response => response.text())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error))
+})
+

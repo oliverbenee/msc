@@ -24,6 +24,8 @@ publisherMap.set("Tide-gauge-secondary", "DMI")
 
 publisherMap.set("WiFi router", "Aarhus Municipality")
 
+publisherMap.set("AU air quality sensor", "Aarhus Universitet")
+publisherMap.set("MET.no air quality sensor", "MET.no")
 publisherMap.set("Instruments from HC Oersted Institute", "HC Oersted Institute")
 
 const iconMap = new Map();
@@ -42,13 +44,16 @@ iconMap.set("SCK 2.1 GPS", "img/smartcitizen.png")
 iconMap.set("WiFi router", "img/msql.png")
 
 iconMap.set("null", "img/sensor_image.png")
+iconMap.set("TEST", "img/sensor_image.png")
 
+iconMap.set("MET.no air quality sensor", "img/met_no.png")
 iconMap.set("Instruments from HC Oersted Institute", "img/kobkomm.jpg")
+iconMap.set("AU air quality sensor", "img/au_logo.png")
 
 export class CityLabSensor {
   constructor(options){
     this.device_id = options.device_id || 7
-    this.sensorType = "CityLab"
+    this.device_type = "CityLab"
 
     // Data types. TODO: Update how data values are fetched.
     this.air_temperature = options.air_temperature
@@ -59,6 +64,26 @@ export class CityLabSensor {
     this.wind_speed = options.wind_speed
     this.wind_vane = options.wind_vane
     this.rain = options.rain
+  }
+}
+
+export class CityProbeSensor {
+  constructor(options) {
+    this.sensorSource="OpenData Aarhus"
+    this.device_type="CityProbe"
+    this.device_id = options.deviceid
+    this.time = options.published_at
+    this.battery_level__pct = options.battery
+    this.measurements = "------------------------"
+    this.noise=options.noise
+    this.CO = options.CO
+    this.temperature__celcius = options.temperature
+    this.humidity__pct = options.humidity
+    this.luminosity__lx = options.illuminance
+    this.pressure__hPa = options.pressure
+    this.PM2_5__mcgPERcm3 = options.PM2_5
+    this.NO2 = options.NO2
+    this.noise_max=options.noise_max
   }
 }
 
@@ -73,7 +98,7 @@ export class CityProbe2Sensor {
   constructor(options) {
     //console.log(options)
     this.sensorSource="Montem"
-    this.sensorType="CityProbe2"
+    this.device_type="CityProbe2"
     this.device_id = options.device_id
     this.time = options.time
 
@@ -124,7 +149,7 @@ export class DMIFreeDataSensor {
     // This looks really stupid, but doing this lets us just copy fields into the sensor afterwards.
     let ST = options.stationType
     delete options.stationType
-    this.sensorType = ST
+    this.device_type = ST
     this.device_id=options[0].properties.stationId.toString()
     this.time = options[0].properties.created // seems to be changing between created and observed every so often????
 
@@ -199,7 +224,7 @@ const NULL = null
 export class SmartCitizenKitDevice {
   constructor(options){
     this.sensorSource = "SmartCitizen"
-    this.sensorType = options.kit.name
+    this.device_type = options.kit.name
     this.device_id = options.id // FINTE: options.kit.uuid er et mærkat for sensor typen og det er forkert!!!
     this.time = options.updated_at
 
@@ -254,7 +279,7 @@ export class SmartCitizenKitFactory {
 export class WiFiRouterLocation {
   constructor(options){
     this.sensorSource = "Open Data Aarhus WiFi Routers"
-    this.sensorType = "WiFi router"
+    this.device_type = "WiFi router"
     this.device_id = options.id
     this.city = options.city
     this.name = options.name
@@ -302,6 +327,69 @@ export class SensorOptions {
   }
 }
 
+export class MetNoAirQualitySensor {
+  constructor(options){
+    this.sensorSource = "MET.no"
+    //console.log("OPT", options)
+    this.device_type = "MET.no air quality sensor"
+    this.device_id = options.device_id
+    this.name = options.location_name
+    this.municipality = options.municipality
+    
+    this.height = options.height
+    
+    this.temperature__celcius = average([0, options.air_temperature_0m, options.air_temperature_2m, options.air_temperature_20m, options.air_temperature_100m, options.air_temperature_200m, options.air_temperature_500m])
+    this.humidity__pct = options.relative_humidity_2m
+    this.wind_speed = options.wind_speed
+    this.wind_dir = options.wind_direction
+    this.pressure__hPa = options.surface_air_pressure
+    this.precip = options.rainfall_amount + options.snowfall_amount
+    this.jsonmap = {
+      rainfall_amount: options.rainfall_amount,
+      snowfall_amount: options.snowfall_amount,
+      air_temperature_0m: options.air_temperature_0m, 
+      air_temperature_2m: options.air_temperature_2m, 
+      air_temperature_20m: options.air_temperature_20m, 
+      air_temperature_100m: options.air_temperature_100m, 
+      air_temperature_200m: options.air_temperature_200m, 
+      air_temperature_500m: options.air_temperature_500m,
+      json: options
+    }
+  }
+}
+
+export class MetNoAirQualitySensorFactory {
+  create(options){
+    return new MetNoAirQualitySensor(options)
+  }
+}
+
+export class AarhusUniversityAirqualitySensor {
+  constructor(options){
+    //console.log("OPT", options)
+    this.sensorSource = "Aarhus Universitet"
+    this.device_id = options.device_id
+    this.device_type = "AU air quality sensor"
+    this.data_location = "https://envs2.au.dk/Luftdata/Presentation/table/Aarhus/" + options.device_id
+    //this.latest = options.latest
+    this.time = options.latest.time
+    this.no2 = options.latest.no2
+    this.nox = options.latest.nox
+    this.co = options.latest.co
+    this.o3 = options.latest.o3
+    this.so2 = options.latest.so2
+    this.PM10__mcgPERcm3 = options.latest.mpx
+    this.PM2_5__mcgPERcm3 = options.latest.pm25
+
+    this.jsonmap = options.latest
+  }
+}
+
+export class AarhusUniversityAirqualitySensorFactory {
+  create(options){
+    return new AarhusUniversityAirqualitySensor(options)
+  }
+}
 
 // https://www.opendata.dk/city-of-copenhagen/meteorologi#resource-hc-oersted-institutet-meteorologi.csv
 export class CopenhagenMeterologySensor {
