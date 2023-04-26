@@ -162,7 +162,7 @@ const createLocation = (request, response) => {
     } else if(json.sensorSource == "Aarhus Universitet"){
       knex('ausensor')
       .insert({device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.mp2, mpx: json.mpx, json: json.jsonmap})
-      .onConflict("device_id").merge({device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.mp2, mpx: json.mpx, json: json.jsonmap})
+      .onConflict("device_id").merge({device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.PM2_5__mcgPERcm3, mpx: json.PM10__mcgPERcm3, json: json.jsonmap})
       .then(() => {console.log("inserted into ausensor")})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)

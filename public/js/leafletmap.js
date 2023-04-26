@@ -570,7 +570,7 @@ function fetchAARH(location) {
   fetch('/AUluft/' + location)
     .then(response => { return response.text() })
     .then(string => {
-      console.log("found a place")
+      // console.log("found a place")
       let $table = $(string)
       var header = [];
       var rows = [];
@@ -604,8 +604,8 @@ function fetchAARH(location) {
       let LM = rows[0]
       // console.log("latest", LM)
       // console.log("rows", rows)
-      console.log("sending latlng: ", [AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1]])
-      console.log("and sensor: ", LM)
+      // console.log("sending latlng: ", [AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1]])
+      // console.log("and sensor: ", LM)
       sendPositionToDatabase(AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1],
         aarhusUniversityAirqualitySensorFactory.create({device_id: AUStationdevids.get(location), latest: LM})
       )     

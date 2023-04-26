@@ -239,6 +239,7 @@ export class SmartCitizenKitDevice {
     this.mEquivalentCarbonDioxideDigitalIndoorSensor = null
     this.mTotalVolatileOrganicCompoundsDigitalIndoorSensor = null
 
+    // FIXME: This is garbage. It creates security holes the size of Jupiter. Use a JSON column instead.
     options.data.sensors.forEach(elem => {
       if(elem.value && elem.description){
         elem.description = "m"+elem.description.replace(/^\s+|\s+$/gm,'').trim().replaceAll(" ","").replaceAll("(","").replaceAll(")","").replaceAll(".","_").replaceAll("/","")
@@ -373,13 +374,13 @@ export class AarhusUniversityAirqualitySensor {
     this.data_location = "https://envs2.au.dk/Luftdata/Presentation/table/Aarhus/" + options.device_id
     //this.latest = options.latest
     this.time = options.latest.time
-    this.no2 = options.latest.no2
-    this.nox = options.latest.nox
-    this.co = options.latest.co
-    this.o3 = options.latest.o3
-    this.so2 = options.latest.so2
-    this.PM10__mcgPERcm3 = options.latest.mpx
-    this.PM2_5__mcgPERcm3 = options.latest.pm25
+    this.no2 = 0 + options.latest.no2
+    this.nox = 0 + options.latest.nox
+    this.co = 0 + options.latest.co
+    this.o3 = 0 + options.latest.o3
+    this.so2 = 0 + options.latest.so2
+    this.PM10__mcgPERcm3 = 0 + options.latest.mpx
+    this.PM2_5__mcgPERcm3 = 0 + options.latest.pm25
 
     this.jsonmap = options.latest
   }
@@ -434,7 +435,7 @@ function test(){
   const sensorfactory = new SensorFactory();
   const sensor = sensorfactory.create({
     device_id: 1,
-    sensorType: "CityLab"
+    device_type: "CityLab"
   })
   console.log("-------------------------------------")
   console.log("test sensor 1")
@@ -443,7 +444,7 @@ function test(){
   console.log("test sensor 2")
   const sensor2 = sensorfactory.create({
     device_id: 2,
-    sensorType: "CityLab"
+    device_type: "CityLab"
   })
   Object.keys(sensor2).forEach((prop, index) => {console.log(prop + ": " + Object.values(sensor2)[index])})
 
