@@ -29,7 +29,7 @@ var map = L.map('map', {
   Geolocation
  */
 
-navigator.geolocation.watchPosition(onFoundUserPosition, onFailedToFindPosition);
+//navigator.geolocation.watchPosition(onFoundUserPosition, onFailedToFindPosition);
 let userPosMarker, userPosCircle, foundUser;
 function onFoundUserPosition(pos){
   const lat = pos.coords.latitude;
@@ -63,8 +63,6 @@ function onFailedToFindPosition(pos){
 
 /*
  * Geocoding
- * https://github.com/perliedman/leaflet-control-geocoder/blob/master/demo/index.html
- * 
  * Note: not directly DAWA. Can be found here... https://github.com/kjoller/leaflet-control-geocoder-dawa/blob/new/demo/index.html
  */
 
@@ -218,10 +216,7 @@ let overlaysObj = {
     "Matrikelkort": matrikelkortlayer
   }
 }
-let overlayOptions= {
-  groupCheckboxes: true,
-}
-var control = L.control.groupedLayers(basemaps, overlaysObj, overlayOptions).addTo(map);
+var control = L.control.groupedLayers(basemaps, overlaysObj, { groupCheckboxes: true }).addTo(map);
 // add scalebar in meter to the map
 L.control.scale({metric: true}).addTo(map);
 
@@ -681,14 +676,7 @@ let vtoptions = {
 // https://dawadocs.dataforsyningen.dk/dok/api/jordstykke#s%C3%B8gning
 function fetchGeojson(){
   var startTime = performance.now()
-  fetch(`https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&polygon=[[[10.230232293107784, 56.18303091786568],
-  [10.256998318307586, 56.16888887943998],
-  [10.250478389092224, 56.13351098726795],
-  [10.21170196796946, 56.11150290519495],
-  [10.145473213308414, 56.11877653389602],
-  [10.125227117323934, 56.15321188662785],
-  [10.145130059139174, 56.18035579663258],
-  [10.171896084338977, 56.18627902871378], [10.230232293107784, 56.18303091786568]]]`)
+  fetch('/jordstykker')
   .then(handleErrors)
   .then(response => response.json())
   .then(data => {
@@ -811,9 +799,9 @@ let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor']
 function fetchAll(){
   new Promise((resolve, reject) => {
     fetchDMI()
+    fetchMetNoAQ()
     fetchSCK()
     fetchWiFi()
-    fetchMetNoAQ()
     fetchAUSensor()
   })
   .then(fetchDatabase())

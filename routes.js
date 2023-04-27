@@ -177,7 +177,12 @@ router.get('/wifilocations', cache(3600), (req, res) => {
 // API Fetch jordstykker GeoJSON //
 ///////////////////////////////////
 
-const API_URL_DATAFORSYNINGEN_JORDSTYKKER=`https://api.dataforsyningen.dk/jordstykker?format=geojson&kommunekode=0751&per_side=500`
+const API_URL_DATAFORSYNINGEN_JORDSTYKKER=`https://api.dataforsyningen.dk/jordstykker?format=geojson
+&kommunekode=0751
+&polygon=[[[10.230232293107784, 56.18303091786568], [10.256998318307586, 56.16888887943998], 
+[10.250478389092224, 56.13351098726795], [10.21170196796946, 56.11150290519495], [10.145473213308414, 56.11877653389602], 
+[10.125227117323934, 56.15321188662785], [10.145130059139174, 56.18035579663258], [10.171896084338977, 56.18627902871378], 
+[10.230232293107784, 56.18303091786568]]]`
 router.get('/jordstykker', cache(3600), (req, res) => {
   fetch(API_URL_DATAFORSYNINGEN_JORDSTYKKER)
   .then((response) => response.json())
@@ -214,35 +219,30 @@ var requestOptions = {
 };
 
 const API_URL_AULUFTDATA = "https://envs2.au.dk/Luftdata/Presentation/table/MainTable/"
-
 router.get('/AUluft/banegaardsgade', (req, res) => {
   fetch(API_URL_AULUFTDATA + "Aarhus/AARH3", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
     .catch(error => console.log('error', error));
 })
-
 router.get('/AUluft/botaniskhave', (req, res) => {
   fetch(API_URL_AULUFTDATA + "Aarhus/AARH6", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
     .catch(error => console.log('error', error));
 })
-
 router.get('/AUluft/hcandersensboulevard', (req, res) => {
   fetch(API_URL_AULUFTDATA + "Copenhagen/HCAB", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
     .catch(error => console.log('error', error))
 })
-
 router.get('/AUluft/oesterbro', (req, res) => {
   fetch(API_URL_AULUFTDATA + "Aalborg/AALB5", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
     .catch(error => console.log('error', error))
 })
-
 router.get('/AUluft/vesterbro', (req, res) => {
   fetch(API_URL_AULUFTDATA + "Aalborg/AALB4", requestOptions)
     .then(response => response.text())
