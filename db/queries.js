@@ -143,12 +143,12 @@ const createLocation = (request, response) => {
       .insert({device_id: device_id, time: json.time, l: json.mDigitalAmbientLightSensor, nA: json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm,
       t: json.mTemperature, h: json.mHumidity, p: json.mDigitalBarometricPressureSensor, mP2: json.mParticleMatterPM2_5, mPX: json.mParticleMatterPM10,
       mP1: json.mParticleMatterPM1, eCO2: json.mEquivalentCarbonDioxideDigitalIndoorSensor, TVOC: json.mTotalVolatileOrganicCompoundsDigitalIndoorSensor})
-      .then(() => {console.log("inserted into smartcitizen")})
+      .then(() => {/*console.log("inserted into smartcitizen")*/})
     } else if(json.sensorSource == "Open Data Aarhus WiFi Routers"){
       knex('wifilocations')
       .insert({device_id: device_id, city: json.city, name: json.name, zip: json.zip, street: json.street, department: json.department, houseno: json.no})
       .onConflict("device_id").merge({device_id: device_id, city: json.city, name: json.name, zip: json.zip, street: json.street, department: json.department, houseno: json.no})
-      .then(() => {console.log("inserted into wifilocations")})
+      .then(() => {/*console.log("inserted into wifilocations")*/})
     } else if(json.sensorSource == "MET.no"){
       console.log("is met.no")
       knex('metdotno')
@@ -163,7 +163,7 @@ const createLocation = (request, response) => {
       knex('ausensor')
       .insert({device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.mp2, mpx: json.mpx, json: json.jsonmap})
       .onConflict("device_id").merge({device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.PM2_5__mcgPERcm3, mpx: json.PM10__mcgPERcm3, json: json.jsonmap})
-      .then(() => {console.log("inserted into ausensor")})
+      .then(() => {/*console.log("inserted into ausensor")*/})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)
     }

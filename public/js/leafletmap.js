@@ -462,9 +462,8 @@ async function fetchWiFi(){
   .catch(error => console.error(error))
 }
 
-const API_URL_METNO_AIRQUALITYFORECAST = 'https://api.met.no/weatherapi/airqualityforecast/0.1/'
 async function fetchMetNoAQ() {
-  fetch(API_URL_METNO_AIRQUALITYFORECAST + 'stations')
+  fetch('/metno/stations')
   .then(handleErrors)
   .then(response => response.json())
   .then(values => {
@@ -477,7 +476,7 @@ async function fetchMetNoAQ() {
         municipality: feature.kommune.name
       }
 
-      fetch(API_URL_METNO_AIRQUALITYFORECAST + 'met?station=' + stationData.device_id)
+      fetch(`/metno/${stationData.device_id}`)
       .then(response => response.json())
       .then((res) => {
         // console.log("--------------------------------")

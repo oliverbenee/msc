@@ -249,4 +249,20 @@ router.get('/AUluft/vesterbro', (req, res) => {
     .catch(error => console.log('error', error))
 })
 
+const API_URL_METNO_AIRQUALITYFORECAST = 'https://api.met.no/weatherapi/airqualityforecast/0.1/'
+router.get('/metno/stations', (req, res) => {
+  fetch(API_URL_METNO_AIRQUALITYFORECAST + 'stations')
+    .then(response => response.json())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error))
+})
+
+router.get('/metno/:station', (req, res) => {
+  let stationId = req.params.station
+  fetch(API_URL_METNO_AIRQUALITYFORECAST + 'met?station=' + stationId)
+    .then(response => response.json())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error))
+})
+
 module.exports.router = router;
