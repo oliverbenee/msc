@@ -1,5 +1,4 @@
-const express = require('express')
-const router = express.Router()
+const router = require('express').Router()
 
 //////////////////
 // Serve pages. //
@@ -19,7 +18,7 @@ router.get('/index/:subpage', (req, res) => {
 // Database access. // https://blog.logrocket.com/crud-rest-api-node-js-express-postgresql/#what-crud-api
 //////////////////////
 
-const db = require('./db/queries')
+const db = require('../db/queries')
 router.get('/locations/dmi', db.getDmi)
 //app.get('/locations/cityprobe2', db.getCityProbe)
 router.get('/locations/sck', db.getSCK)
