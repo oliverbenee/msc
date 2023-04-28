@@ -30,3 +30,5 @@ app.use(router)
 // near=56.172592, 10.189799&distance=1000000
 
 //  https://data.sensor.community/airrohr/v1/filter/country=DK
+
+const apiToDatabaseUpdateHandler = require('./apiToDatabaseUpdateHandler')

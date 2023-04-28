@@ -332,8 +332,7 @@ function sendPositionToDatabase(lat, lng, sensor){
       console.error("failed to send to database", response.json())
     }
     if(response.status == 200){
-      //console.log("data was sent to db", sensor)
-      // console.log("OK", response.json())
+
     }
   })
 }
@@ -383,125 +382,6 @@ function handleErrors(response) {
 //   .catch((error) => console.error(error))
 // }
 
-async function fetchDMI() {
-  const metobsUrls = ['/dmi/list/metobs', '/dmi/obs/metobs']
-  // // use map() to perform a fetch and handle the response for each url
-  fetchDMIFreeData(metobsUrls);
-    //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
-  const oceanobsUrls = ['/dmi/list/oceanobs', 'dmi/obs/oceanobs']
-  fetchDMIFreeData(oceanobsUrls)
-}
-function fetchDMIFreeData(urls) {
-  Promise.all(urls.map(url => fetch(url)
-    .then(handleErrors)
-    .then(response => response.json())
-    ))
-    .then((values) => {
-      console.log("done fetching. ")
-      console.log(values)
-      // locations.
-      let locationFeatures = values[0].features
-      // sensor data.
-      let sensorFeatures = values[1].features
-      var noOfEmptyObservationStations = 0;
-      locationFeatures.forEach(item => {
-        // Identify associated station for the location.
-        var latitude = item.geometry.coordinates[1]
-        var longitude = item.geometry.coordinates[0]
-        var stationId = item.properties.stationId
-        var stationType = item.properties.type
-
-        // Now find the features for that sensor in the metobs. 
-        var featuresForThatSensor = sensorFeatures.filter(feature => feature.properties.stationId == stationId)
-        var hasFeatures = featuresForThatSensor.length != 0
-        if (hasFeatures) {
-          var paramsForDMISensor = jQuery.extend(stationId, featuresForThatSensor)
-          paramsForDMISensor.stationType = stationType
-          sendPositionToDatabase(latitude, longitude, dmiFreeDataSensorFactory.create(paramsForDMISensor))
-        } else {
-          placeSensorDataMarker(latitude, longitude, nullSensorFactory.create())
-          noOfEmptyObservationStations++;
-        }
-      })
-    })
-}
-async function fetchSCK(){
-  console.log("fetchsck")
-  fetch('/scklocations')
-  .then(handleErrors)
-  .then(response => response.json())
-  .then((list) => {
-    console.log(`Found ${list.length} elements`)
-    list.forEach((kit) => {
-    try {
-      if (kit.system_tags.indexOf("offline") !== -1) {
-        var latitude = kit.data.location.latitude
-        var longitude = kit.data.location.longitude
-        let device = smartCitizenKitFactory.create(kit)
-        sendPositionToDatabase(latitude, longitude, device)
-      } else {
-        console.log("Found dead sensor.")
-      }
-    } catch (e) { 
-      console.log("skipping a sensor without data.", e) 
-    }
-  })
-  })
-}
-async function fetchWiFi(){
-  fetch('/wifilocations')
-  .then(handleErrors)
-  .then(response => response.json())
-  .then((data) => {
-    data.result.records.forEach(record =>{
-      let latitude = record.lat
-      let longitude = record.lng
-      sendPositionToDatabase(latitude, longitude, wiFiRouterFactory.create(record))
-    })
-  })
-  .catch(error => console.error(error))
-}
-
-async function fetchMetNoAQ() {
-  fetch('/metno/stations')
-  .then(handleErrors)
-  .then(response => response.json())
-  .then(values => {
-    let locationFeatures = values
-    locationFeatures.forEach(feature => {
-      let stationData = {
-        device_id: feature.eoi,
-        location_name: feature.name,
-        height: feature.height,
-        municipality: feature.kommune.name
-      }
-
-      fetch(`/metno/${stationData.device_id}`)
-      .then(response => response.json())
-      .then((res) => {
-        // console.log("--------------------------------")
-        var finalStationData = stationData
-        let observations = res.data.time[0].variables
-        // console.log("observations:", observations)
-        // un-nest JSON.
-        try {
-        for (const key in observations) {
-          if (Object.hasOwnProperty.call(observations, key)) {
-            const element = observations[key].value;
-            finalStationData[key] = element
-          }
-        }
-        let sensor = metNoAirQualitySensorFactory.create(finalStationData)
-        sendPositionToDatabase(feature.latitude, feature.longitude, sensor)
-        //console.log("lat: ", feature.latitude, "lng: ", feature.longitude, "SD:", stationData, "OB: ", sensor)
-        } catch(e){console.log(e)}
-      }, (error) => {
-        console.warn("MET.no has no observations for station of id: ", stationData.device_id)
-      }).catch((error) => console.error(error))
-    })
-  })
-}
-
 // outdated data.
 const API_URL_OD_COPENHAGEN_METEROLOGY = 'https://admin.opendata.dk/api/3/action/datastore_search?resource_id=315bf474-2fb1-49f1-8ae0-32c4b74e6b07'
 function fetchODCMet(){
@@ -514,103 +394,6 @@ function fetchODCMet(){
     // the location here is a "best guess using: https://www.opendata.dk/city-of-copenhagen/meteorologi"
     placeSensorDataMarker(55.0421, 12.03341, CMS)
   })
-}
-
-// Cross-reffed using: https://envs.au.dk/faglige-omraader/luftforurening-udledninger-og-effekter/overvaagningsprogrammet/maalestationer
-// and google maps,
-// with: https://envs2.au.dk/Luftdata/Presentation/table/Aarhus/AARH3
-// this list is not exhaustive, but includes the most important ones. 
-
-let AUStationLatLngs = new Map()
-let AUStationdevids = new Map()
-function setupAUStations() {
-  AUStationLatLngs.set("banegaardsgade", [56.150556, 10.200833]);
-  AUStationdevids.set("banegaardsgade", "AARH3"); // OK.
-  AUStationLatLngs.set("botaniskhave", [56.159573, 10.193892]); // botanisk have "AARH6". CANT BE IMPROVED
-  AUStationdevids.set("botaniskhave", "AARH6"); // OK.
-  //AUStationLatLngs.set("AARH4", [56.159509, 10.193597]) // valdemarsgade. An old one, the one they moved to botanisk have. "AARH4"
-
-  AUStationLatLngs.set("vesterbro", [57.052222, 9.917500]);
-  AUStationdevids.set("vesterbro", "AALB4"); // OK. 
-  AUStationLatLngs.set("oesterbro", [57.046667, 9.930833]);
-  AUStationdevids.set("oesterbro", "AALB5"); // OK. 
-
-  AUStationLatLngs.set("groennelykkevej", [55.397222, 10.366667]);
-  AUStationdevids.set("groennelykkevej", "ODEN6"); // OK.
-  AUStationLatLngs.set("raadhus", [55.396389, 10.389167]);
-  AUStationdevids.set("raadhus", "ODEN2"); // OK.
-
-  AUStationLatLngs.set("hcandersensboulevard", [55.675024, 12.569641]);
-  AUStationdevids.set("hcandersensboulevard", "HCAB"); // OK. 
-  AUStationLatLngs.set("hcoerstedinstitute", [55.7011638, 12.5586069]);
-  AUStationdevids.set("hcoerstedinstitute", "HCØ"); // OK. 
-  AUStationLatLngs.set("hvidovre", [55.631678, 12.462922]);
-  AUStationdevids.set("hvidovre", "HVID"); // OK. 
-  AUStationLatLngs.set("jagtvej", [55.6995582, 12.5536595]);
-  AUStationdevids.set("jagtvej", "JAGT1"); // OK. 
-
-  //------
-  AUStationLatLngs.set("anholt");
-  AUStationdevids.set("anholt", "ANHO");
-  AUStationLatLngs.set("foellesbjerg");
-  AUStationdevids.set("foellesbjerg", "FOEL");
-  AUStationLatLngs.set("risoe");
-  AUStationdevids.set("risoe", "RISOE");
-  AUStationLatLngs.set("ulborg");
-  AUStationdevids.set("ulborg", "ULBG");
-}
-setupAUStations();
-function fetchAARH(location) {
-  fetch('/AUluft/' + location)
-    .then(response => { return response.text() })
-    .then(string => {
-      // console.log("found a place")
-      let $table = $(string)
-      var header = [];
-      var rows = [];
-      
-      // build json headers from table headers. 
-      $table.find("thead th").each(function () {
-        // The format is made in html "correct" for Danish typing. 
-        // Convert to be usable in JSON. 
-        header.push($(this).html().trim()
-        .replace("Målt (starttid)", "time")
-        .replace("CO","co")
-        .replace("NO<sub>2</sub>", "no2")
-        .replace("NO<sub>X</sub>","nox")
-        .replace("PM<sub>10</sub> Teom", "mpx"));
-      });
-    
-      // convert each row of the table body to json entries.
-      $table.find("tbody tr").each(function () {
-        var row = {};
-        $(this).find("td").each(function (i) {
-            var key = header[i]
-            .replace("SO<sub>2</sub>", "so2")
-            .replace("O<sub>3</sub>", "o3")
-            .replace("PM<sub>2.5</sub> Teom","pm25"),
-            value = $(this).html().trim().replace(",",".")
-
-            row[key] = value;
-        });
-        rows.push(row);
-      });
-      let LM = rows[0]
-      // console.log("latest", LM)
-      // console.log("rows", rows)
-      // console.log("sending latlng: ", [AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1]])
-      // console.log("and sensor: ", LM)
-      sendPositionToDatabase(AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1],
-        aarhusUniversityAirqualitySensorFactory.create({device_id: AUStationdevids.get(location), latest: LM})
-      )     
-    })
-}
-function fetchAUSensor(){
-  fetchAARH("banegaardsgade")
-  fetchAARH("botaniskhave")
-  fetchAARH("hcandersensboulevard")
-  fetchAARH("oesterbro")
-  fetchAARH("vesterbro")
 }
 
 /*
@@ -796,14 +579,7 @@ let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor']
 }
 
 function fetchAll(){
-  new Promise((resolve, reject) => {
-    fetchDMI()
-    fetchMetNoAQ()
-    fetchSCK()
-    fetchWiFi()
-    fetchAUSensor()
-  })
-  .then(fetchDatabase())
+  fetchDatabase()
   .catch((error) => console.error(error))
   fetchGeojson()
   fetchSpeedTraps()
