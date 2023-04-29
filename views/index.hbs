@@ -107,7 +107,7 @@
 
 <form name="queryForm" class="queryForm" onsubmit="javascript:queryMap();">
 
-  <p> Fields </p>
+  <p> Fields to return </p>
   <select name="fields" id="fields" multiple>
     <option value="st_asgeojson(geometry) as geometry">Geometry</option>
     <option value="device_type">Device Type</option>
@@ -115,7 +115,7 @@
     <option value="*">Measurements</option>
   </select>
 
-  <p> Source </p>
+  <p> Source Layer </p>
   <select name="source" id="source" multiple>
     <!--option value="cityprobe2">cityprobe2</option-->
     <option value="dmisensor">dmisensor</option>

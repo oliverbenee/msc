@@ -1,0 +1,58 @@
+/**
+ * On mobile devices: Align tables and headers in the center. 
+ * Ensure, that there is some space between refresh button and measurement table.
+ */
+
+ @media 
+ only screen and (max-width: 760px)  {
+  
+    /* Align headers in the center for readability */
+    h1, h2 { text-align: center; }
+  
+    /* Align input fields in the center of the page */
+    /* For worker name...*/
+    input[type=text] {
+      width: 89%;
+      height: 1em;
+      padding: 12px;
+      margin: 8px 0;
+      box-sizing: border-box;
+    }
+  
+    /* Table headers serve no use on mobile tables */
+    .tableheader { display: none; }
+  
+    /* Force table to not be like tables anymore. Ensure, that too long words can be read in a new line.  */
+    table, thead, tbody, th, td, tr { 
+      display: block; 
+      word-wrap:break-word; 
+      empty-cells: hide;
+    }
+    
+    /* Hide table headers on mobile (but not display: none, as this gives bugs in css) */
+    thead tr { 
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+    
+    /* Each location is encapsulated as a table row. */
+    tr { border: 5px solid; }
+    td { 
+      /* Behave  like a "row" */
+      border: none;
+      position: relative;
+      padding-left: 50%; 
+      empty-cells: hide;
+    }
+    td:before { 
+      /* Now like a table header */
+      position: absolute;
+      /* Top/left values mimic padding */
+      top: 6px;
+      left: 6px;
+      width: 45%; 
+      padding-right: 10px; 
+      white-space: normal;
+    }
+ }
