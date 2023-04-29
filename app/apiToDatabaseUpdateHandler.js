@@ -285,6 +285,3 @@ function fetchAll(){
 setInterval(() => {
   fetchAll()
 }, 60000)
-
-// WFL works
-// SCK works
