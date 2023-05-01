@@ -284,4 +284,4 @@ function fetchAll(){
 
 setInterval(() => {
   fetchAll()
-}, 60000)
+}, 600000)
