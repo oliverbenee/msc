@@ -5,3 +5,8 @@ html, body, #map{
   /*height: 100%;*/
   width: 97vw;
 }
+
+/* Set map size. */
+#map{
+  height: 650px;
+}

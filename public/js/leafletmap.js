@@ -1,17 +1,9 @@
 'use strict';
-import {
-  DMIFreeDataSensorFactory, SmartCitizenKitFactory, WiFiRouterFactory, NullSensorFactory, 
-  SensorOptions, MetNoAirQualitySensorFactory, CopenhagenMeterologySensorFactory, AarhusUniversityAirqualitySensorFactory
-} from './sensorNodeFactory.js'
+import { NullSensorFactory, SensorOptions, CopenhagenMeterologySensorFactory } from './sensorNodeFactory.js'
 let sensorOptions = new SensorOptions()
 //let cityProbe2Factory = new CityProbe2Factory();
-let dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory();
-let smartCitizenKitFactory = new SmartCitizenKitFactory();
-let wiFiRouterFactory = new WiFiRouterFactory();
 let nullSensorFactory = new NullSensorFactory();
-let metNoAirQualitySensorFactory = new MetNoAirQualitySensorFactory();
 let copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory();
-let aarhusUniversityAirqualitySensorFactory = new AarhusUniversityAirqualitySensorFactory();
 
 let openStreetMapTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -252,10 +244,9 @@ function placeSensorDataMarker(lat, lng, sensor){
     iconAnchor: [8, 8], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
   
-  // check if the marker exists. if it does, just update it, and block the dupe check from running. 
+  // check if the marker exists at target position. If we find a marker at that position, update it instead of making a new one.
   // We have to do it like this, because js doesn't let us return out of a foreach loop.
   let isUpdated = false
-  // if we find a marker at that position, update it instead of making a new one. 
   markerlayers.forEach((ML) => { 
     ML.eachLayer((layer) => { 
       if(layer instanceof L.Marker){
