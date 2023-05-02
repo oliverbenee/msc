@@ -261,9 +261,7 @@ const getFields = (request, response) => {
   if(params.orderSource && params.orderType){ 
     q.orderBy(`${params.source[0]}.${params.orderSource}`, `${params.orderType}`)
   }
-  if(params.limit){
-    q.limit(10)
-  }
+  if(params.limit){q.limit(params.limit)}
 
   console.log("STATEMENTS.")
   console.log(q._statements)
