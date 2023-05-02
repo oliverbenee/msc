@@ -218,31 +218,31 @@ var requestOptions = {
 };
 
 const API_URL_AULUFTDATA = "https://envs2.au.dk/Luftdata/Presentation/table/MainTable/"
-router.get('/AUluft/banegaardsgade', (req, res) => {
+router.get('/AUluft/banegaardsgade', cache(3600), (req, res) => {
   fetch(API_URL_AULUFTDATA + "Aarhus/AARH3", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
     .catch(error => console.log('error', error));
 })
-router.get('/AUluft/botaniskhave', (req, res) => {
+router.get('/AUluft/botaniskhave', cache(3600), (req, res) => {
   fetch(API_URL_AULUFTDATA + "Aarhus/AARH6", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
     .catch(error => console.log('error', error));
 })
-router.get('/AUluft/hcandersensboulevard', (req, res) => {
+router.get('/AUluft/hcandersensboulevard', cache(3600), (req, res) => {
   fetch(API_URL_AULUFTDATA + "Copenhagen/HCAB", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
     .catch(error => console.log('error', error))
 })
-router.get('/AUluft/oesterbro', (req, res) => {
+router.get('/AUluft/oesterbro', cache(3600), (req, res) => {
   fetch(API_URL_AULUFTDATA + "Aalborg/AALB5", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
     .catch(error => console.log('error', error))
 })
-router.get('/AUluft/vesterbro', (req, res) => {
+router.get('/AUluft/vesterbro', cache(3600), (req, res) => {
   fetch(API_URL_AULUFTDATA + "Aalborg/AALB4", requestOptions)
     .then(response => response.text())
     .then(result => res.send(result))
@@ -250,14 +250,14 @@ router.get('/AUluft/vesterbro', (req, res) => {
 })
 
 const API_URL_METNO_AIRQUALITYFORECAST = 'https://api.met.no/weatherapi/airqualityforecast/0.1/'
-router.get('/metno/stations', (req, res) => {
+router.get('/metno/stations', cache(3600), (req, res) => {
   fetch(API_URL_METNO_AIRQUALITYFORECAST + 'stations')
     .then(response => response.json())
     .then(result => res.send(result))
     .catch(error => console.log('error', error))
 })
 
-router.get('/metno/:station', (req, res) => {
+router.get('/metno/:station', cache(3600), (req, res) => {
   let stationId = req.params.station
   fetch(API_URL_METNO_AIRQUALITYFORECAST + 'met?station=' + stationId)
     .then(response => response.json())
