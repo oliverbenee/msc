@@ -308,26 +308,6 @@ function placeSensorDataMarker(lat, lng, sensor){
   }
 }
 
-function sendPositionToDatabase(lat, lng, sensor){
-  fetch('/locations', {
-    method: 'POST',
-    headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ "coordinates": "POINT(" + lat + " " + lng + ")", "json": JSON.stringify(sensor) })
-  })
-  .then(response => {
-    // 400 and 500 are bad.
-    if(response.status == 500){
-      console.error("failed to send to database", response.json())
-    }
-    if(response.status == 200){
-
-    }
-  })
-}
-
 /*
  * FETCH DATA FROM APIs. 
  */
