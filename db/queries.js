@@ -246,9 +246,9 @@ const getFields = (request, response) => {
     const element = params.fields[FL];
     if(element == "geometry"){ // force geometry into geojson format.
       q.select(st.asGeoJSON('geometry')) // https://github.com/jfgodoy/knex-postgis/blob/master/tests/functions.js
-    } else {
-      q.select(element)
-    }
+    } else if(element == "st_x"){q.select(st.x('geometry'))} 
+    else if(element == "st_y"){q.select(st.y('geometry'))}
+    else {q.select(element)}
   }
 
   for (let i=0; i<params.source.length; i++) {

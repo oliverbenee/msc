@@ -11,7 +11,8 @@ app.set('view engine', '.hbs')
 app.engine('.hbs', exphbs.engine({
   defaultLayout: 'main',
   extname: '.hbs', // Shorten handlebars file name.
-  layoutsDir: `${__dirname}/../views/layouts`
+  layoutsDir: `${__dirname}/../views/layouts`, // allow use of layouts, when specified with res.render.
+  partialsDir: `${__dirname}/../views/partials` // allow use of partials automatically from 'views/partials'
 }))
 
 app.use(express.static(`${__dirname}/../public`)) // serve static webpages. Use content from the public folder.
