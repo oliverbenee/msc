@@ -696,6 +696,7 @@ function getSelect(selectId){
  */
 
 let queryLayer = L.layerGroup();
+let isQlayerAdded = false;
 
 function queryMap(){
   let fields = getSelect("fields")
@@ -734,34 +735,39 @@ function queryMap(){
         // Clear query layer.
         queryLayer.clearLayers()
 
+        var isGeometry = false
         // show on map if geometry is selected.
         if (data[0].geometry) {
+          try {
           data.forEach((elem) => {
             console.log(elem)
             let parsedObject = JSON.parse(elem.geometry)
             console.log("element", elem)
-            console.log("parsedObject", parsedObject)
-            var newmarker = L.geoJSON(parsedObject, {
-                pointToLayer: function (feature, latlng) {
-                  return L.circleMarker(latlng, {
-                    radius: 8,
-                    fillColor: "#ff7800",
-                    color: "#000",
-                  }).addTo(map)
-                },
-                coordsToLatLng: function (coords) {
-                  return new L.LatLng(coords[0], coords[1], coords[2]);
-                }
-              })
-              .on('click', () => {
-                sidebar.setContent(getPopupTableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], elem)).show()
-              })
-              //.bindPopup(tableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], elem))
-              .addTo(queryLayer)
+            var newmarker = L.geoJSON(parsedObject, { 
+              pointToLayer: function (feature, latlng) { 
+                return L.circleMarker(latlng, { 
+                  radius: 8, 
+                  fillColor: "#ff7800", 
+                  color: "#000"
+                })
+              }, 
+              coordsToLatLng: function (coords) {
+                return new L.LatLng(coords[0], coords[1], coords[2]); 
+              }
+            })
+            .on('click', () => {
+              sidebar.setContent(getPopupTableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], elem)).show()
+            })
+            .addTo(queryLayer)
+            isGeometry = true
           })
+          } catch(e){console.warn("Error for selected layers.", e)}
         }
 
-        control.addOverlay(queryLayer, "Query Results", "SQL")
+        if (isGeometry && !isQlayerAdded) { 
+          control.addOverlay(queryLayer, "Query Results", "SQL")
+          isQlayerAdded = true
+       }
       })
     } else {
       console.error(response.statusText)
