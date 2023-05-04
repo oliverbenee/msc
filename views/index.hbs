@@ -101,11 +101,11 @@
 
 <form name="queryForm" class="queryForm" onsubmit="javascript:queryMap();">
   <p> Source Layer </p>
-  {{>sources}}
+  {{>sources}} <!-- automatically selected from partials folder. -->
   <p> Method: SELECT </p>
   <p> Columns </p>
   <select name="fields" id="fields" multiple>
-    <option value="st_asgeojson(geometry) as geometry">Geometry</option>
+    <option value="geometry">Geometry</option>
     <option value="device_type">Device Type</option>
     <option value="locations.device_id">Device ID</option>
     <option value="*">Measurements</option>
