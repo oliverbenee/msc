@@ -701,7 +701,9 @@ let isQlayerAdded = false;
 function queryMap(){
   let fields = getSelect("fields")
   let source = getSelect("source")
-  let clause = document.getElementById("clause").value
+  let clause_column = document.getElementById("clauseColumn").value
+  let clause_param = getSelect("parameterSelect")[0]
+  let clause_value = parseFloat(document.getElementById("clauseValue").value)
   let orderSource = getSelect("orderSource")
   let orderType = getSelect("orderType")
   let limit = document.getElementById("inputLimit").value
@@ -709,7 +711,11 @@ function queryMap(){
   let QueryParams = {
     fields: fields,
     source: source,
-    clause: clause,
+
+    clause_column: clause_column,
+    clause_param: clause_param,
+    clause_value: clause_value,
+
     orderSource: orderSource,
     orderType: orderType,
     limit: limit

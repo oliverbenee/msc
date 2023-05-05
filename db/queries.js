@@ -255,9 +255,9 @@ const getFields = (request, response) => {
   }
   //-----------------------------------------------------------------------------
 
-  if(params.clause){
+  if(params.clause_column && params.clause_param && params.clause_value){
+    q.where(params.clause_column, params.clause_param, params.clause_value)
     //q.where(params.clause.replace('%3D',' ='))
-    console.log(params.clause)
   }
 
   //-----------------------------------------------------------------------------
