@@ -229,15 +229,14 @@ function createLocationFromBackend(object){
 const getFields = (request, response) => {
   console.log("----------------------------------------------------------------")
   let params = request.body.data
-
   console.log("FORM:")
   console.log(params)
-
   // No query inserted or the form wasn't filled correctly. Basic form checking. 
   if(Object.keys(params).length === 0){
     console.log("no params")
     return response.status(400).send("no params");
   }
+  // ----------------------------------------------------------------------------
 
   var q = knex('locations')
   .withSchema('public')
@@ -254,10 +253,14 @@ const getFields = (request, response) => {
   for (let i=0; i<params.source.length; i++) {
     q.leftJoin(params.source[i], `${params.source[i]}.device_id`, '=', 'locations.device_id')
   }
+  //-----------------------------------------------------------------------------
+
   if(params.clause){
     //q.where(params.clause.replace('%3D',' ='))
     console.log(params.clause)
   }
+
+  //-----------------------------------------------------------------------------
   if(params.orderSource && params.orderType){ 
     q.orderBy(`${params.source[0]}.${params.orderSource}`, `${params.orderType}`)
   }
