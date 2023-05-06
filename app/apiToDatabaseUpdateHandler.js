@@ -25,12 +25,12 @@ let dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory()
 function getInsertTemplate(lat, lng, sensor){
   return {"coordinates": "POINT(" + lat + " " + lng + ")", "json": sensor}
 }
-// FETCH ALL API's. INSERT THE DATA INTO THE DB. 
 function sendPositionToDatabase(lat, lng, sensor){
   db.createLocationFromBackend(getInsertTemplate(lat, lng, sensor))
 }
 
 function fetchDMIFreeData(urls) {
+  // use map() to perform a fetch and handle the response for each url
   Promise.all(urls.map(url =>
     axios.get(url)
     .then(response => {return response.data})
@@ -38,7 +38,6 @@ function fetchDMIFreeData(urls) {
   .then((values) => {
     console.log("done fetching. ")
     console.log(values)
-    //console.log(values)
     // locations.
     let locationFeatures = values[0].features
     // sensor data.
@@ -66,9 +65,7 @@ function fetchDMIFreeData(urls) {
 async function fetchDMI() {
   console.log("begin updating dmi sensors")
   const metobsUrls = ['/dmi/list/metobs', '/dmi/obs/metobs']
-  // // use map() to perform a fetch and handle the response for each url
   fetchDMIFreeData(metobsUrls);
-    //console.log("No of empty observation stations: ", noOfEmptyObservationStations)
   const oceanobsUrls = ['/dmi/list/oceanobs', 'dmi/obs/oceanobs']
   fetchDMIFreeData(oceanobsUrls)
 }
@@ -110,7 +107,6 @@ async function fetchWiFi(){
 async function fetchMetNoAQ() {
   axios.get('/metno/stations')
   .then(values => {
-    // console.log(values)
     let locationFeatures = values.data
     locationFeatures.forEach(feature => {
       let stationData = {
@@ -123,10 +119,8 @@ async function fetchMetNoAQ() {
       axios.get(`/metno/${stationData.device_id}`)
       .then(response => response.json())
       .then((res) => {
-        // console.log("--------------------------------")
         var finalStationData = stationData
         let observations = res.data.time[0].variables
-        // console.log("observations:", observations)
         // un-nest JSON.
         try {
         for (const key in observations) {
@@ -193,8 +187,6 @@ function fetchAARH(location) {
   console.log("fetchaarh")
   axios.get('/AUluft/' + location)
     .then(string => {
-      console.log("foundaarh")
-      // console.log("found a place")
       let $table = $(string.data)
       var header = [];
       var rows = [];
@@ -229,7 +221,6 @@ function fetchAARH(location) {
         rows.push(row);
       });
       let LM = rows[0]
-      // console.log("rows", rows)
       console.log("sending latlng: ", [AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1]])
       console.log("and latest: ", LM)
       sendPositionToDatabase(AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1], aarhusUniversityAirqualitySensorFactory.create({device_id: AUStationdevids.get(location), latest: LM}))  

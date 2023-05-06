@@ -266,3 +266,5 @@ router.get('/metno/:station', cache(3600), (req, res) => {
 })
 
 module.exports.router = router;
+
+// TODO: https://data.sensor.community/airrohr/v1/filter/country=DK
