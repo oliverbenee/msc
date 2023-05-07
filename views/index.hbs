@@ -112,17 +112,20 @@
   </select>
 
   <p> Clauses </p>
-  Column <input type="text" id="clauseColumn" name="clauseColumn">
+  <table align="center">
+    <tr><td>Column</td><td><input type="text" id="clauseColumn" name="clauseColumn"></td></tr>
+    <tr><td>Parameter</td><td>
+      <select name="parameter" id="parameterSelect" width="20em">
+        <option value=">">Greater than </option>
+        <option value="<">Less than </option>
+        <option value="=">Equal to </option>
+        <option value="=>">Less than or equal to</option>
+        <option value="<=">Greater than or equal to </option>
+      </select>
+    </td></tr>
+    <tr><td>Column value</td><td><input type="number" id="clauseValue" width="20em"></td></tr>
+  </table>
 
-  <select name="parameter" id="parameterSelect" width="20em">
-    <option value=">">Greater than </option>
-    <option value="<">Less than </option>
-    <option value="=">Equal to </option>
-    <option value="=>">Less than or equal to</option>
-    <option value="<=">Greater than or equal to </option>
-  </select>
-  Column value <input type="number" id="clauseValue">
-  </select>
 
   <p> Order by </p>
   <select class="orderSelect" name="orderSource" id="orderSource">
