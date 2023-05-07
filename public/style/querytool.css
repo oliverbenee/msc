@@ -46,7 +46,7 @@ form.queryForm {
   /* Center the form onto the page itself */
   margin: 0 auto;
   /* Ensure, that the form fits all devices */
-  width: 66%;
+  width: 60%;
   /* Ensures the outline of the form is visible. */
   padding: 1em;
   background-color: rgba(120, 120, 120, 0.5);
