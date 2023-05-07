@@ -91,7 +91,6 @@ var control = L.Control.geocoder({
 function getPopupTableHTML(lat, lng, sensor){
   const loc = `<table><thead><tr><th>(${lat},${lng})</tr></th></thead><tbody>`
   var tableListOutput;
-  //console.log(sensor)
   Object.entries(sensor).forEach(([key, value]) => {
       if(key == "json"){
         tableListOutput += "<tr><td>------------json--------------</td></tr>"
@@ -131,25 +130,6 @@ var SafeCast = L.tileLayer('https://s3.amazonaws.com/te512.safecast.org/{z}/{x}/
 	maxZoom: 16,
 	attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://blog.safecast.org/about/">SafeCast</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 });
-let OpenWeatherMap_API_KEY ='<insert your api key here>'
-var OpenWeatherMap_Clouds = L.tileLayer('http://{s}.tile.openweathermap.org/map/clouds/{z}/{x}/{y}.png?appid={apiKey}', {
-	maxZoom: 19,
-	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
-	apiKey: OpenWeatherMap_API_KEY,
-	opacity: 0.5
-});
-var OpenWeatherMap_Pressure = L.tileLayer('http://{s}.tile.openweathermap.org/map/pressure/{z}/{x}/{y}.png?appid={apiKey}', {
-	maxZoom: 19,
-	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
-	apiKey: OpenWeatherMap_API_KEY,
-	opacity: 0.5
-});
-var OpenWeatherMap_Wind = L.tileLayer('http://{s}.tile.openweathermap.org/map/wind/{z}/{x}/{y}.png?appid={apiKey}', {
-	maxZoom: 19,
-	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
-	apiKey: OpenWeatherMap_API_KEY,
-	opacity: 0.5
-});
 
 // let mbapik = pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ
 let basemaps = {
@@ -173,7 +153,7 @@ var markerClusterGroupingTool = L.markerClusterGroup({
   removeOutsideVisibleBounds: true,
   spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
 })
-markers.addLayer(markerClusterGroupingTool) // A little cheat, that lets us ignore the layers control. 
+markers.addLayer(markerClusterGroupingTool) // This lets us ignore the layers control. 
 
 let dmiLayer = L.layerGroup()
 //let cityprobe2layer = L.layerGroup()
@@ -209,7 +189,6 @@ let overlaysObj = {
   }
 }
 var control = L.control.groupedLayers(basemaps, overlaysObj, { groupCheckboxes: true }).addTo(map);
-// add scalebar in meter to the map
 L.control.scale({metric: true}).addTo(map);
 
 // From: https://leafletjs.com/examples/zoom-levels/example-setzoom.html
