@@ -27,7 +27,7 @@ router.get('/locations/metno', db.getMetNo)
 router.get('/locations/ausensor', db.getAUSensor)
 
 router.get('/locations/:id', db.getLocationById)
-router.post('/locations', db.createLocation)
+//router.post('/locations', db.createLocation)
 router.delete('/locations/:id', db.deleteLocation)
 router.purge('/locations', db.nukeTable)
 

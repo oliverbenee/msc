@@ -31,6 +31,7 @@ exports.up = function (knex) {
           table.float("sun", 5)
           table.integer("visibility")
           table.json("json")
+          table.unique(['device_id', "time"], {useConstraint: true})
         })
     }
   })
@@ -52,6 +53,7 @@ exports.up = function (knex) {
           table.float("mPX", 5)
           table.float("eCO2", 5)
           table.float("TVOC", 5)
+          table.unique(["device_id", "time"], {useConstraint: true})
         })
     }
   })
@@ -78,9 +80,7 @@ exports.up = function (knex) {
     if (!exists) {
       knex.schema
         .createTableIfNotExists("metdotno", table => {
-          table.string('device_id').unique({
-            useConstraint: true
-          })
+          table.string('device_id')
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
           table.timestamp("time").defaultTo(knex.fn.now())
           table.varchar('name')
@@ -93,6 +93,7 @@ exports.up = function (knex) {
           table.float("p", 5)
           table.float("precip", 5)
           table.json("json")
+          table.unique(["device_id", "time"], {useConstraint: true})
         })
     }
   })
@@ -101,9 +102,7 @@ exports.up = function (knex) {
     if (!exists) {
       knex.schema
         .createTableIfNotExists("ausensor", table => {
-          table.string('device_id').unique({
-            useConstraint: true
-          })
+          table.string('device_id')
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
           table.timestamp("time").defaultTo(knex.fn.now())
           table.float("no2", 5)
@@ -113,6 +112,7 @@ exports.up = function (knex) {
           table.float("mp2", 5)
           table.float("mpx", 5)
           table.json("json")
+          table.unique(["device_id", "time"], {useConstraint: true})
         })
     }
   })

@@ -36,8 +36,8 @@ function fetchDMIFreeData(urls) {
     .then(response => {return response.data})
   ))
   .then((values) => {
-    console.log("done fetching. ")
-    console.log(values)
+    // console.log("done fetching. ")
+    // console.log(values)
     // locations.
     let locationFeatures = values[0].features
     // sensor data.
@@ -55,7 +55,7 @@ function fetchDMIFreeData(urls) {
       var hasFeatures = featuresForThatSensor.length != 0
       if (hasFeatures) {
         featuresForThatSensor.stationType = stationType
-        console.log("params: ", featuresForThatSensor)
+        // console.log("params: ", featuresForThatSensor)
         sendPositionToDatabase(latitude, longitude, dmiFreeDataSensorFactory.create(featuresForThatSensor))
       }
     })
@@ -74,7 +74,7 @@ async function fetchSCK(){
   axios.get('/scklocations')
   .then(response => {return response.data})
   .then((list) => {
-    console.log(`Found ${list.length} elements`)
+    // console.log(`Found ${list.length} elements`)
     list.forEach((kit) => {
     try {
       if (kit.system_tags.indexOf("offline") !== -1) {
@@ -83,10 +83,10 @@ async function fetchSCK(){
         let device = smartCitizenKitFactory.create(kit)
         sendPositionToDatabase(latitude, longitude, device)
       } else {
-        console.log("Found dead sensor.")
+        // console.log("Found dead sensor.")
       }
     } catch (e) { 
-      console.log("skipping a sensor without data.", e) 
+      // console.log("skipping a sensor without data.", e) 
     }
   })
   })
@@ -184,7 +184,7 @@ function setupAUStations() {
 }
 setupAUStations();
 function fetchAARH(location) {
-  console.log("fetchaarh")
+  // console.log("fetchaarh")
   axios.get('/AUluft/' + location)
     .then(string => {
       let $table = $(string.data)
@@ -221,8 +221,8 @@ function fetchAARH(location) {
         rows.push(row);
       });
       let LM = rows[0]
-      console.log("sending latlng: ", [AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1]])
-      console.log("and latest: ", LM)
+      // console.log("sending latlng: ", [AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1]])
+      // console.log("and latest: ", LM)
       sendPositionToDatabase(AUStationLatLngs.get(location)[0], AUStationLatLngs.get(location)[1], aarhusUniversityAirqualitySensorFactory.create({device_id: AUStationdevids.get(location), latest: LM}))  
     })
     .catch((error) => {console.error("fetch: " + location, error)})
@@ -236,7 +236,7 @@ function fetchAUSensor(){
 }
 
 function tableToJson(table) {
-  console.log(table)
+  // console.log(table)
   var rows = table.rows;
   var propCells = rows[0].cells.toString();
   var propNames = [];
