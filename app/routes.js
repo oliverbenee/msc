@@ -42,16 +42,16 @@ var mcache = require('memory-cache')
 // https://medium.com/the-node-js-collection/simple-server-side-cache-for-express-js-with-node-js-45ff296ca0f0
 // Data caching. Time is in seconds.
 var cache = (duration) => { 
-  console.log("checking cache")
+  //console.log("checking cache")
   return (req, res, next) => {
     let key = '__express__' + (req.originalUrll || req.url) + req.body
     let cachedbody = mcache.get(key)
     if(cachedbody) {
       res.send(cachedbody)
-      console.log("sent cached data")
+      //console.log("sent cached data")
       return
     } else {
-      console.log("no cache found")
+      //console.log("no cache found")
       res.sendResponse = res.send
       res.send = (body) => {
         mcache.put(key, body, duration*1000)
