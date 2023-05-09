@@ -6,18 +6,19 @@ exports.up = function (knex) {
   knex.schema.hasTable("locations").then((exists) => {
     if (!exists) {
       knex.schema
-        .createTableIfNotExists("locations", table => {
+        .createTable("locations", table => {
           table.specificType("geometry", "geometry(point, 4326)")
           table.string('device_type')
           table.string('device_id').primary()
         })
+        .then(console.log("created locations if it didn't exist. "))
     }
   })
   
   knex.schema.hasTable("dmisensor").then((exists) => {
     if (!exists) {
       knex.schema
-        .createTableIfNotExists("dmisensor", table => {
+        .createTable("dmisensor", table => {
           table.string('device_id') //.unique({ useConstraint: true })
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
           table.timestamp("time").defaultTo(knex.fn.now())
@@ -33,13 +34,14 @@ exports.up = function (knex) {
           table.json("json")
           table.unique(['device_id', "time"], {useConstraint: true})
         })
+        .then(console.log("created dmisensor if it didn't exist. "))
     }
   })
   
   knex.schema.hasTable("smartcitizen").then((exists) => {
     if (!exists) {
       knex.schema
-        .createTableIfNotExists("smartcitizen", table => {
+        .createTable("smartcitizen", table => {
           table.string('device_id') //.unique({ useConstraint: true })
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
           table.timestamp("time").defaultTo(knex.fn.now())
@@ -55,13 +57,14 @@ exports.up = function (knex) {
           table.float("TVOC", 5)
           table.unique(["device_id", "time"], {useConstraint: true})
         })
+        .then(console.log("created smartcitizen if it didn't exist. "))
     }
   })
   
   knex.schema.hasTable("wifilocations").then((exists) => {
     if (!exists) {
       knex.schema
-        .createTableIfNotExists("wifilocations", table => {
+        .createTable("wifilocations", table => {
           table.string('device_id').unique({
             useConstraint: true
           })
@@ -73,13 +76,14 @@ exports.up = function (knex) {
           table.varchar("department")
           table.varchar("houseno")
         })
+        .then(console.log("created wifilocations if it didn't exist. "))
     }
   })
   
   knex.schema.hasTable("metdotno").then((exists) => {
     if (!exists) {
       knex.schema
-        .createTableIfNotExists("metdotno", table => {
+        .createTable("metdotno", table => {
           table.string('device_id')
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
           table.timestamp("time").defaultTo(knex.fn.now())
@@ -95,13 +99,14 @@ exports.up = function (knex) {
           table.json("json")
           table.unique(["device_id", "time"], {useConstraint: true})
         })
+        .then(console.log("created metdotno if it didn't exist. "))
     }
   })
   
   knex.schema.hasTable("ausensor").then((exists) => {
     if (!exists) {
       knex.schema
-        .createTableIfNotExists("ausensor", table => {
+        .createTable("ausensor", table => {
           table.string('device_id')
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
           table.timestamp("time").defaultTo(knex.fn.now())
@@ -114,8 +119,10 @@ exports.up = function (knex) {
           table.json("json")
           table.unique(["device_id", "time"], {useConstraint: true})
         })
+        .then(console.log("created ausensor if it didn't exist. "))
     }
   })
+  console.log("all done.")
 
   /*
   .createTableIfNotExists("cityprobe2", table => {
