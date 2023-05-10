@@ -115,10 +115,11 @@ async function fetchMetNoAQ() {
         height: feature.height,
         municipality: feature.kommune.name
       }
-
+      console.log("new station ", stationData.device_id)
       axios.get(`/metno/${stationData.device_id}`)
       .then(response => {return response.data})
       .then((res) => {
+        //console.log("response for station ", stationData.device_id)
         var finalStationData = stationData
         let observations = res.data.time[0].variables
         // un-nest JSON.
