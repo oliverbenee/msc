@@ -222,7 +222,7 @@ function createLocationFromBackend(object){
         json: json.jsonmap}
       knex('metdotno')
       .insert(obj)
-      .onConflict(['device_id', 'time']).merge(obj)
+      .onConflict(['device_id', 'time']).merge()
       .then(() => {console.log("inserted into metdotno")})
     } else if(json.sensorSource == "Aarhus Universitet"){
       let obj = {device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.mp2, mpx: json.mpx, json: json.jsonmap}

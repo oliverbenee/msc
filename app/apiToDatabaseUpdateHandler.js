@@ -117,7 +117,7 @@ async function fetchMetNoAQ() {
       }
 
       axios.get(`/metno/${stationData.device_id}`)
-      .then(response => response.json())
+      .then(response => {return response.data})
       .then((res) => {
         var finalStationData = stationData
         let observations = res.data.time[0].variables
@@ -134,8 +134,8 @@ async function fetchMetNoAQ() {
         //console.log("lat: ", feature.latitude, "lng: ", feature.longitude, "SD:", stationData, "OB: ", sensor)
         } catch(e){console.log(e)}
       }, (error) => {
-        console.warn("MET.no has no observations for station of id: ", stationData.device_id)
-      }).catch((error) => console.error(error))
+        //console.warn("MET.no has no observations for station of id: ", stationData.device_id)
+      }).catch((error) => {/*console.error(error)*/})
     })
   })
 }
@@ -272,6 +272,7 @@ function fetchAll(){
   fetchMetNoAQ()
   fetchAUSensor()
 }
+fetchAll()
 
 setInterval(() => {
   fetchAll()

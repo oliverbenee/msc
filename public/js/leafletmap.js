@@ -585,7 +585,7 @@ map.on('draw:created', (event) => {
     getMarkers(layer.getBounds())
   }
   drawnItems.addLayer(layer);
-  console.log(layer)
+  //console.log(layer)
 });
 
 function getMarkers(bounds){
@@ -699,6 +699,8 @@ function queryMap(){
     orderType: orderType,
     limit: limit
   }
+
+  console.log(QueryParams)
 
   fetch('/locations', {
     method: 'PUT',
