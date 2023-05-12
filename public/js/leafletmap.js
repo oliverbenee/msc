@@ -1,5 +1,5 @@
 'use strict';
-import { NullSensorFactory, SensorOptions, CopenhagenMeterologySensorFactory } from './sensorNodeFactory.js'
+import { NullSensorFactory, SensorOptions, CopenhagenMeterologySensorFactory } from '../sensornodefactory/sensorNodeFactory.js'
 let sensorOptions = new SensorOptions()
 //let cityProbe2Factory = new CityProbe2Factory();
 let nullSensorFactory = new NullSensorFactory();
