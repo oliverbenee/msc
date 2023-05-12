@@ -50,7 +50,7 @@ iconMap.set("MET.no air quality sensor", "img/met_no.png")
 iconMap.set("Instruments from HC Oersted Institute", "img/kobkomm.jpg")
 iconMap.set("AU air quality sensor", "img/au_logo.png")
 
-class CityLabSensor {
+export class CityLabSensor {
   constructor(options){
     this.device_id = options.device_id || 7
     this.device_type = "CityLab"
@@ -67,7 +67,7 @@ class CityLabSensor {
   }
 }
 
-class CityProbeSensor {
+export class CityProbeSensor {
   constructor(options) {
     this.sensorSource="OpenData Aarhus"
     this.device_type="CityProbe"
@@ -91,7 +91,7 @@ class CityProbeSensor {
   UPDATE 18-04-2023:
   Unfortunately, it appears, that the founders of Montem A/S has shut down their business. 
   The code here is preserved for documentation purposes. 
-class CityProbe2Sensor { 
+export class CityProbe2Sensor { 
   // Translation for values found at:
   // https://docs.cityflow.live/#get-device-types
   // GET https://api.cityflow.live/devices/types
@@ -136,14 +136,14 @@ class CityProbe2Sensor {
   }
 }
 
-class CityProbe2Factory {
+export class CityProbe2Factory {
   create(options){
     return new CityProbe2Sensor(options)
   }
 }
 */
 
-class DMIFreeDataSensor { 
+export class DMIFreeDataSensor { 
   constructor(options){    
     this.sensorSource="DMI"
     // This looks really stupid, but doing this lets us just copy fields into the sensor afterwards.
@@ -206,14 +206,14 @@ class DMIFreeDataSensor {
   }
 }
 
-function average(array) {
+export function average(array) {
   let AL = array.length-1
   let sum = array.reduce((acc, cv) => {return acc += cv}, 0)
   let avg = (sum/AL) || 0
   return avg;
 }
 
-class DMIFreeDataSensorFactory {
+export class DMIFreeDataSensorFactory {
   create(options){
     return new DMIFreeDataSensor(options)
   }
@@ -221,7 +221,7 @@ class DMIFreeDataSensorFactory {
 
 const NULL = null
 
-class SmartCitizenKitDevice {
+export class SmartCitizenKitDevice {
   constructor(options){
     this.sensorSource = "SmartCitizen"
     this.device_type = options.kit.name
@@ -271,13 +271,13 @@ class SmartCitizenKitDevice {
   }
 }
 
-class SmartCitizenKitFactory {
+export class SmartCitizenKitFactory {
   create(options){
     return new SmartCitizenKitDevice(options)
   }
 }
 
-class WiFiRouterLocation {
+export class WiFiRouterLocation {
   constructor(options){
     this.sensorSource = "Open Data Aarhus WiFi Routers"
     this.device_type = "WiFi router"
@@ -291,13 +291,13 @@ class WiFiRouterLocation {
   }
 }
 
-class WiFiRouterFactory {
+export class WiFiRouterFactory {
   create(options) {
     return new WiFiRouterLocation(options)
   }
 }
 
-class NullSensor {
+export class NullSensor {
   constructor(options){
     this.sensorSource="null"
     this.device_type = "null"
@@ -310,13 +310,13 @@ class NullSensor {
   }
 }
 
-class NullSensorFactory {
+export class NullSensorFactory {
   create(options){
     return new NullSensor()
   }
 }
 
-class SensorOptions {
+export class SensorOptions {
   getRangeMap(key){
     return rangeMap.get(key);
   }
@@ -328,7 +328,7 @@ class SensorOptions {
   }
 }
 
-class MetNoAirQualitySensor {
+export class MetNoAirQualitySensor {
   constructor(options){
     this.sensorSource = "MET.no"
     //console.log("OPT", options)
@@ -359,13 +359,13 @@ class MetNoAirQualitySensor {
   }
 }
 
-class MetNoAirQualitySensorFactory {
+export class MetNoAirQualitySensorFactory {
   create(options){
     return new MetNoAirQualitySensor(options)
   }
 }
 
-class AarhusUniversityAirqualitySensor {
+export class AarhusUniversityAirqualitySensor {
   constructor(options){
     //console.log("OPT", options)
     this.sensorSource = "Aarhus Universitet"
@@ -386,14 +386,14 @@ class AarhusUniversityAirqualitySensor {
   }
 }
 
-class AarhusUniversityAirqualitySensorFactory {
+export class AarhusUniversityAirqualitySensorFactory {
   create(options){
     return new AarhusUniversityAirqualitySensor(options)
   }
 }
 
 // https://www.opendata.dk/city-of-copenhagen/meteorologi#resource-hc-oersted-institutet-meteorologi.csv
-class CopenhagenMeterologySensor {
+export class CopenhagenMeterologySensor {
   constructor(options){
     console.log("OPTIONS", options)
 
@@ -424,11 +424,12 @@ class CopenhagenMeterologySensor {
   }
 }
 
-class CopenhagenMeterologySensorFactory {
+export class CopenhagenMeterologySensorFactory {
   create(options){
     return new CopenhagenMeterologySensor(options)
   }
 }
+
 
 function test(){
   const sensorfactory = new SensorFactory();
@@ -459,20 +460,3 @@ function test(){
 }
 //test();
 
-module.exports = {
-  DMIFreeDataSensor,
-  DMIFreeDataSensorFactory,
-  SmartCitizenKitDevice,
-  SmartCitizenKitFactory,
-  WiFiRouterLocation,
-  WiFiRouterFactory,
-  NullSensor,
-  NullSensorFactory,
-  SensorOptions,
-  MetNoAirQualitySensor,
-  MetNoAirQualitySensorFactory,
-  AarhusUniversityAirqualitySensor,
-  AarhusUniversityAirqualitySensorFactory,
-  CopenhagenMeterologySensor,
-  CopenhagenMeterologySensorFactory  
-}

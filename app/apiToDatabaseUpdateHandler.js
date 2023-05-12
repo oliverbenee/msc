@@ -8,10 +8,10 @@ const { JSDOM } = require( "jsdom" );
 const { window } = new JSDOM( "" );
 const $ = require( "jquery" )( window );
 
-const { SmartCitizenKitFactory, SensorOptions, WiFiRouterFactory, 
+const  { SmartCitizenKitFactory, SensorOptions, WiFiRouterFactory, 
   NullSensorFactory, MetNoAirQualitySensorFactory, 
   CopenhagenMeterologySensorFactory, AarhusUniversityAirqualitySensorFactory, 
-  DMIFreeDataSensorFactory } = require('./sensorNodeFactory')
+  DMIFreeDataSensorFactory } = require('fix-esm').require('sensornodefactory')
 
 let sensorOptions = new SensorOptions();
 let smartCitizenKitFactory = new SmartCitizenKitFactory();

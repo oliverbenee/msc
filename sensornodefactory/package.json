@@ -1,0 +1,12 @@
+{
+  "name": "sensornodefactory",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sensorNodeFactory.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "type": "module",
+  "license": "ISC"
+}
