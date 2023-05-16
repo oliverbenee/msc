@@ -270,7 +270,14 @@ const getFields = (request, response) => {
   if(params.clause_column && params.clause_param && params.clause_value){
     q.where(params.clause_column, params.clause_param, params.clause_value)
     //q.where(params.clause.replace('%3D',' ='))
+  if(params.clause_value && isJsonParam){
+    console.log("ISJSONPARAM")
+    q.whereJsonSubsetOf(params.clause_column, params.clause_value)
+  } else {
+    console.log("isJSONPARAM?", isJsonParam, "WHAT DOES IT SAY?", params.clause_value)
   }
+  }
+
 
   //-----------------------------------------------------------------------------
   if(params.orderSource && params.orderType){ 
