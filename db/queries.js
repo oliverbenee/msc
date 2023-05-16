@@ -4,11 +4,6 @@ const knex = require('knex')(knexfile.development)
 const knexPostgis = require('knex-postgis')
 const st = knexPostgis(knex) 
 
-// NOTE: latitude and longitude are primary key. This prevents dupes when fetching from database.
-// 1. It makes updating the API very simple (only have to write, as the old version will be overwritten)
-// 2. Places with the same latitude and longitude won't work in leaflet.js anyway. 
-// https://dev.mysql.com/doc/refman/8.0/en/json.html
-
 const getDmi = (request, response) => {
   knex('locations')
   .withSchema('public')
