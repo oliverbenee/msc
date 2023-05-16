@@ -267,14 +267,15 @@ const getFields = (request, response) => {
   }
   //-----------------------------------------------------------------------------
 
-  if(params.clause_column && params.clause_param && params.clause_value){
-    q.where(params.clause_column, params.clause_param, params.clause_value)
-    //q.where(params.clause.replace('%3D',' ='))
-  if(params.clause_value && isJsonParam){
-    console.log("ISJSONPARAM")
+  let isJsonParam = params.clause_param === "jsonsubsetof"
+
+  if(params.clause_column && params.clause_param && params.clause_value && !isJsonParam){
+    q.where(params.clause_column, params.clause_param, parseFloat(params.clause_value))
+  } else if(params.clause_value && isJsonParam){
+    // console.log("ISJSONPARAM")
     q.whereJsonSubsetOf(params.clause_column, params.clause_value)
   } else {
-    console.log("isJSONPARAM?", isJsonParam, "WHAT DOES IT SAY?", params.clause_value)
+    // console.log("isJSONPARAM?", isJsonParam, "WHAT DOES IT SAY?", params.clause_value)
   }
   }
 
