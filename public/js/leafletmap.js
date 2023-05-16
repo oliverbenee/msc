@@ -586,6 +586,7 @@ map.on('draw:created', (event) => {
   }
   drawnItems.addLayer(layer);
   //console.log(layer)
+  console.log(typeof(layer))
 });
 
 function getMarkers(bounds){
