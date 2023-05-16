@@ -288,7 +288,7 @@ const getFields = (request, response) => {
   q
   .then((rows) => {
     console.log('result found, which has %d rows', rows.length)
-    console.log(rows)
+    // console.log(rows)
     response.status(200).json(rows)
   }, (error) => {
     console.log("error.", error)
