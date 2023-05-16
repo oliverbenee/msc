@@ -108,7 +108,9 @@
 
 <form name="queryForm" class="queryForm" onsubmit="javascript:queryMap();" autocomplete="on">
   <p> Source Layer </p>
-  {{>sources}} <!-- automatically selected from partials folder. -->
+  <select id="source" name="source" multiple>
+    {{>sources}} <!-- automatically selected from partials folder. -->
+  </select>
   <p> Method: SELECT </p>
   <p> Columns </p>
   <select name="fields" id="fields" multiple>
