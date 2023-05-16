@@ -284,10 +284,11 @@ const getFields = (request, response) => {
   console.log(q.toSQL())
   q
   .then((rows) => {
-    console.log("ROWS:")
+    console.log('result found, which has %d rows', rows.length)
     console.log(rows)
     response.status(200).json(rows)
   }, (error) => {
+    console.log("error.", error)
     response.status(500).send(error)
     return
   })
