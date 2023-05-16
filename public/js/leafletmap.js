@@ -576,6 +576,7 @@ let drawControl = new L.Control.Draw({
 })
 map.addControl(drawControl)
 
+var buffer
 // Inspired from: https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat
 // capture drawn data event.
 map.on('draw:created', (event) => {
@@ -584,9 +585,9 @@ map.on('draw:created', (event) => {
     console.debug("drawn Rectangle")
     getMarkers(layer.getBounds())
   }
+  buffer = layer
   drawnItems.addLayer(layer);
-  //console.log(layer)
-  console.log(typeof(layer))
+  console.log("new buffer is ", layer)
 });
 
 function getMarkers(bounds){
