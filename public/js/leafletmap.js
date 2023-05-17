@@ -729,9 +729,8 @@ function queryMap(){
         if (data[0].geometry) {
           try {
           data.forEach((elem) => {
-            console.log(elem)
             let parsedObject = JSON.parse(elem.geometry)
-            console.log("element", elem)
+            // console.log("element", elem)
             var newmarker = L.geoJSON(parsedObject, { 
               pointToLayer: function (feature, latlng) { 
                 return L.circleMarker(latlng, { 
