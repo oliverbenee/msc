@@ -81,24 +81,24 @@
     <ul><li> Find markers/features - find by attribute. <a href="https://www.youtube.com/watch?v=WnPcSGlh0eQ"> LINK </a></li></ul-->
     <!--li> [OK] Which sensors are contained in this area, and what do they record? </li-->
     <!--li> \item (follow-up) Would it be a good idea to set up a sensor here? - This is a question, we can't answer.</li-->
-    <li> \item From this point, what is the closest sensor data in PROXIMITY, and what does it read? </li>
-    <li> [ ] Solution: allow creation of BUFFER FROM POINT to search from. </li>
+    <!--li> \item From this point, what is the closest sensor data in PROXIMITY, and what does it read? </li>
+    <li> [ OK ] Solution: allow creation of BUFFER FROM POINT to search from. </li-->
     <li> \item For this particular sensor, do sensors in PROXIMITY sensors show similar values?</li>
     <li> [ ] Solution to the 2 above: A query that finds all sensors within the geojson area of the postal code. 
     <li>\item If there are no sensors nearby, what are the NEAREST NEIGHBORS, and what do they read?</li>
-    <li> [ ] Solution: Allow creation of BUFFER FROM POINT to search from. </li>
-    <li> Good resource for inspiration: <a href="https://towardsdatascience.com/postgis-a-complete-workflow-729bb604f34c"> LINK</a></li>
+    <!--li> [ OK ] Solution: Allow creation of BUFFER FROM POINT to search from. </li>
+    <li> Good resource for inspiration: <a href="https://towardsdatascience.com/postgis-a-complete-workflow-729bb604f34c"> LINK</a></li-->
     <!--ul>
       <li> [ ] What are the closest sensor values for where i am? </li>
       <li> [ ] <a href="https://www.youtube.com/watch?v=8rOZRE1Z0hE&t=52s"> LINK </a> </li>
       <li> [ ] Solution: write a KNN query to this one. </li>
     </ul-->
   </ul>
-  <ul> QUESTION: How well do i know about pollution/sensor information *right here*? And would it be a good idea to set up a sensor here?
-    <li> [ ] Get all sensors within range. <a href="https://stackoverflow.com/questions/51889155/getting-all-buildings-in-range-of-5-miles-from-specified-coordinates/51889638#51889638"> LINK</li>
-    <li> [ ] Other queries. <a href="https://www.bostongis.com/?content_name=postgis_tut02#21"> LINK </a></li>
-    <li> [ ] Solution: allow creation of BUFFER FROM POINT to search from. </li>
-  </ul>
+  <!--ul> QUESTION: How well do i know about pollution/sensor information *right here*? And would it be a good idea to set up a sensor here?
+    <li> [ OK ] Get all sensors within range. <a href="https://stackoverflow.com/questions/51889155/getting-all-buildings-in-range-of-5-miles-from-specified-coordinates/51889638#51889638"> LINK</li>
+    <li> [ OK ] Other queries. <a href="https://www.bostongis.com/?content_name=postgis_tut02#21"> LINK </a></li>
+    <li> [ OK ] Solution: allow creation of BUFFER FROM POINT to search from. </li>
+  </ul-->
 </ul>
 <div id="map"></div>
 <div id="sidebar"></div>
@@ -122,6 +122,9 @@
     <option disabled> Modified geometry! </option>
     <option value="st_x"> Latitude </option>
     <option value="st_y"> Longitude </option>
+    <option value="st_distance">shortest distance to target layer</option>
+    <!--option value="st_area"> Area</option>
+    <option value="st_numgeometries">Number of parts in collection</option-->
   </select>
 
   <p> Select by attribute </p>
@@ -142,11 +145,44 @@
     <tr><td>Column value</td><td><input type="number" id="clauseValue" width="20em"></td></tr>
   </table>
 
+  <input type="checkbox" id="gccheck"> Select by location
+  <table align="center">
+    <tr><td>The source layer...</td>
+    <td>
+      <select name="clauseSelect" id="clauseSelect">
+        <option value="st_within"> Contain </option>
+        <option value="!st_within"> Does not contain </option>
+        <option value="st_intersects"> Intersects or touch </option>
+        <option value="!st_intersects"> Do not intersect </option>
+        <option value="st_dwithin"> shortest distance is equal to or less than </option>
+        <option value="!st_dwithin"> shortest distance is at least </option>
+        <!--option value="st_crosses"> Crosses </option-->
+        <!--option value="st_disjoint"> Do not intersect. st_intersect is faster. </option-->
+        <!--option value="st_equals"> if geometry is the same </option>
+        <option value="st_overlap"> Overlap (not completely) </option>
+        <option value="st_touches"> Geometries touch </option>
+        <option value="st_within"> Geometries overlap </option-->
+      </select>
+    </td></tr>
+    <tr><td>Target layer</td><td>
+      Apply search distance <input type="number">
+      <select name="cls" id="cls">
+        <option value="point"> The buffer point </option>
+        <option value="line"> The buffer line </option>
+        <!--option value="circle"> The buffer circle. This option is nonsensical. The same as point. </option-->
+        <!--option value="square"> The buffer square. This option is nonsensical. It overlaps with other features. </option-->
+        <!--option value="polygon"> The buffer polygon </option-->
+        <option disabled> Elements in... </option>
+        {{>sources}}
+      </select>
+    </td></tr>
+  </table>    
 
   <p> Order by </p>
   <select class="orderSelect" name="orderSource" id="orderSource">
     <option value="device_id">device_id</option>
     <option value="time">time</option>
+    <option value="st_distance">shortest distance</option>
   </select>
   <select class="orderSelect" name="orderType" id="orderType">
     <option value="asc">ASC</option>

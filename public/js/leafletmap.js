@@ -584,10 +584,13 @@ map.on('draw:created', (event) => {
   if(layer && layer instanceof L.Rectangle) { // GetBounds works like a square, so it doesn't work properly if you make polygons.
     console.debug("drawn Rectangle")
     getMarkers(layer.getBounds())
+  } else if(layer && (layer instanceof L.Marker || layer instanceof L.Polyline)){
+    buffer = L.geoJSON(layer.toGeoJSON(), 
+      {coordsToLatLng: function (coords) { return new L.LatLng(coords[0], coords[1], coords[2]); }})
+    console.log("new buffer is ", buffer)
   }
-  buffer = layer
+  drawnItems.clearLayers()
   drawnItems.addLayer(layer);
-  console.log("new buffer is ", layer)
 });
 
 function getMarkers(bounds){
@@ -684,7 +687,22 @@ function queryMap(){
   let source = getSelect("source")
   let clause_column = document.getElementById("clauseColumn").value
   let clause_param = getSelect("parameterSelect")[0]
-  let clause_value = parseFloat(document.getElementById("clauseValue").value)
+  let clause_value = document.getElementById("clauseValue").value
+
+  let geoClause = getSelect("clauseSelect")[0]
+  let geoClauseComparedTo = getSelect("cls")[0]
+  var targetGeom
+
+  let isGeoClause = document.getElementById("gccheck").checked
+  let bufferExists = buffer != undefined
+  if (isGeoClause && bufferExists) {
+    targetGeom = buffer.toGeoJSON().features[0]
+    if(geoClauseComparedTo != undefined){
+      console.log("compare with object of type", geoClauseComparedTo)
+      console.log("buffer object", buffer)
+    }
+  }
+
   let orderSource = getSelect("orderSource")
   let orderType = getSelect("orderType")
   let limit = document.getElementById("inputLimit").value
@@ -699,7 +717,9 @@ function queryMap(){
 
     orderSource: orderSource,
     orderType: orderType,
-    limit: limit
+    limit: limit,
+    geoClause: geoClause,
+    targetGeom: targetGeom
   }
 
   console.log(QueryParams)

@@ -238,6 +238,8 @@ const getFields = (request, response) => {
   let params = request.body.data
   console.log("FORM:")
   console.log(params)
+  console.log("----------------------------------------------------------------")
+
   // No query inserted or the form wasn't filled correctly. Basic form checking. 
   if(Object.keys(params).length === 0){
     console.log("no params")
@@ -272,6 +274,20 @@ const getFields = (request, response) => {
   } else {
     // console.log("isJSONPARAM?", isJsonParam, "WHAT DOES IT SAY?", params.clause_value)
   }
+
+  if(params.geoClause && params.targetGeom){
+    console.log("geoClause", params.geoClause)
+    console.log("targetGeom", params.targetGeom)
+    switch(params.geoClause){
+      case "st_within":
+        q.where(st.within("locations.geometry", st.geomFromGeoJSON(params.targetGeom.geometry)))
+        break
+      case "st_dwithin": 
+        q.where(st.dwithin("locations.geometry", st.geomFromGeoJSON(params.targetGeom.geometry), 50))
+        break
+      default:
+        console.log("real clause", params.geoClause)
+    }
   }
 
 
@@ -281,8 +297,8 @@ const getFields = (request, response) => {
   }
   if(params.limit){q.limit(params.limit)}
 
-  console.log("STATEMENTS.")
-  console.log(q._statements)
+  // console.log("STATEMENTS.")
+  // console.log(q._statements)
   console.log("SQL.")
   console.log(q.toSQL())
   q
