@@ -2,12 +2,15 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
+const knexPostgis = require('knex-postgis')
+
 exports.up = function (knex) {
+  const st = knexPostgis(knex)
   knex.schema.hasTable("locations").then((exists) => {
     if (!exists) {
       knex.schema
         .createTable("locations", table => {
-          table.specificType("geometry", "geometry(point, 4326)")
+          table.specificType("geometry", "geometry(point, 3857)")
           table.string('device_type')
           table.string('device_id').primary()
         })
