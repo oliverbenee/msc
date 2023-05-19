@@ -1,16 +1,16 @@
 'use strict';
 import { NullSensorFactory, SensorOptions, CopenhagenMeterologySensorFactory } from '../sensornodefactory/sensorNodeFactory.js'
-let sensorOptions = new SensorOptions()
+const sensorOptions = new SensorOptions()
 //let cityProbe2Factory = new CityProbe2Factory();
-let nullSensorFactory = new NullSensorFactory();
-let copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory();
+const nullSensorFactory = new NullSensorFactory();
+const copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory();
 
-let openStreetMapTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const openStreetMapTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 })
 
-var map = L.map('map', {
+const map = L.map('map', {
   layers: openStreetMapTileLayer, 
   center: [58.25602,8.35935],
   zoom: 7,
@@ -59,11 +59,11 @@ function onFailedToFindPosition(pos){
  */
 
 var gcpoly
-var geocoder = L.Control.Geocoder.nominatim();
+let geocoder = L.Control.Geocoder.nominatim();
 if (typeof URLSearchParams !== 'undefined' && location.search) {
   // parse /?geocoder=nominatim from URL
-  var params = new URLSearchParams(location.search);
-  var geocoderString = params.get('geocoder');
+  let params = new URLSearchParams(location.search);
+  let geocoderString = params.get('geocoder');
   if (geocoderString && L.Control.Geocoder[geocoderString]) {
     console.log('Using geocoder', geocoderString);
     geocoder = L.Control.Geocoder[geocoderString]();
@@ -71,7 +71,7 @@ if (typeof URLSearchParams !== 'undefined' && location.search) {
     console.warn('Unsupported geocoder', geocoderString);
   }
 }
-var control = L.Control.geocoder({
+const geocoderControl = L.Control.geocoder({
   query: 'Moon',
   placeholder: 'Search here...',
   geocoder: geocoder
@@ -89,8 +89,8 @@ var control = L.Control.geocoder({
 
 // Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
 function getPopupTableHTML(lat, lng, sensor){
-  const loc = `<table><thead><tr><th>(${lat},${lng})</tr></th></thead><tbody>`
-  var tableListOutput;
+  let loc = `<table><thead><tr><th>(${lat},${lng})</tr></th></thead><tbody>`
+  let tableListOutput;
   Object.entries(sensor).forEach(([key, value]) => {
       if(key == "json"){
         tableListOutput += "<tr><td>------------json--------------</td></tr>"
@@ -99,7 +99,7 @@ function getPopupTableHTML(lat, lng, sensor){
         tableListOutput += "<tr><td>" + `${key}` + "</td><td>" + `${value}` + "</td></tr>"
       }
   })
-  var tableListEnd = "</tbody></table>"
+  const tableListEnd = "</tbody></table>"
 
   return loc+tableListOutput+tableListEnd
 }
@@ -108,7 +108,7 @@ function getPopupTableHTML(lat, lng, sensor){
  * Add SideBar
  */
 
-var sidebar = L.control.sidebar('sidebar', {
+let sidebar = L.control.sidebar('sidebar', {
   position: 'left',
   autoPan: true
 });
