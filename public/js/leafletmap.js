@@ -77,7 +77,7 @@ const geocoderControl = L.Control.geocoder({
   geocoder: geocoder
 })
 .on('markgeocode', (e) => { 
-  var bbox = e.geocode.bbox;
+  let bbox = e.geocode.bbox;
   gcpoly = L.polygon([
     bbox.getSouthEast(),
     bbox.getNorthEast(),
@@ -118,21 +118,21 @@ map.addControl(sidebar)
  * ADDITIONAL MAP LAYERS
  */ 
 
-let arcGISMapTileLayer = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+const arcGISMapTileLayer = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 19
 })
-var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+const CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 	subdomains: 'abcd',
 	maxZoom: 20
 });
-var SafeCast = L.tileLayer('https://s3.amazonaws.com/te512.safecast.org/{z}/{x}/{y}.png', {
+const SafeCast = L.tileLayer('https://s3.amazonaws.com/te512.safecast.org/{z}/{x}/{y}.png', {
 	maxZoom: 16,
 	attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://blog.safecast.org/about/">SafeCast</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 });
 
 // let mbapik = pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ
-let basemaps = {
+const basemaps = {
   "OpenStreetMap: Standard": openStreetMapTileLayer,
   "Positron by CartoDB: Standard": CartoDB_Positron,
   "MapServer by ArcGIS Online: Satellite": arcGISMapTileLayer
@@ -145,7 +145,7 @@ let basemaps = {
 let layers = L.layerGroup(); // This is a container object to quickly scan all layers with markers.
 let markers = L.layerGroup();
 
-var markerClusterGroupingTool = L.markerClusterGroup({
+const markerClusterGroupingTool = L.markerClusterGroup({
   chunkedLoading: true,
   showCoverageOnHover: false, // this would have been nice but doesn't seem to work. 
   spiderfyOnMaxZoom: true,
@@ -155,20 +155,20 @@ var markerClusterGroupingTool = L.markerClusterGroup({
 })
 markers.addLayer(markerClusterGroupingTool) // This lets us ignore the layers control. 
 
-let dmiLayer = L.layerGroup()
+const dmiLayer = L.layerGroup()
 //let cityprobe2layer = L.layerGroup()
-let scklayer = L.layerGroup()
-let errorlayer = L.layerGroup()
-let wifilayer = L.layerGroup()
-let matrikelkortlayer = L.layerGroup()
-let trueMatLayer = L.layerGroup()
-let aggMatLayer = L.layerGroup()
-let speedTrapLayer = L.layerGroup()
-let dbQueryLayer = L.layerGroup()
-let metNoAirLayer = L.layerGroup()
-let envZoneLayer = L.layerGroup()
-let variousUniversitiesLayer = L.layerGroup()
-let markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer, variousUniversitiesLayer]
+const scklayer = L.layerGroup()
+const errorlayer = L.layerGroup()
+const wifilayer = L.layerGroup()
+const matrikelkortlayer = L.layerGroup()
+const trueMatLayer = L.layerGroup()
+const aggMatLayer = L.layerGroup()
+const speedTrapLayer = L.layerGroup()
+const dbQueryLayer = L.layerGroup()
+const metNoAirLayer = L.layerGroup()
+const envZoneLayer = L.layerGroup()
+const variousUniversitiesLayer = L.layerGroup()
+const markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer, variousUniversitiesLayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
@@ -188,7 +188,7 @@ let overlaysObj = {
     "Matrikelkort": matrikelkortlayer
   }
 }
-var control = L.control.groupedLayers(basemaps, overlaysObj, { groupCheckboxes: true }).addTo(map);
+let control = L.control.groupedLayers(basemaps, overlaysObj, { groupCheckboxes: true }).addTo(map);
 L.control.scale({metric: true}).addTo(map);
 
 // From: https://leafletjs.com/examples/zoom-levels/example-setzoom.html
@@ -208,7 +208,7 @@ const zoomViewer = (new ZoomViewer()).addTo(map);
 
 // Place a marker, and add a pop-up to it.
 function placeSensorDataMarker(lat, lng, sensor){
-  var iconUrl = "img/msql.png";
+  let iconUrl = "img/msql.png";
   let device_type = sensor.device_type
   if(device_type != undefined){
     iconUrl = sensorOptions.getIconMap(device_type)
@@ -217,7 +217,7 @@ function placeSensorDataMarker(lat, lng, sensor){
     console.error("No icon found for", sensor)
   }
 
-  var sensorIcon = L.icon({
+  let sensorIcon = L.icon({
     iconUrl: iconUrl,
     iconSize: [16, 16], // Not sure about image sizes, but this should be fine for now. 
     iconAnchor: [8, 8], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
@@ -241,7 +241,7 @@ function placeSensorDataMarker(lat, lng, sensor){
   // Place a NEW marker. 
   if(!isUpdated){
     //console.debug(`no dupe found for: ${sensor.device_id}. It is a ${sensor.device_type} from ${sensor.sensorSource}`)
-    var locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(markers); // Note, we add the marker to a group "markers", which allows clustering to work. 
+    let locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(markers); // Note, we add the marker to a group "markers", which allows clustering to work. 
     if(sensor.device_type){
       //let circle = createErrorCircle(lat, lng, range);
       //markers.addLayer(circle)
@@ -254,7 +254,7 @@ function placeSensorDataMarker(lat, lng, sensor){
       
       // for layer filtering.
       let publisher = sensorOptions.getPublisherMap(sensor.device_type)
-      var layerToAddTo = errorlayer
+      let layerToAddTo = errorlayer
       // switch statements are faster than if-else. 
       switch(publisher){
         // case "Montem": 
@@ -339,7 +339,7 @@ function fetchODCMet(){
   .then(handleErrors)
   .then(response => response.json())
   .then(data => {
-    var IN = data.result.records[0]
+    let IN = data.result.records[0]
     let CMS = copenhagenMeterologySensorFactory.create(IN)
     // the location here is a "best guess using: https://www.opendata.dk/city-of-copenhagen/meteorologi"
     placeSensorDataMarker(55.0421, 12.03341, CMS)
@@ -365,7 +365,7 @@ let highlightStyle = {weight: 5,
 }
 
 function highlightFeature(e) {
-  var layer = e.target;
+  let layer = e.target;
   layer.setStyle(highlightStyle);
   layer.bringToFront();
   info.update(layer.feature.properties)
@@ -407,7 +407,7 @@ let vtoptions = {
 
 // https://dawadocs.dataforsyningen.dk/dok/api/jordstykke#s%C3%B8gning
 function fetchGeojson(){
-  var startTime = performance.now()
+  let startTime = performance.now()
   fetch('/jordstykker')
   .then(handleErrors)
   .then(response => response.json())
@@ -460,7 +460,7 @@ function fetchGeojson(){
   })
   .catch(error => console.error(error))
   aggMatLayer.addTo(matrikelkortlayer)
-  var endTime = performance.now()
+  let endTime = performance.now()
   //console.log(`Call to fetchGeojson took ${endTime - startTime} milliseconds`)
 }
 
@@ -515,10 +515,10 @@ let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor']
 
   function addMarkersToMap(data) {
     data.forEach(item => {
-      var parsedObject = JSON.parse(item.geojson);
+      let parsedObject = JSON.parse(item.geojson);
       let sensor = item;
 
-      var newmarker = L.geoJSON(parsedObject, {
+      L.geoJSON(parsedObject, {
         coordsToLatLng: function (coords) { return new L.LatLng(coords[0], coords[1], coords[2]); },
         onEachFeature: function (feature, layer) {
           placeSensorDataMarker(parsedObject.coordinates[0], parsedObject.coordinates[1], sensor);
@@ -537,7 +537,7 @@ function fetchAll(){
 fetchAll()
 
 function createErrorCircle(lat, lng, radius){
-  var circle = L.circle([lat, lng], {
+  let circle = L.circle([lat, lng], {
     color: 'yellow',
     fillcolor: '#ffc800',
     fillopacity: 90,
@@ -576,11 +576,11 @@ let drawControl = new L.Control.Draw({
 })
 map.addControl(drawControl)
 
-var buffer
+let buffer
 // Inspired from: https://stackoverflow.com/questions/64702581/leaflet-js-draw-rectangle-and-filter-circle-markers-in-the-rectangle-and-updat
 // capture drawn data event.
 map.on('draw:created', (event) => {
-  var layer = event.layer
+  let layer = event.layer
   if(layer && layer instanceof L.Rectangle) { // GetBounds works like a square, so it doesn't work properly if you make polygons.
     console.debug("drawn Rectangle")
     getMarkers(layer.getBounds())
@@ -595,15 +595,15 @@ map.on('draw:created', (event) => {
 
 function getMarkers(bounds){
   console.debug("getmarkers")
-  var layers = [];
+  let layers = [];
 
-    markers.eachLayer((layer) => { 
-      if(layer instanceof L.Marker || layer instanceof L.polyline){
-        if(bounds.contains(layer.getLatLng())){
-          layers.push(layer)
-        }
-      } 
-    })
+  markers.eachLayer((layer) => { 
+    if(layer instanceof L.Marker || layer instanceof L.polyline){
+      if(bounds.contains(layer.getLatLng())){
+        layers.push(layer)
+      }
+    } 
+  })
 
   console.log("found the following layers: ")
   console.log(layers)
@@ -621,7 +621,7 @@ function getMarkers(bounds){
   return layers;
 }
 
-var _table_ = document.createElement('table'),
+const _table_ = document.createElement('table'),
   _tr_ = document.createElement('tr'),
   _th_ = document.createElement('th'),
   _td_ = document.createElement('td');
@@ -629,14 +629,14 @@ _table_.className="queryTable"
 
 // Builds the HTML Table out of myList json data from Ivy restful service.
 function buildHtmlTable(arr) {
-  var table = _table_.cloneNode(false),
+  let table = _table_.cloneNode(false),
   columns = addAllColumnHeaders(arr, table);
-  for (var i = 0, maxi = arr.length; i < maxi; ++i) {
+  for (let i = 0, maxi = arr.length; i < maxi; ++i) {
     if(arr[i] != undefined){
-      var tr = _tr_.cloneNode(false);
-      for (var j = 0, maxj = columns.length; j < maxj; ++j) {
-        var td = _td_.cloneNode(false);
-        var cellValue = arr[i][columns[j]];
+      let tr = _tr_.cloneNode(false);
+      for (let j = 0, maxj = columns.length; j < maxj; ++j) {
+        let td = _td_.cloneNode(false);
+        let cellValue = arr[i][columns[j]];
         if(typeof cellValue === 'object' && !Array.isArray(cellValue) && cellValue !== null){cellValue = JSON.stringify(cellValue)}
         td.appendChild(document.createTextNode(cellValue || ''));
         tr.appendChild(td);
@@ -651,13 +651,13 @@ function buildHtmlTable(arr) {
 // Need to do union of keys from all records as some records may not contain
 // all records
 function addAllColumnHeaders(arr, table) {
-  var columnSet = [],
+  let columnSet = [],
     tr = _tr_.cloneNode(false);
-  for (var i = 0, l = arr.length; i < l; i++) {
-    for (var key in arr[i]) {
+  for (let i = 0, l = arr.length; i < l; i++) {
+    for (let key in arr[i]) {
       if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
         columnSet.push(key);
-        var th = _th_.cloneNode(false);
+        let th = _th_.cloneNode(false);
         th.appendChild(document.createTextNode(key));
         tr.appendChild(th);
       }

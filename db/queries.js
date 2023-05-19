@@ -297,8 +297,6 @@ const getFields = (request, response) => {
   }
   if(params.limit){q.limit(params.limit)}
 
-  // console.log("STATEMENTS.")
-  // console.log(q._statements)
   console.log("SQL.")
   console.log(q.toSQL())
   q
