@@ -110,7 +110,7 @@ async function fetchMetNoAQ() {
       .then(response => {return response.data})
       .then((res) => {
         //console.log("response for station ", stationData.device_id)
-        var finalStationData = stationData
+        let finalStationData = stationData
         let observations = res.data.time[0].variables
         // un-nest JSON.
         try {
@@ -131,8 +131,8 @@ async function fetchMetNoAQ() {
   })
 }
 
-var AUStationLatLngs = new Map()
-var AUStationdevids = new Map()
+let AUStationLatLngs = new Map()
+let AUStationdevids = new Map()
 function setupAUStations() {
   // Cross-reffed using: https://envs.au.dk/faglige-omraader/luftforurening-udledninger-og-effekter/overvaagningsprogrammet/maalestationer
   // and google maps,
@@ -179,8 +179,8 @@ function fetchAARH(location) {
   axios.get('/AUluft/' + location)
     .then(string => {
       let $table = $(string.data)
-      var header = [];
-      var rows = [];
+      let header = [];
+      let rows = [];
 
       //console.log("TABLE", $table)
       
@@ -198,9 +198,9 @@ function fetchAARH(location) {
     
       // convert each row of the table body to json entries.
       $table.find("tbody tr").each(function () {
-        var row = {};
+        let row = {};
         $(this).find("td").each(function (i) {
-            var key = header[i]
+            let key = header[i]
             .replace("SO<sub>2</sub>", "so2")
             .replace("O<sub>3</sub>", "o3")
             .replace("PM<sub>2.5</sub> Teom","pm25"),
@@ -228,27 +228,27 @@ function fetchAUSensor(){
 
 function tableToJson(table) {
   // console.log(table)
-  var rows = table.rows;
-  var propCells = rows[0].cells.toString();
-  var propNames = [];
-  var results = [];
-  var obj, row, cells;
+  let rows = table.rows;
+  let propCells = rows[0].cells.toString();
+  let propNames = [];
+  let results = [];
+  let obj, row, cells;
 
   // Use the first row for the property names
   // Could use a header section but result is the same if
   // there is only one header row
-  for (var i=0, iLen=propCells.length; i<iLen; i++) {
+  for (let i=0, iLen=propCells.length; i<iLen; i++) {
     propNames.push(propCells[i].textContent || propCells[i].innerText);
   }
 
   // Use the rows for data
   // Could use tbody rows here to exclude header & footer
   // but starting from 1 gives required result
-  for (var j=1, jLen=rows.length; j<jLen; j++) {
+  for (let j=1, jLen=rows.length; j<jLen; j++) {
     cells = rows[j].cells;
     obj = {};
 
-    for (var k=0; k<iLen; k++) {
+    for (let k=0; k<iLen; k++) {
       obj[propNames[k]] = cells[k].textContent || cells[k].innerText;
     }
     results.push(obj)
