@@ -38,10 +38,10 @@ router.put('/locations', db.getFields)
 // Cache API requests. //
 /////////////////////////
 
-var mcache = require('memory-cache')
+let mcache = require('memory-cache')
 // https://medium.com/the-node-js-collection/simple-server-side-cache-for-express-js-with-node-js-45ff296ca0f0
 // Data caching. Time is in seconds.
-var cache = (duration) => { 
+let cache = (duration) => { 
   //console.log("checking cache")
   return (req, res, next) => {
     let key = '__express__' + (req.originalUrll || req.url) + req.body
@@ -205,12 +205,12 @@ router.get('/speedtraps', cache(3600), (req, res) => {
 // API Fetch AU.dk air measurements. //
 ///////////////////////////////////////
 
-var myHeaders = new fetch.Headers();
+let myHeaders = new fetch.Headers();
 myHeaders.append("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 myHeaders.append("Origin", "https://envs2.au.dk");
 myHeaders.append("Cookie", "CookieScriptConsent={action:reject,categories:^[^],key:284a4681-d2c9-45c9-b58b-a46c4fd6d999}; mitstudie-login=true; allow_cookies=true; __RequestVerificationToken_L0x1ZnRkYXRhL1ByZXNlbnRhdGlvbg2=Z35qSPoidytIPQsf4dMmnBB4s80eOT-3gffAGnotpMODHi0INdYHFUcXr6EGqa0K55w0unEHem_ATWd0pRJ-Mj5GXiftrT1wwpLrPNqI2Qo1");
-var raw = "__RequestVerificationToken=8L5V1DUKuKh6JGZlcUI4whnegPbWkYedTXJS8MMuo5QenVCEjERTOIkyyMdFU7ARUpGxah0szVNdv0RyRgiQ_rd9umLLVRj2UQRryd1IUcc1";
-var requestOptions = {
+const raw = "__RequestVerificationToken=8L5V1DUKuKh6JGZlcUI4whnegPbWkYedTXJS8MMuo5QenVCEjERTOIkyyMdFU7ARUpGxah0szVNdv0RyRgiQ_rd9umLLVRj2UQRryd1IUcc1";
+const requestOptions = {
   method: 'POST',
   headers: myHeaders,
   body: raw,
