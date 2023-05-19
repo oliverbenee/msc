@@ -13,14 +13,14 @@ const  { SmartCitizenKitFactory, SensorOptions, WiFiRouterFactory,
   CopenhagenMeterologySensorFactory, AarhusUniversityAirqualitySensorFactory, 
   DMIFreeDataSensorFactory } = require('fix-esm').require('sensornodefactory')
 
-let sensorOptions = new SensorOptions();
-let smartCitizenKitFactory = new SmartCitizenKitFactory();
-let wiFiRouterFactory = new WiFiRouterFactory();
-let nullSensorFactory = new NullSensorFactory();
-let metNoAirQualitySensorFactory = new MetNoAirQualitySensorFactory();
-let copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory();
-let aarhusUniversityAirqualitySensorFactory = new AarhusUniversityAirqualitySensorFactory()
-let dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory()
+const sensorOptions = new SensorOptions();
+const smartCitizenKitFactory = new SmartCitizenKitFactory();
+const wiFiRouterFactory = new WiFiRouterFactory();
+const nullSensorFactory = new NullSensorFactory();
+const metNoAirQualitySensorFactory = new MetNoAirQualitySensorFactory();
+const copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory();
+const aarhusUniversityAirqualitySensorFactory = new AarhusUniversityAirqualitySensorFactory()
+const dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory()
 
 function getInsertTemplate(lat, lng, sensor){
   return {"coordinates": "POINT(" + lat + " " + lng + ")", "json": sensor}
@@ -31,31 +31,21 @@ function sendPositionToDatabase(lat, lng, sensor){
 
 function fetchDMIFreeData(urls) {
   // use map() to perform a fetch and handle the response for each url
-  Promise.all(urls.map(url =>
-    axios.get(url)
-    .then(response => {return response.data})
-  ))
+  Promise.all(urls.map(url => axios.get(url).then(response => {return response.data})))
   .then((values) => {
-    // console.log("done fetching. ")
-    // console.log(values)
-    // locations.
-    let locationFeatures = values[0].features
-    // sensor data.
-    let sensorFeatures = values[1].features
-    var noOfEmptyObservationStations = 0;
+    const locationFeatures = values[0].features // locations.
+    const sensorFeatures = values[1].features // sensor data.
     locationFeatures.forEach(item => {
       // Identify associated station for the location.
-      var latitude = item.geometry.coordinates[1]
-      var longitude = item.geometry.coordinates[0]
-      var stationId = item.properties.stationId
-      var stationType = item.properties.type
-
+      const latitude = item.geometry.coordinates[1]; 
+      const longitude = item.geometry.coordinates[0]
+      const stationId = item.properties.stationId; 
+      const stationType = item.properties.type
       // Now find the features for that sensor in the metobs. 
-      var featuresForThatSensor = sensorFeatures.filter(feature => feature.properties.stationId == stationId)
-      var hasFeatures = featuresForThatSensor.length != 0
+      let featuresForThatSensor = sensorFeatures.filter(feature => feature.properties.stationId === stationId)
+      const hasFeatures = featuresForThatSensor.length != 0
       if (hasFeatures) {
         featuresForThatSensor.stationType = stationType
-        // console.log("params: ", featuresForThatSensor)
         sendPositionToDatabase(latitude, longitude, dmiFreeDataSensorFactory.create(featuresForThatSensor))
       }
     })
@@ -78,9 +68,9 @@ async function fetchSCK(){
     list.forEach((kit) => {
     try {
       if (kit.system_tags.indexOf("offline") !== -1) {
-        var latitude = kit.data.location.latitude
-        var longitude = kit.data.location.longitude
-        let device = smartCitizenKitFactory.create(kit)
+        const latitude = kit.data.location.latitude
+        const longitude = kit.data.location.longitude
+        const device = smartCitizenKitFactory.create(kit)
         sendPositionToDatabase(latitude, longitude, device)
       } else {
         // console.log("Found dead sensor.")
@@ -141,8 +131,8 @@ async function fetchMetNoAQ() {
   })
 }
 
-let AUStationLatLngs = new Map()
-let AUStationdevids = new Map()
+var AUStationLatLngs = new Map()
+var AUStationdevids = new Map()
 function setupAUStations() {
   // Cross-reffed using: https://envs.au.dk/faglige-omraader/luftforurening-udledninger-og-effekter/overvaagningsprogrammet/maalestationer
   // and google maps,
