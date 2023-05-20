@@ -691,7 +691,7 @@ function queryMap(){
 
   let geoClause = getSelect("clauseSelect")[0]
   let geoClauseComparedTo = getSelect("cls")[0]
-  var targetGeom
+  let targetGeom
 
   let isGeoClause = document.getElementById("gccheck").checked
   let bufferExists = buffer != undefined
@@ -744,14 +744,14 @@ function queryMap(){
         // Clear query layer.
         queryLayer.clearLayers()
 
-        var isGeometry = false
+        let isGeometry = false
         // show on map if geometry is selected.
         if (data[0].geometry) {
           try {
           data.forEach((elem) => {
             let parsedObject = JSON.parse(elem.geometry)
             // console.log("element", elem)
-            var newmarker = L.geoJSON(parsedObject, { 
+            let newmarker = L.geoJSON(parsedObject, { 
               pointToLayer: function (feature, latlng) { 
                 return L.circleMarker(latlng, { 
                   radius: 8, 
