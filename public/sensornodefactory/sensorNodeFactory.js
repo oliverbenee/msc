@@ -171,21 +171,27 @@ export class DMIFreeDataSensor {
         var thing = options[element].properties;
         var propertyname = thing.parameterId
         var propertyvalue = thing.value
-        //console.log("name: " + propertyname + ", value: " + propertyvalue)
         let isTemp = (propertyname.includes("temp") || propertyname.includes("tw"))
         if(isTemp && propertyvalue != Infinity){this.temperature__celcius.push(parseFloat(propertyvalue));}
-        else if(propertyname.includes("hum")){this.humidity__pct.push(parseFloat(propertyvalue))}
-        else if(propertyname.includes("pressure")){this.pressure__hPa.push(parseFloat(propertyvalue))} 
-        else if(propertyname.includes("radia")){this.radia_glob.push(parseInt(propertyvalue))}
-        else if(propertyname.includes("wind_dir")){this.wind_dir.push(parseInt(propertyvalue))}
-        else if(propertyname.includes("wind") && !propertyname.includes("dir")){this.wind_speed.push(parseFloat(propertyvalue))}
-        else if(propertyname.includes("precip") && !propertyname.includes("dur")){this.precip.push(parseFloat(propertyvalue))}
-        else if(propertyname.includes("sun")){this.sun.push(propertyvalue)}
-        else if(propertyname.includes("visib")){this.visibility.push(parseInt(propertyvalue))}
-
+        else if(propertyname.includes("hum")){
+          this.humidity__pct.push(parseFloat(propertyvalue))
+        } else if(propertyname.includes("pressure")){
+          this.pressure__hPa.push(parseFloat(propertyvalue))
+        } else if(propertyname.includes("radia")){
+          this.radia_glob.push(parseInt(propertyvalue))
+        } else if(propertyname.includes("wind_dir")){
+          this.wind_dir.push(parseInt(propertyvalue))
+        } else if(propertyname.includes("wind") && !propertyname.includes("dir")){
+          this.wind_speed.push(parseFloat(propertyvalue))
+        } else if(propertyname.includes("precip") && !propertyname.includes("dur")){
+          this.precip.push(parseFloat(propertyvalue))
+        } else if(propertyname.includes("sun")){
+          this.sun.push(propertyvalue)
+        } else if(propertyname.includes("visib")){
+          this.visibility.push(parseInt(propertyvalue))
+        }
         // Save a backup value for preservation. 
         this.jsonmap.set(propertyname, propertyvalue)
-        //eval("this."+propertyname+"="+propertyvalue) // Unceremoniously yoinked from: https://stackoverflow.com/questions/5613834/convert-string-to-variable-name-in-javascript
       }
     }
     this.jsonmap = JSON.stringify(Object.fromEntries(this.jsonmap))
