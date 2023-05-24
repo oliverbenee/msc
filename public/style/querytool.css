@@ -59,16 +59,17 @@ form.queryForm {
 select {
   width:66%;
   display: block;
-  margin-left: auto;
   margin-right: auto;
 }
 
 select.orderSelect {
   width:33%;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 input.inputLimit {
   width:5em;
-  text-align:left;
+  text-align: center;
   box-sizing: border-box;
 }
