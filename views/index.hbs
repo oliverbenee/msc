@@ -111,8 +111,7 @@
   <select id="source" name="source" multiple>
     {{>sources}} <!-- automatically selected from partials folder. -->
   </select>
-  <p class="formText"> Method: SELECT </p>
-  <p class="formText"> Columns</p>
+  <p class="formText"> SELECT Columns:</p>
   <select name="fields" id="fields" multiple>
     <option value="geometry">Geometry</option>
     <option value="device_type">Device Type</option>
@@ -145,7 +144,6 @@
     <tr><td>Column value</td><td><input type="number" id="clauseValue" width="20em"></td></tr>
   </table>
 
-  <br></br>
   <input type="checkbox" id="gccheck"> Select by location
   <table align="center" class ="tableForm">
     <tr><td>The source layer...</td>
@@ -189,9 +187,10 @@
     <option value="asc">ASC</option>
     <option value="desc">DESC</option>
   </select>
-  <p class="formText"> Limit </p>
-  <center><input type="number" id="inputLimit" class="inputLimit"></center>
-  <br></br>
+  <table align="center">
+    <tr><td>Limit</td>
+    <td><input type="number" id="inputLimit" class="inputLimit"></td></tr>
+  </table>
   <center><input type="button" value="update" id="updateBtn"></center>
 </form>
   
