@@ -1,3 +1,28 @@
+const unitMap = new Map();
+unitMap.set("geometry", {name: "geometry", unit: ""})
+unitMap.set("device_type", {name: "device type", unit:""})
+unitMap.set("device_id", {name: "device id", unit:""})
+unitMap.set("t", {name: "temperature", unit: "celsius"})
+unitMap.set("h", {name: "humidity", unit: "%"})
+unitMap.set("p", {name: "pressure", unit: "hPa"})
+unitMap.set("l", {name: "luminosity", unit: "lux"})
+unitMap.set("radia_glob", {name: "Radiation", unit: "W/m2"})
+unitMap.set("wind_dir", {name: "Wind Direction", unit: "°"})
+unitMap.set("wind_speed", {name: "Wind Speed", unit: "m/s"})
+unitMap.set("precip", {name: "Precipitation", unit: "kg/m2"})
+unitMap.set("sun", {name: "Sun", unit: "min"})
+unitMap.set("visibility", {name: "Visibility", unit: "m"})
+unitMap.set("mp1", {name: "PM1", unit: "µg/cm3"})
+unitMap.set("mp2", {name: "PM2.5", unit: "µg/cm3"})
+unitMap.set("mpx", {name: "PM10", unit: "µg/cm3"})
+unitMap.set("height", {name: "Height", unit: "m"})
+unitMap.set("nA", {name: "Noise Average", unit: "dBa"})
+unitMap.set("eCO2", {name: "equivalent CO2", unit: "ppm"})
+unitMap.set("TVOC", {name: "Total Volatile Organic Compounds", unit: "ppb"})
+unitMap.set("so2", {name: "Sulfur Dioxide", unit: "µg/m3"})
+unitMap.set("no2", {name: "Nitrogen Dioxide", unit: "µg/m3"})
+unitMap.set("nox", {name: "Nitrogen Oxide (any)", unit: "µg/m3"})
+
 const rangeMap = new Map();
 rangeMap.set("Synop", 25000)
 rangeMap.set("GIWS", 1000)
@@ -331,6 +356,9 @@ export class SensorOptions {
   }
   getPublisherMap(key){
     return publisherMap.get(key);
+  }
+  getUnitMap(key){
+    return unitMap.get(key);
   }
 }
 

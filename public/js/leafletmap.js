@@ -86,23 +86,6 @@ const geocoderControl = L.Control.geocoder({
   map.fitBounds(gcpoly.getBounds())
 }).addTo(map);
 
-// Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
-function getPopupTableHTML(lat, lng, sensor){
-  let loc = `<table><thead><tr><th>(${lat},${lng})</tr></th></thead><tbody>`
-  let tableListOutput;
-  Object.entries(sensor).forEach(([key, value]) => {
-      if(key == "json"){
-        tableListOutput += "<tr><td>------------json--------------</td></tr>"
-        Object.entries(value).forEach((K) => {tableListOutput += "<tr><td>" + `${K[0]}` + "</td><td>" + `${K[1]}` + "</td></tr>"})
-      } else {
-        tableListOutput += "<tr><td>" + `${key}` + "</td><td>" + `${value}` + "</td></tr>"
-      }
-  })
-  const tableListEnd = "</tbody></table>"
-
-  return loc+tableListOutput+tableListEnd
-}
-
 /*
  * Add SideBar
  */
@@ -247,7 +230,7 @@ function placeSensorDataMarker(lat, lng, sensor){
       // Pop-ups for data. 
       locationMarker.sensor = sensor
       locationMarker.on('click', () => {
-        sidebar.setContent(getPopupTableHTML(lat, lng, sensor)).show()
+        sidebar.setContent(buildSidebarTable(lat, lng, sensor)).show()
       })
       //locationMarker.bindPopup(tableHTML(lat, lng, sensor))
       
@@ -389,7 +372,7 @@ function onEachFeature(feature, layer){
     mouseclick: zoomToFeature
   })
   //let popupContent = `<p> ${JSON.stringify(feature.properties)}</p>`
-  let popupContent = getPopupTableHTML(feature.properties.visueltcenter_x, feature.properties.visueltcenter_y, feature.properties)
+  let popupContent = buildSidebarTable(feature.properties.visueltcenter_x, feature.properties.visueltcenter_y, feature.properties)
 }
 
 // https://www.youtube.com/watch?v=xerlQ3tE8Ew <-- large geojson
@@ -472,7 +455,7 @@ function fetchSpeedTraps(){
       let latlngs = [[elem.POINT_1_LAT, elem.POINT_1_LNG], [elem.POINT_2_LAT, elem.POINT_2_LNG]]
       L.polyline(latlngs, { color: 'red' })
       .on('click', () => {
-        sidebar.setContent(getPopupTableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem)).show()
+        sidebar.setContent(buildSidebarTable(elem.POINT_1_LAT, elem.POINT_1_LNG, elem)).show()
       })
       .addTo(speedTrapLayer)
     })
@@ -613,7 +596,7 @@ function getMarkers(bounds){
   })
   let table = document.getElementById("queryTable")
   table.innerHTML = ""
-  table.appendChild(buildHtmlTable(sensorsToTable))
+  table.appendChild(buildQueryToolTable(sensorsToTable))
 
   return layers;
 }
@@ -624,14 +607,38 @@ const _table_ = document.createElement('table'),
   _td_ = document.createElement('td');
 _table_.className="queryTable"
 
+// Format key and value for sensor into something readable. I think leaflet only accepts html strings as input?
+function buildSidebarTable(lat, lng, sensor){
+  let loc = `<table><thead><tr><th>(${lat},${lng})</tr></th></thead><tbody>`
+  let tableListOutput;
+  Object.entries(sensor).forEach(([key, value]) => {
+      if(key == "json"){
+        tableListOutput += "<tr><td>------------json--------------</td></tr>"
+        Object.entries(value).forEach((K) => {tableListOutput += `<tr><td>${K[0]}</td><td>${K[1]}</td></tr>`})
+      } else {
+        let unitRes = sensorOptions.getUnitMap(key)
+        if(!unitRes){
+          tableListOutput += `<tr><td>${key}</td><td>${value}</td></tr>`
+        } else {
+          tableListOutput += `<tr><td>${unitRes.name}</td><td>${value}</td><td>${unitRes.unit}</td></tr>`
+        }
+      }
+  })
+  const tableListEnd = "</tbody></table>"
+
+  return loc+tableListOutput+tableListEnd
+}
+
 // Builds the HTML Table out of myList json data from Ivy restful service.
-function buildHtmlTable(arr) {
+function buildQueryToolTable(arr) {
   let table = _table_.cloneNode(false),
   columns = addAllColumnHeaders(arr, table);
   for (let i = 0, maxi = arr.length; i < maxi; ++i) {
     if(arr[i] != undefined){
+      // new sensor node.
       let tr = _tr_.cloneNode(false);
       for (let j = 0, maxj = columns.length; j < maxj; ++j) {
+        // new measurement in the node. 
         let td = _td_.cloneNode(false);
         let cellValue = arr[i][columns[j]];
         if(typeof cellValue === 'object' && !Array.isArray(cellValue) && cellValue !== null){cellValue = JSON.stringify(cellValue)}
@@ -736,7 +743,7 @@ function queryMap(){
         // show on table.
         let table = document.getElementById("queryTable")
         table.innerHTML = ""
-        table.appendChild(buildHtmlTable(data))
+        table.appendChild(buildQueryToolTable(data))
 
         // Clear query layer.
         queryLayer.clearLayers()
@@ -761,7 +768,7 @@ function queryMap(){
               }
             })
             .on('click', () => {
-              sidebar.setContent(getPopupTableHTML(parsedObject.coordinates[0], parsedObject.coordinates[1], elem)).show()
+              sidebar.setContent(buildSidebarTable(parsedObject.coordinates[0], parsedObject.coordinates[1], elem)).show()
             })
             .addTo(queryLayer)
             isGeometry = true
