@@ -75,8 +75,7 @@ const geocoderControl = L.Control.geocoder({
   query: 'Moon',
   placeholder: 'Search here...',
   geocoder: geocoder
-})
-.on('markgeocode', (e) => { 
+}).on('markgeocode', (e) => { 
   let bbox = e.geocode.bbox;
   gcpoly = L.polygon([
     bbox.getSouthEast(),
@@ -471,9 +470,7 @@ function fetchSpeedTraps(){
   .then(data => {
     data.forEach(elem => {
       let latlngs = [[elem.POINT_1_LAT, elem.POINT_1_LNG], [elem.POINT_2_LAT, elem.POINT_2_LNG]]
-      L.polyline(latlngs, {
-        color: 'red'
-      })
+      L.polyline(latlngs, { color: 'red' })
       .on('click', () => {
         sidebar.setContent(getPopupTableHTML(elem.POINT_1_LAT, elem.POINT_1_LNG, elem)).show()
       })
@@ -507,7 +504,7 @@ let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor']
       .then(handleErrors)
       .then(response => response.json())
       .then((values) => {
-        console.log(values)
+        // console.log(values)
         addMarkersToMap(values)
       })
       .catch(error => console.error(error))
