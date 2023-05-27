@@ -186,7 +186,7 @@ function createLocationFromBackend(object){
   //.withSchema('public')
   .insert({geometry: coordinates, device_type: sensor_type, device_id: device_id})
   .onConflict("device_id", "geometry")
-  .merge({geometry: coordinates, device_type: sensor_type}) // FIXME: this merge is being ignored. Not sure why. 
+  .merge({geometry: coordinates, device_type: sensor_type}) 
   .then(() => {
     if(json.sensorSource == "DMI"){
       let obj = {device_id: device_id, time: json.time, t: json.temperature__celcius, h: json.humidity__pct, p: json.pressure__hPa, 
