@@ -10,3 +10,8 @@ html, body, #map{
 #map{
   height: 650px;
 }
+
+/* Make table elements readable */
+td {
+  max-width: 10em;
+}

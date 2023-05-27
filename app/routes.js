@@ -127,21 +127,21 @@ router.get('/dmi/list/metobs', cache(3600), (req, res) => {
 })
 
 router.get('/dmi/obs/metobs', cache(3600), (req, res) => {
-  fetch(API_URL_DMI_METOBS_COLLECTIONS + "?api-key=" + API_KEY_DMI_METOBS)
+  fetch(API_URL_DMI_METOBS_COLLECTIONS + "?limit=100&period=latest&api-key=" + API_KEY_DMI_METOBS)
   .then((response => response.json()))
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});
 })
 
 router.get('/dmi/list/oceanobs', cache(3600), (req, res) => {
-  fetch(API_URL_DMI_OCEANOBS_STATIONS + "?limit=100&status=Active&api-key=" + API_KEY_DMI_OCEANOBS)
+  fetch(API_URL_DMI_OCEANOBS_STATIONS + "?limit=100&period=latest&status=Active&api-key=" + API_KEY_DMI_OCEANOBS)
   .then((response) => response.json())
   .then((data) => res.send(data))
   .catch(error => {console.log(error)})
 })
 
 router.get('/dmi/obs/oceanobs', cache(3600), (req, res) => {
-  fetch(API_URL_DMI_OCEANOBS_COLLECTIONS + "?api-key=" + API_KEY_DMI_OCEANOBS)
+  fetch(API_URL_DMI_OCEANOBS_COLLECTIONS + "?period=latest&api-key=" + API_KEY_DMI_OCEANOBS)
   .then((response => response.json()))
   .then((data) => res.send(data))
   .catch(error => {console.log(error)});
