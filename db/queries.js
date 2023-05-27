@@ -247,7 +247,7 @@ const getFields = (request, response) => {
   }
   // ----------------------------------------------------------------------------
 
-  var q = knex('locations')
+  let q = knex('locations')
   .withSchema('public')
   
   for (const FL in params.fields) {
