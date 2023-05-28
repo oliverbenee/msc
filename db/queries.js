@@ -224,7 +224,7 @@ function createLocationFromBackend(object){
         co: json.co, so2: json.so2, mP2: json.mp2, mPX: json.mpx, json: json.jsonmap}
       knex('ausensor')
       .insert(obj)
-      .onConflict(['device_id']).merge(obj)
+      .onConflict(['device_id', 'time']).merge(obj)
       .then(() => {console.log("inserted into ausensor")})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)
