@@ -220,11 +220,12 @@ function createLocationFromBackend(object){
       .onConflict(['device_id', 'time']).merge()
       .then(() => {console.log("inserted into metdotno")})
     } else if(json.sensorSource == "Aarhus Universitet"){
-      let obj = {device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, co: json.co, so2: json.so2, mp2: json.mp2, mpx: json.mpx, json: json.jsonmap}
+      let obj = {device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, 
+        co: json.co, so2: json.so2, mP2: json.mp2, mPX: json.mpx, json: json.jsonmap}
       knex('ausensor')
       .insert(obj)
       .onConflict(['device_id']).merge(obj)
-      .then(() => {/*console.log("inserted into ausensor")*/})
+      .then(() => {console.log("inserted into ausensor")})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)
     }
