@@ -215,7 +215,7 @@ function placeSensorDataMarker(lat, lng, sensor){
           //console.log("UPDATEEEE" + sensor.device_type + "ID: " + sensor.device_id)
           layer.sensor = sensor
           layer.on('click', () => {
-            sidebar.setContent(buildSidebarTable(lat, lng, sensor)).show()
+            sidebar.setContent(buildSidebarTable(lat, lng, sensor))
           })
           isUpdated = true
         }
