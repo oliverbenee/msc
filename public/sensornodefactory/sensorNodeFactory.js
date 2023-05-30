@@ -376,9 +376,9 @@ export class MetNoAirQualitySensor {
     this.temperature__celcius = average([0, options.air_temperature_0m, options.air_temperature_2m, options.air_temperature_20m, options.air_temperature_100m, options.air_temperature_200m, options.air_temperature_500m])
     this.humidity__pct = options.relative_humidity_2m
     this.wind_speed = options.wind_speed
+    this.precip=options.rainfall_amount + options.snowfall_amount
     this.wind_dir = options.wind_direction
     this.pressure__hPa = options.surface_air_pressure
-    this.precip = options.rainfall_amount + options.snowfall_amount
     this.jsonmap = {
       rainfall_amount: options.rainfall_amount,
       snowfall_amount: options.snowfall_amount,

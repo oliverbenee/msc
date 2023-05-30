@@ -194,9 +194,7 @@ function placeSensorDataMarker(lat, lng, sensor){
   let device_type = sensor.device_type
   if(device_type != undefined){
     iconUrl = sensorOptions.getIconMap(device_type)
-    //console.log(device_type)
-  } else {
-    console.error("No icon found for", sensor)
+  } else { console.error("No icon found for", sensor) }
   }
 
   let sensorIcon = L.icon({
@@ -205,31 +203,26 @@ function placeSensorDataMarker(lat, lng, sensor){
     iconAnchor: [8, 8], // IMAGE POSITIONING PIXEL. PLACED IN CENTER
   })
   
-  // check if the marker exists at target position. If we find a marker at that position, update it instead of making a new one.
+  // check if marker of same source exists at location. If one is found, update it instead of making a new one.
   // We have to do it like this, because js doesn't let us return out of a foreach loop.
   let isUpdated = false
-  markerlayers.forEach((ML) => { 
-    ML.eachLayer((layer) => { 
-      if(layer instanceof L.Marker){
-        if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
-          //console.log("UPDATEEEE" + sensor.device_type + "ID: " + sensor.device_id)
-          layer.sensor = sensor
-          layer.on('click', () => {
-            sidebar.setContent(buildSidebarTable(lat, lng, sensor))
-          })
-          isUpdated = true
-        }
-      } 
-    })
+  layerToAddTo.eachLayer((layer) => {
+    if(layer instanceof L.Marker){
+      if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
+        //console.log("UPDATEEEE" + sensor.device_type + "ID: " + sensor.device_id)
+        layer.sensor = sensor
+        layer.on('click', () => {
+          sidebar.setContent(buildSidebarTable(lat, lng, sensor))
+        })
+        isUpdated = true
+      }
+    }
   })
 
   // Place a NEW marker. 
   if(!isUpdated){
-    //console.debug(`no dupe found for: ${sensor.device_id}. It is a ${sensor.device_type} from ${sensor.sensorSource}`)
     let locationMarker = L.marker([lat, lng], {icon: sensorIcon}).addTo(markers); // Note, we add the marker to a group "markers", which allows clustering to work. 
     if(sensor.device_type){
-      //let circle = createErrorCircle(lat, lng, range);
-      //markers.addLayer(circle)
       // Pop-ups for data. 
       locationMarker.sensor = sensor
       locationMarker.on('click', () => {
