@@ -267,10 +267,10 @@ const getFields = (request, response) => {
 
   if(params.clause_column && params.clause_param && params.clause_value && !isJsonParam){
     q.where(params.clause_column, params.clause_param, parseFloat(params.clause_value))
-  } else if(params.clause_value && isJsonParam){
-    q.whereJsonSubsetOf(params.clause_column, params.clause_value)
+  } else if(isJsonParam && params.clause_value && params.clause_column){ // key and value.
+    q.whereRaw('dmisensor.json->>? = ?', [params.clause_column, JSON.parse(params.clause_value)])    
   } else {
-    console.log("isJSONPARAM?", isJsonParam, "is param?", params.clause_column, "WHAT DOES IT SAY?", params.clause_value)
+    console.log("isJSONPARAM?", isJsonParam, "what is the param?", params.clause_column, "what is the value?", params.clause_value)
   }
 
   if(params.geoClause && params.targetGeom){
