@@ -288,10 +288,17 @@ const getFields = (request, response) => {
     }
   }
 
-
   //-----------------------------------------------------------------------------
-  if(params.orderSource && params.orderType){ 
-    q.orderBy(`${params.source[0]}.${params.orderSource}`, `${params.orderType}`)
+  if(params.orderSource && params.orderType && params.orderSource != 'st_distance'){ 
+    if(params.orderSource != "st_x" && params.orderSource != "st_y"){
+      q.orderBy(`${params.source[0]}.${params.orderSource}`, `${params.orderType}`)
+    } else {
+      console.log("IS X OR Y")
+      let orderVal
+      if(params.orderSource == "st_x"){orderVal = st.x("geometry")}
+      else if(params.orderSource == "st_y"){orderVal = st.y("geometry")}
+      q.orderBy(orderVal, `${params.orderType}`)
+    }
   }
   if(params.limit){q.limit(params.limit)}
 
