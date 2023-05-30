@@ -195,6 +195,33 @@ function placeSensorDataMarker(lat, lng, sensor){
   if(device_type != undefined){
     iconUrl = sensorOptions.getIconMap(device_type)
   } else { console.error("No icon found for", sensor) }
+
+  // for layer filtering.
+  let publisher = sensorOptions.getPublisherMap(sensor.device_type)
+  let layerToAddTo = errorlayer
+  // switch statements are faster than if-else. 
+  switch (publisher) {
+    // case "Montem": 
+    //   layerToAddTo = cityprobe2layer
+    //   break
+    case "DMI":
+      layerToAddTo = dmiLayer
+      break
+    case "SmartCitizen":
+      layerToAddTo = scklayer
+      break
+    case "Aarhus Municipality":
+      layerToAddTo = wifilayer
+      break
+    case "MET.no":
+      layerToAddTo = metNoAirLayer
+      break
+    case "Aarhus Universitet":
+      layerToAddTo = variousUniversitiesLayer
+      break
+    default:
+      console.warn(`no layer found. Will be added to the error layer. publisher: '${publisher}' `, sensor)
+      layerToAddTo = errorlayer
   }
 
   let sensorIcon = L.icon({
@@ -225,38 +252,7 @@ function placeSensorDataMarker(lat, lng, sensor){
     if(sensor.device_type){
       // Pop-ups for data. 
       locationMarker.sensor = sensor
-      locationMarker.on('click', () => {
-        sidebar.setContent(buildSidebarTable(lat, lng, sensor)).show()
-      })
-      //locationMarker.bindPopup(tableHTML(lat, lng, sensor))
-      
-      // for layer filtering.
-      let publisher = sensorOptions.getPublisherMap(sensor.device_type)
-      let layerToAddTo = errorlayer
-      // switch statements are faster than if-else. 
-      switch(publisher){
-        // case "Montem": 
-        //   layerToAddTo = cityprobe2layer
-        //   break
-        case "DMI": 
-          layerToAddTo = dmiLayer
-          break
-        case "SmartCitizen": 
-          layerToAddTo = scklayer
-          break
-        case "Aarhus Municipality":
-          layerToAddTo = wifilayer
-          break
-        case "MET.no": 
-          layerToAddTo = metNoAirLayer
-          break
-        case "Aarhus Universitet": 
-          layerToAddTo = variousUniversitiesLayer
-          break
-        default: 
-          console.warn(`no layer found. Will be added to the error layer. publisher: '${publisher}' `, sensor)
-          layerToAddTo = errorlayer
-      }
+      locationMarker.on('click', () => { sidebar.setContent(buildSidebarTable(lat, lng, sensor)).show() })
       layerToAddTo.addLayer(locationMarker)
     }
     // clustering tool. 
