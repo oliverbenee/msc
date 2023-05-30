@@ -249,12 +249,18 @@ const getFields = (request, response) => {
   let q = knex('locations')
   .withSchema('public')
   
+  var isDist
+
   for (const FL in params.fields) {
     const element = params.fields[FL];
     if(element == "geometry"){ // force geometry into geojson format.
       q.select(st.asGeoJSON('geometry')) // https://github.com/jfgodoy/knex-postgis/blob/master/tests/functions.js
     } else if(element == "st_x"){q.select(st.x('geometry'))} 
     else if(element == "st_y"){q.select(st.y('geometry'))}
+    else if(element == "st_distance" && params.targetGeom != undefined){
+      q.select(st.distance('geometry', params.targetGeom))
+      isDist = true
+    }
     else {q.select(element)}
   }
 
@@ -269,13 +275,11 @@ const getFields = (request, response) => {
     q.where(params.clause_column, params.clause_param, parseFloat(params.clause_value))
   } else if(isJsonParam && params.clause_value && params.clause_column){ // key and value.
     q.whereRaw('dmisensor.json->>? = ?', [params.clause_column, JSON.parse(params.clause_value)])    
-  } else {
-    console.log("isJSONPARAM?", isJsonParam, "what is the param?", params.clause_column, "what is the value?", params.clause_value)
   }
 
   if(params.geoClause && params.targetGeom){
-    console.log("geoClause", params.geoClause)
-    console.log("targetGeom", params.targetGeom)
+    // console.log("geoClause", params.geoClause)
+    // console.log("targetGeom", params.targetGeom)
     switch(params.geoClause){
       case "st_within":
         q.where(st.within("locations.geometry", st.geomFromGeoJSON(params.targetGeom.geometry)))
@@ -283,6 +287,10 @@ const getFields = (request, response) => {
       case "st_dwithin": 
         q.where(st.dwithin("locations.geometry", st.geomFromGeoJSON(params.targetGeom.geometry), 50))
         break
+      case "knn":
+        q.distinct(st.distance("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857)).as("dist"))
+        isDist = true;
+        break;
       default:
         console.log("real clause", params.geoClause)
     }
@@ -299,6 +307,10 @@ const getFields = (request, response) => {
       else if(params.orderSource == "st_y"){orderVal = st.y("geometry")}
       q.orderBy(orderVal, `${params.orderType}`)
     }
+  } else if(params.orderSource == 'st_distance' && isDist && params.orderType){
+    q.orderBy("dist", `${params.orderType}`)
+  } else {
+    console.log("OS:", params.orderSource, "ID: ", isDist, "OT: ", params.orderType)
   }
   if(params.limit){q.limit(params.limit)}
 
