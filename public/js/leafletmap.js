@@ -504,6 +504,7 @@ function fetchAll(){
   fetchSpeedTraps()
 }
 fetchAll()
+setInterval(fetchAll(), 30000)
 
 function createErrorCircle(lat, lng, radius){
   let circle = L.circle([lat, lng], {
