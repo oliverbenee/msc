@@ -239,8 +239,6 @@ const getFields = (request, response) => {
   let params = request.body.data
   console.log("FORM:")
   console.log(params)
-  console.log("----------------------------------------------------------------")
-
   // No query inserted or the form wasn't filled correctly. Basic form checking. 
   if(Object.keys(params).length === 0){
     console.log("no params")
@@ -270,10 +268,9 @@ const getFields = (request, response) => {
   if(params.clause_column && params.clause_param && params.clause_value && !isJsonParam){
     q.where(params.clause_column, params.clause_param, parseFloat(params.clause_value))
   } else if(params.clause_value && isJsonParam){
-    // console.log("ISJSONPARAM")
     q.whereJsonSubsetOf(params.clause_column, params.clause_value)
   } else {
-    // console.log("isJSONPARAM?", isJsonParam, "WHAT DOES IT SAY?", params.clause_value)
+    console.log("isJSONPARAM?", isJsonParam, "is param?", params.clause_column, "WHAT DOES IT SAY?", params.clause_value)
   }
 
   if(params.geoClause && params.targetGeom){
