@@ -234,15 +234,12 @@ function placeSensorDataMarker(lat, lng, sensor){
   // We have to do it like this, because js doesn't let us return out of a foreach loop.
   let isUpdated = false
   layerToAddTo.eachLayer((layer) => {
-    if(layer instanceof L.Marker){
-      if(layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001){
-        //console.log("UPDATEEEE" + sensor.device_type + "ID: " + sensor.device_id)
-        layer.sensor = sensor
-        layer.on('click', () => {
-          sidebar.setContent(buildSidebarTable(lat, lng, sensor))
-        })
-        isUpdated = true
-      }
+    let isMarkerThere = layer instanceof L.Marker && layer.getLatLng().distanceTo(L.latLng(lat, lng)) < 0.0000001
+    if(isMarkerThere){
+      //console.log("UPDATEEEE" + sensor.device_type + "ID: " + sensor.device_id)
+      layer.sensor = sensor
+      layer.on('click', () => { sidebar.setContent(buildSidebarTable(lat, lng, sensor)) })
+      isUpdated = true
     }
   })
 
