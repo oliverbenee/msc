@@ -11,7 +11,7 @@ const $ = require( "jquery" )( window );
 const  { SmartCitizenKitFactory, SensorOptions, WiFiRouterFactory, 
   NullSensorFactory, MetNoAirQualitySensorFactory, 
   CopenhagenMeterologySensorFactory, AarhusUniversityAirqualitySensorFactory, 
-  DMIFreeDataSensorFactory } = require('fix-esm').require('sensornodefactory')
+  DMIFreeDataSensorFactory, OpenMeteoStationFactory} = require('fix-esm').require('sensornodefactory')
 
 const sensorOptions = new SensorOptions();
 const smartCitizenKitFactory = new SmartCitizenKitFactory();
@@ -21,6 +21,7 @@ const metNoAirQualitySensorFactory = new MetNoAirQualitySensorFactory();
 const copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory();
 const aarhusUniversityAirqualitySensorFactory = new AarhusUniversityAirqualitySensorFactory()
 const dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory()
+const openMeteoStationFactory = new OpenMeteoStationFactory()
 
 function getInsertTemplate(lat, lng, sensor){
   return {"coordinates": "POINT(" + lat + " " + lng + ")", "json": sensor}
@@ -263,8 +264,46 @@ function fetchAll(){
   fetchMetNoAQ()
   fetchAUSensor()
 }
-fetchAll()
+// fetchAll()
 
-setInterval(() => {
-  fetchAll()
-}, 600000)
+// setInterval(() => {
+//   fetchAll()
+// }, 600000)
+ 
+function fetchOpenMeteoloc(lat, lng){
+  axios.get(`/open-meteo/${lat}/${lng}`)
+  .then(response => {
+    let data = response.data
+    data.device_id = `lat${lat}lng${lng}`
+    sendPositionToDatabase(lat, lng, openMeteoStationFactory.create(data))
+  }).catch(err => {
+    console.log("error", err)
+  })
+}
+
+function fetchOpenMeteo(){
+  console.log("fetcopenmetero")
+  let latlngs = {
+  "Aarhus C": {lat: 56.17, lng: 10.21},
+  "Aarhus N": {lat: 56.20, lng: 10.17},
+  "Aarhus V": {lat: 56.17, lng: 10.15},
+  "Aarhus Airport": {lat: 56.30, lng: 10.63},
+  "Vejle": {lat: 56.48, lng: 9.91},
+  "Vejle Ø": {lat: 55.73, lng: 9.63},
+  "Kolding": {lat: 55.49, lng: 9.47},
+  "Kolding Vamdrup": {lat: 55.44, lng: 9.33},
+  "Randers": {lat: 56.46, lng: 10.04},
+  "Randers Airport": {lat: 56.51, lng: 10.03},
+  "Randers C": {lat: 56.46, lng: 10.03},
+  "Randers SV": {lat: 56.41, lng: 10.3},
+  "Odense": {lat: 55.40, lng: 10.39},
+  "København N": {lat: 55.70, lng: 12.55}
+  }
+
+  for (const location in latlngs) {
+    const element = latlngs[location];
+    fetchOpenMeteoloc(element.lat, element.lng)
+  }
+}
+
+fetchOpenMeteo()

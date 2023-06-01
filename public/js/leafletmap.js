@@ -150,7 +150,8 @@ const dbQueryLayer = L.layerGroup()
 const metNoAirLayer = L.layerGroup()
 const envZoneLayer = L.layerGroup()
 const variousUniversitiesLayer = L.layerGroup()
-const markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer, variousUniversitiesLayer]
+const openMeteoLayer = L.layerGroup()
+const markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer, variousUniversitiesLayer, openMeteoLayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
@@ -162,7 +163,8 @@ let overlaysObj = {
     "WiFi Locations": wifilayer,
     "Speedtraps": speedTrapLayer,
     "MET.no Air Quality Sensor": metNoAirLayer,
-    "Various universities": variousUniversitiesLayer
+    "Various universities": variousUniversitiesLayer,
+    "Open-meteo": openMeteoLayer
   },
   "Tools": {
     "Cluster markers": markers,
@@ -218,6 +220,9 @@ function placeSensorDataMarker(lat, lng, sensor){
       break
     case "Aarhus Universitet":
       layerToAddTo = variousUniversitiesLayer
+      break
+    case "Open-Meteo":
+      layerToAddTo = openMeteoLayer
       break
     default:
       console.warn(`no layer found. Will be added to the error layer. publisher: '${publisher}' `, sensor)
@@ -470,7 +475,7 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor']
+let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor', 'open-meteo']
   Promise.all(sources.map(url =>
     fetch('/locations/' + url)
       .then(handleErrors)

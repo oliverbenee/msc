@@ -52,6 +52,7 @@ publisherMap.set("WiFi router", "Aarhus Municipality")
 publisherMap.set("AU air quality sensor", "Aarhus Universitet")
 publisherMap.set("MET.no air quality sensor", "MET.no")
 publisherMap.set("Instruments from HC Oersted Institute", "HC Oersted Institute")
+publisherMap.set("Open-Meteo Weather station", "Open-Meteo")
 
 const iconMap = new Map();
 iconMap.set("CityProbe2", "img/montem_logo.jpg")
@@ -60,6 +61,7 @@ iconMap.set("Pluvio", "img/dmi_metobs.png")
 iconMap.set("GIWS", "img/dmi_metobs.png")
 iconMap.set("Tide-gauge-primary", "img/dmi_oceanobs.png")
 iconMap.set("Tide-gauge-secondary", "img/dmi_oceanobs.png")
+iconMap.set("Open-Meteo Weather station", "img/open-meteo.png")
 
 // all the smartCitizen ones
 iconMap.set("SmartCitizen Kit 1.1", "img/smartcitizen.png")
@@ -494,3 +496,25 @@ function test(){
 }
 //test();
 
+export class OpenMeteoStation {
+  constructor(options){
+    this.sensorSource="Open-Meteo"
+    this.device_type="Open-Meteo Weather station"
+    this.device_id=options.device_id
+    let hour = new Date().getHours()
+    this.time=options.hourly.time[hour]
+    this.temperature__celcius = options.hourly.temperature_2m[hour]
+    this.humidity__pct = options.hourly.relativehumidity_2m[hour]
+    this.precip = options.hourly.precipitation[hour]
+    this.pressure__hPa = options.hourly.surface_pressure[hour]
+    this.visibility = options.hourly.visibility[hour]
+    this.wind_speed=options.hourly.windspeed_10m[hour]
+    this.wind_dir=options.hourly.winddirection_10m[hour]
+  }
+}
+
+export class OpenMeteoStationFactory {
+  create(options){
+    return new OpenMeteoStation(options)
+  }
+}

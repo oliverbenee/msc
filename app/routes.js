@@ -25,6 +25,7 @@ router.get('/locations/sck', db.getSCK)
 router.get('/locations/wifi', db.getWiFi)
 router.get('/locations/metno', db.getMetNo)
 router.get('/locations/ausensor', db.getAUSensor)
+router.get('/locations/open-meteo', db.getOpenMeteo)
 
 router.get('/locations/:id', db.getLocationById)
 //router.post('/locations', db.createLocation)
@@ -265,6 +266,16 @@ router.get('/metno/:station', cache(3600), (req, res) => {
     .catch(error => console.log('error', error))
 })
 
-module.exports.router = router;
+const API_URL_OPENMETEO = "https://api.open-meteo.com/v1/forecast"
+const API_SUFFIX_OPENMETEO = "hourly=temperature_2m,relativehumidity_2m,precipitation,surface_pressure,visibility,windspeed_10m,winddirection_10m&forecast_days=1"
 
-// TODO: https://data.sensor.community/airrohr/v1/filter/country=DK
+router.get('/open-meteo/:lat/:lng', (req, res) => {
+  let lat = req.params.lat
+  let lng = req.params.lng
+  fetch(`${API_URL_OPENMETEO}?latitude=${lat}&longitude=${lng}&${API_SUFFIX_OPENMETEO}`)
+  .then(response => response.json())
+  .then(result => res.send(result))
+  .catch(error => console.log('error', error))
+})
+
+module.exports.router = router;

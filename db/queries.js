@@ -88,6 +88,20 @@ const getAUSensor = (request, response) => {
   })
 }
 
+const getOpenMeteo = (request, response) => {
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('open-meteo', 'locations.device_id', 'open-meteo.device_id')
+  .then((result) => { 
+    response.status(200).json(result)
+    return
+  }, (error) => {
+    response.status(500).json(error)
+    return
+  })
+}
+
 const getLocationById = (request, response) => {
   knex('locations')
   .select('*', st.asGeoJSON('geometry').as('geojson'))
@@ -226,6 +240,16 @@ function createLocationFromBackend(object){
       .insert(obj)
       .onConflict(['device_id', 'time']).merge(obj)
       .then(() => {console.log("inserted into ausensor")})
+    } else if(json.sensorSource == "Open-Meteo"){
+      console.log("Database received object:")
+      let obj = {device_id: device_id, time: json.time, t: json.temperature__celcius,
+      h: json.humidity__pct, precip: json.precip, p: json.pressure__hPa, visibility: json.visibility,
+      wind_speed: json.wind_speed, wind_dir: json.wind_dir }
+      console.log(obj)
+      knex('open-meteo')
+      .insert(obj)
+      .onConflict(['device_id', 'time']).merge(obj)
+      .then(() => {console.log("inserted into open-meteo")})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)
     }
@@ -370,6 +394,7 @@ module.exports = {
   getWiFi,
   getMetNo,
   getAUSensor,
+  getOpenMeteo,
   getLocationById,
   getFields,
   createLocationFromBackend,
