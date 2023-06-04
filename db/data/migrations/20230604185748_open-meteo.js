@@ -5,7 +5,7 @@
 exports.up = function(knex) {
   knex.schema.hasTable("open-meteo").then((exists) => {
     if(!exists) {
-      knex.schema
+      return knex.schema
         .createTable("open-meteo", table => {
           table.string("device_id")
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")

@@ -3,26 +3,25 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  return knex.schema.hasTable("metdotno").then((exists) => {
-    if (!exists) {
-      knex.schema
-        .createTable("metdotno", table => {
+  knex.schema.hasTable("smhi").then((exists) => {
+    if(!exists) {
+      return knex.schema
+        .createTable("smhi", table => {
           table.string('device_id')
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
-          table.timestamp("time").defaultTo(knex.fn.now())
-          table.varchar('name')
-          table.varchar('municipality')
-          table.float('height') // one station has a height of 3.5, the rest only 3.
+          table.timestamp("time")
           table.float("t", 5)
           table.float("h", 5)
-          table.float("wind_speed", 5)
-          table.float("wind_dir", 5)
           table.float("p", 5)
+          table.float("wind_dir", 5)
+          table.float("wind_speed", 5)
+          table.float("radia_glob", 5)
           table.float("precip", 5)
-          table.json("json")
+          table.float("sun", 5)
+          table.float("visibility", 5)
           table.unique(["device_id", "time"], {useConstraint: true})
         })
-        .then(console.log("created metdotno if it didn't exist. "))
+        .then(console.log("created table smhi"))
     }
   })
 };

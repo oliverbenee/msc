@@ -5,7 +5,7 @@
 exports.up = function(knex) {
   knex.schema.hasTable("smartcitizen").then((exists) => {
     if (!exists) {
-      knex.schema
+      return knex.schema
         .createTable("smartcitizen", table => {
           table.string('device_id') //.unique({ useConstraint: true })
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")

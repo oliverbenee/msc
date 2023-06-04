@@ -5,7 +5,7 @@
 exports.up = function(knex) {
   knex.schema.hasTable("wifilocations").then((exists) => {
     if (!exists) {
-      knex.schema
+      return knex.schema
         .createTable("wifilocations", table => {
           table.string('device_id').unique({
             useConstraint: true

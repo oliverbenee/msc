@@ -6,7 +6,7 @@
 exports.up = function (knex) {
   knex.schema.hasTable("locations").then((exists) => {
     if (!exists) {
-      knex.schema
+      return knex.schema
         .createTable("locations", table => {
           table.specificType("geometry", "geometry(point, 3857)")
           table.string('device_type')

@@ -5,7 +5,7 @@
 exports.up = function(knex) {
   knex.schema.hasTable("ausensor").then((exists) => {
     if (!exists) {
-      knex.schema
+      return knex.schema
         .createTable("ausensor", table => {
           table.string('device_id')
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
