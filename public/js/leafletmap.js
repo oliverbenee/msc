@@ -113,6 +113,25 @@ const SafeCast = L.tileLayer('https://s3.amazonaws.com/te512.safecast.org/{z}/{x
 	attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://blog.safecast.org/about/">SafeCast</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 });
 
+var OpenWeatherMap_Clouds = L.tileLayer('http://{s}.tile.openweathermap.org/map/clouds/{z}/{x}/{y}.png?appid={apiKey}', {
+	maxZoom: 19,
+	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
+	apiKey: 'bd600f61e5aa20c8a5e82cbc55e02a08',
+	opacity: 0.5
+});
+var OpenWeatherMap_Pressure = L.tileLayer('http://{s}.tile.openweathermap.org/map/pressure/{z}/{x}/{y}.png?appid={apiKey}', {
+	maxZoom: 19,
+	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
+	apiKey: 'bd600f61e5aa20c8a5e82cbc55e02a08',
+	opacity: 0.5
+});
+var OpenWeatherMap_Wind = L.tileLayer('http://{s}.tile.openweathermap.org/map/wind/{z}/{x}/{y}.png?appid={apiKey}', {
+	maxZoom: 19,
+	attribution: 'Map data &copy; <a href="http://openweathermap.org">OpenWeatherMap</a>',
+	apiKey: 'bd600f61e5aa20c8a5e82cbc55e02a08',
+	opacity: 0.5
+});
+
 // let mbapik = pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ
 const basemaps = {
   "OpenStreetMap: Standard": openStreetMapTileLayer,
@@ -169,7 +188,10 @@ let overlaysObj = {
   "Tools": {
     "Cluster markers": markers,
     "SafeCast Radiation": SafeCast,
-    "Matrikelkort": matrikelkortlayer
+    "Matrikelkort": matrikelkortlayer,
+    "OWM Clouds": OpenWeatherMap_Clouds,
+    "OWM Wind": OpenWeatherMap_Wind,
+    "OWM Pressure": OpenWeatherMap_Pressure
   }
 }
 let control = L.control.groupedLayers(basemaps, overlaysObj, { groupCheckboxes: true }).addTo(map);
@@ -354,6 +376,7 @@ function resetHighlight(e) {
 function zoomToFeature(e) {
   console.info("click")
   map.fitBounds(e.target.getBounds());
+  sidebar.setContent(buildSidebarTable(e.target.latitude, e.target.longitude, e.target.popupContent)).show()
   sidebar.setContent(e.target.popupContent).show()
 }
 
