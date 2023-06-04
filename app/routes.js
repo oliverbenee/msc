@@ -250,6 +250,10 @@ router.get('/AUluft/vesterbro', cache(3600), (req, res) => {
     .catch(error => console.log('error', error))
 })
 
+////////////////////////////////////////////////////////////////////////////////////
+// API Fetch MET.no stations. These seem to be the same as the ones used by yr.no //
+////////////////////////////////////////////////////////////////////////////////////
+
 const API_URL_METNO_AIRQUALITYFORECAST = 'https://api.met.no/weatherapi/airqualityforecast/0.1/'
 router.get('/metno/stations', cache(3600), (req, res) => {
   fetch(API_URL_METNO_AIRQUALITYFORECAST + 'stations')
