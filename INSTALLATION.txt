@@ -1,0 +1,79 @@
+I would be very surprised, if the project could just be run out of the box.  
+
+Download and install:
+- PostgreSQL
+- PostGIS Spatial Extension (important!)
+- PgAdmin (technically not necessary, but very useful for confirming that the installation works.)
+
+When installing the Stack Builder should say that "Selected Packages" includes "PostGIS ... Bundle for PostgreSQL ..."
+Click "Next" to download. (this takes quite a while...)
+Click "Next" to install. 
+Read the License for PostGIS, and click "I Agree".
+Check components to install:
+- PostGIS
+You will have another opportunity to create the database here as well. 
+Click "Install"
+
+If it asks to install any drivers, click "Yes".
+
+
+Use as reference: https://www.postgis.net/workshops/postgis-intro/installation.html
+
+Open PgAdmin. 
+Use the password it asked you to set. 
+
+--------------------------------------------------------------------------------------
+IF A POSTGRESQL SERVER WITH THE NAME "postgres" DOES NOT EXIST 
+Under "Browsers" (left), if no server exists.
+- Right-click "Servers" -> Create -> Server...
+
+Use as reference: https://www.postgis.net/workshops/postgis-intro/creating_db.html
+
+Naming:
+-------
+Host name: localhost
+Port: 5432
+Maintenance database: postgres 
+User: postgres
+Password: g37TbukJZ
+-------
+If you named these values anything else, you will have to manually change the values in 'db/knexfile.js' to whatever you made them.
+-------
+
+Expand "Servers"->"PostgreSQL 15" (or whatever)
+Right-click "Databases"->"Create"->"Database..."
+
+Naming:
+-------
+Database: postgres
+Owner: postgres
+-------
+Now you need to enable to PostgreSQL database. 
+
+Now to ensure everything works properly...
+Click drop-down "Tools" -> "Query Tool"
+Run the script in 'db/sql/extensiongis.sql'. It contains:
+```
+CREATE EXTENSION postgis;
+CREATE EXTENSION postgis_topology;
+SELECT postgis_full_version();
+```
+If the query successfully runs, you have installed PostGIS correctly. 
+It should tell you some information about the installation.
+You can now run Knex.js migrations to set up the tables.
+
+--------------------------------------------------------------------------------------
+
+Open up a terminal and navigate to the folder of this project.
+
+First, install *all* packages for the project.
+> npm install
+
+First command is to set up the knex migration, tables, and constraints.
+> npm run migrate
+If everything went correctly, it should print, that a bunch of tables have been created, and then print an error. 
+
+Optionally, you can now populate the database with some "fake" measurements. 
+> npm run seed
+Then, you can safely run the project.
+> npm run start
