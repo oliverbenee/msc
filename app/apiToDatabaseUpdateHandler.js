@@ -294,6 +294,8 @@ function fetchOpenMeteo(){
 }
 
 fetchOpenMeteo()fetchAll()
+
+fetchAll()
 setInterval(() => {
   fetchAll()
 }, 600000)
