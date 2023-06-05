@@ -9,7 +9,7 @@ exports.up = function(knex) {
         .createTable("smhi", table => {
           table.string('device_id')
           table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
-          table.timestamp("time")
+          table.timestamp("time").defaultTo(knex.fn.now())
           table.float("t", 5)
           table.float("h", 5)
           table.float("p", 5)
