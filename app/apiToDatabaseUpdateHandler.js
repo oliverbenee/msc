@@ -257,19 +257,6 @@ function tableToJson(table) {
   return results;
 }
 
-function fetchAll(){
-  fetchDMI()
-  fetchSCK()
-  fetchWiFi()
-  fetchMetNoAQ()
-  fetchAUSensor()
-}
-// fetchAll()
-
-// setInterval(() => {
-//   fetchAll()
-// }, 600000)
- 
 function fetchOpenMeteoloc(lat, lng){
   axios.get(`/open-meteo/${lat}/${lng}`)
   .then(response => {
@@ -306,4 +293,7 @@ function fetchOpenMeteo(){
   }
 }
 
-fetchOpenMeteo()
+fetchOpenMeteo()fetchAll()
+setInterval(() => {
+  fetchAll()
+}, 600000)
