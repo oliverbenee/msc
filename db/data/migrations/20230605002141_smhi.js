@@ -3,12 +3,12 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  knex.schema.hasTable("smhi").then((exists) => {
+    knex.schema.hasTable("smhi").then((exists) => {
     if(!exists) {
       return knex.schema
         .createTable("smhi", table => {
           table.string('device_id')
-          table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
+	  table.foreign("device_id").references("device_id").inTable("locations").onDelete("CASCADE")
           table.timestamp("time").defaultTo(knex.fn.now())
           table.float("t", 5)
           table.float("h", 5)
@@ -19,11 +19,12 @@ exports.up = function(knex) {
           table.float("precip", 5)
           table.float("sun", 5)
           table.float("visibility", 5)
-          table.unique(["device_id", "time"], {useConstraint: true})
+	  table.unique(["device_id", "time"], {useConstraint: true})
+	  
         })
         .then(console.log("created table smhi"))
     }
-  })
+  })  
 };
 
 /**
