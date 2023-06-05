@@ -54,6 +54,9 @@ publisherMap.set("MET.no air quality sensor", "MET.no")
 publisherMap.set("Instruments from HC Oersted Institute", "HC Oersted Institute")
 publisherMap.set("Open-Meteo Weather station", "Open-Meteo")
 
+publisherMap.set("CORE", "SMHI")
+publisherMap.set("ADDITIONAL", "SMHI")
+
 const iconMap = new Map();
 iconMap.set("CityProbe2", "img/montem_logo.jpg")
 iconMap.set("Synop", "img/dmi_metobs.png")
@@ -76,6 +79,9 @@ iconMap.set("TEST", "img/sensor_image.png")
 iconMap.set("MET.no air quality sensor", "img/met_no.png")
 iconMap.set("Instruments from HC Oersted Institute", "img/kobkomm.jpg")
 iconMap.set("AU air quality sensor", "img/au_logo.png")
+
+iconMap.set("CORE", "img/smhi_logo.png")
+iconMap.set("ADDITIONAL", "img/smhi_logo.png")
 
 export class CityLabSensor {
   constructor(options){

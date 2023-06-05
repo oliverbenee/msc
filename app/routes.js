@@ -26,6 +26,7 @@ router.get('/locations/wifi', db.getWiFi)
 router.get('/locations/metno', db.getMetNo)
 router.get('/locations/ausensor', db.getAUSensor)
 router.get('/locations/open-meteo', db.getOpenMeteo)
+router.get('/locations/smhi', db.getSMHI)
 
 router.get('/locations/:id', db.getLocationById)
 //router.post('/locations', db.createLocation)
@@ -277,6 +278,19 @@ router.get('/open-meteo/:lat/:lng', (req, res) => {
   let lat = req.params.lat
   let lng = req.params.lng
   fetch(`${API_URL_OPENMETEO}?latitude=${lat}&longitude=${lng}&${API_SUFFIX_OPENMETEO}`)
+  .then(response => response.json())
+  .then(result => res.send(result))
+  .catch(error => console.log('error', error))
+})
+
+/////////////////////////////////
+// API Fetch SMHI.se stations. //
+/////////////////////////////////
+
+const API_URL_SMHI_METOBS = "https://opendata-download-metobs.smhi.se/api/version/latest"
+router.get('/smhi/:parameter', cache(3600), (req, res) => {
+  const param = req.params.parameter
+  fetch(API_URL_SMHI_METOBS + '/parameter/' + param + '/station-set/all/period/latest-hour/data.json')
   .then(response => response.json())
   .then(result => res.send(result))
   .catch(error => console.log('error', error))

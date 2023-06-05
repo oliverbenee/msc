@@ -102,6 +102,19 @@ const getOpenMeteo = (request, response) => {
   })
 }
 
+const getSMHI = (request, response) => {
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('smhi', 'locations.device_id', 'smhi.device_id')
+  .then((result) => {
+    response.status(200).json(result)
+  }, (error) => {
+    response.status(500).json(error)
+    return
+  })
+}
+
 const getLocationById = (request, response) => {
   knex('locations')
   .select('*', st.asGeoJSON('geometry').as('geojson'))
@@ -250,11 +263,18 @@ function createLocationFromBackend(object){
       .insert(obj)
       .onConflict(['device_id', 'time']).merge(obj)
       .then(() => {console.log("inserted into open-meteo")})
+    } else if(json.sensorSource == "SMHI"){
+      let obj = {device_id: device_id, time: json.time, t: json.t, h: json.h, p: json.p, wind_dir: json.wind_dir,
+      wind_speed: json.wind_speed, radia_glob: json.radia_glob, precip:json.precip, sun: json.sun, visibility: json.visibility}
+      knex('smhi')
+      .insert(obj)
+      .onConflict(['device_id', 'time']).merge(obj)
+      .then(() => {/*console.log("inserted into smhisensor")*/})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)
     }
   })
-  .then((result) => { console.log("added location.") },
+  .then((result) => {/* console.log("added location.") */},
   (error) => { console.error(error) })
 }
 
@@ -395,6 +415,7 @@ module.exports = {
   getMetNo,
   getAUSensor,
   getOpenMeteo,
+  getSMHI,
   getLocationById,
   getFields,
   createLocationFromBackend,

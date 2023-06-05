@@ -170,6 +170,7 @@ const metNoAirLayer = L.layerGroup()
 const envZoneLayer = L.layerGroup()
 const variousUniversitiesLayer = L.layerGroup()
 const openMeteoLayer = L.layerGroup()
+const smhiLayer = L.layerGroup()
 const markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer, variousUniversitiesLayer, openMeteoLayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
@@ -179,11 +180,14 @@ let overlaysObj = {
     //"CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer,
-    "WiFi Locations": wifilayer,
     "Speedtraps": speedTrapLayer,
     "MET.no Air Quality Sensor": metNoAirLayer,
-    "Various universities": variousUniversitiesLayer,
-    "Open-meteo": openMeteoLayer
+    "Various universities in Denmark": variousUniversitiesLayer,
+    "Open-meteo": openMeteoLayer,
+    "SMHI": smhiLayer
+  },
+  "Other": {
+    "WiFi Locations": wifilayer,
   },
   "Tools": {
     "Cluster markers": markers,
@@ -216,9 +220,9 @@ const zoomViewer = (new ZoomViewer()).addTo(map);
 function placeSensorDataMarker(lat, lng, sensor){
   let iconUrl = "img/msql.png";
   let device_type = sensor.device_type
-  if(device_type != undefined){
-    iconUrl = sensorOptions.getIconMap(device_type)
-  } else { console.error("No icon found for", sensor) }
+  let gic = sensorOptions.getIconMap(device_type)
+  if(gic){ iconUrl = gic } 
+  else { console.error("No icon found for '", device_type, "'") }
 
   // for layer filtering.
   let publisher = sensorOptions.getPublisherMap(sensor.device_type)
@@ -246,6 +250,9 @@ function placeSensorDataMarker(lat, lng, sensor){
     case "Open-Meteo":
       layerToAddTo = openMeteoLayer
       break
+    case "SMHI":
+      layerToAddTo = smhiLayer
+      break;
     default:
       console.warn(`no layer found. Will be added to the error layer. publisher: '${publisher}' `, sensor)
       layerToAddTo = errorlayer
@@ -498,7 +505,7 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor', 'open-meteo']
+let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor', 'open-meteo', 'smhi']
   Promise.all(sources.map(url =>
     fetch('/locations/' + url)
       .then(handleErrors)
@@ -642,6 +649,14 @@ function buildSidebarTable(lat, lng, sensor){
         }
       }
   })
+
+  if(sensorOptions.getPublisherMap(sensor.device_type) == "SMHI"){
+    tableListOutput += "<tr><td>note: Sun and Radiation are measured at seperate locations from everything else.</td></tr>"
+  } else if(sensorOptions.getPublisherMap(sensor.device_type) == "DMI"){
+    tableListOutput += "<tr><td>Explaination of weather codes: </td><td><a href=https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476621> link </a></td></tr>"
+    tableListOutput += "<tr><td>Explaination of parameters: </td><td><a href=https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476616> link </a></td></tr>"
+  }
+
   const tableListEnd = "</tbody></table>"
 
   return loc+tableListOutput+tableListEnd
