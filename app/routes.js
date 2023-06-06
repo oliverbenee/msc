@@ -27,6 +27,7 @@ router.get('/locations/metno', db.getMetNo)
 router.get('/locations/ausensor', db.getAUSensor)
 router.get('/locations/open-meteo', db.getOpenMeteo)
 router.get('/locations/smhi', db.getSMHI)
+router.get('/locations/opensensemap', db.getOpenSenseMap)
 
 router.get('/locations/:id', db.getLocationById)
 //router.post('/locations', db.createLocation)
@@ -294,6 +295,26 @@ router.get('/smhi/:parameter', cache(3600), (req, res) => {
   .then(response => response.json())
   .then(result => res.send(result))
   .catch(error => console.log('error', error))
+})
+
+////////////////////////////////////////
+// API Fetch OpenSenseMap senseboxes. //
+////////////////////////////////////////
+
+const API_URL_OPENSENSEMAP = "https://api.opensensemap.org/boxes"
+
+
+
+router.get('/opensensemap', cache(3600), (req, res) => {
+  var requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  let time = new Date().toISOString()
+  fetch(`https://api.opensensemap.org/boxes?date=${time}&format=geojson`, requestOptions)
+    .then(response => response.json())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error));
 })
 
 module.exports.router = router;

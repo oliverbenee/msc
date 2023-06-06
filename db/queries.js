@@ -115,6 +115,19 @@ const getSMHI = (request, response) => {
   })
 }
 
+const getOpenSenseMap = (request, response) => {
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('opensensemap', 'locations.device_id', 'opensensemap.device_id')
+  .then((result) => {
+    response.status(200).json(result)
+  }, (error) => {
+    response.status(500).json(error)
+    return
+  })
+}
+
 const getLocationById = (request, response) => {
   knex('locations')
   .select('*', st.asGeoJSON('geometry').as('geojson'))
@@ -222,7 +235,7 @@ function createLocationFromBackend(object){
       knex('dmisensor')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge()
-      .then(() => {console.log("inserted into dmisensor.")})
+      .then(() => {/*console.log("inserted into dmisensor.")*/})
     } else if(json.sensorSource == "SmartCitizen"){
       let obj = {device_id: device_id, time: json.time, l: json.mDigitalAmbientLightSensor, nA: json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm,
         t: json.mTemperature, h: json.mHumidity, p: json.mDigitalBarometricPressureSensor, mP2: json.mParticleMatterPM2_5, mPX: json.mParticleMatterPM10,
@@ -230,39 +243,39 @@ function createLocationFromBackend(object){
       knex('smartcitizen')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge()
-      .then(() => {console.log("inserted into smartcitizen")})
+      .then(() => {/*console.log("inserted into smartcitizen")*/})
     } else if(json.sensorSource == "Open Data Aarhus WiFi Routers"){
       let obj = {device_id: device_id, city: json.city, name: json.name, zip: json.zip, street: json.street, department: json.department, houseno: json.no}
       knex('wifilocations')
       .insert(obj)
       .onConflict("device_id").merge()
-      .then(() => {console.log("inserted into wifilocations")})
+      .then(() => {/*console.log("inserted into wifilocations")*/})
     } else if(json.sensorSource == "MET.no"){
-      console.log("is met.no")
+      // console.log("is met.no")
       let obj = {device_id: device_id, name: json.name, municipality: json.municipality, height: json.height, t: json.temperature__celcius, 
         h: json.humidity__pct, wind_speed: json.wind_speed, wind_dir: json.wind_dir, p: json.pressure__hPa, precip: json.precip, 
         json: json.jsonmap}
       knex('metdotno')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge()
-      .then(() => {console.log("inserted into metdotno")})
+      .then(() => {/*console.log("inserted into metdotno")*/})
     } else if(json.sensorSource == "Aarhus Universitet"){
       let obj = {device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, 
         co: json.co, so2: json.so2, mP2: json.mp2, mPX: json.mpx, json: json.jsonmap}
       knex('ausensor')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge(obj)
-      .then(() => {console.log("inserted into ausensor")})
+      .then(() => {/*console.log("inserted into ausensor")*/})
     } else if(json.sensorSource == "Open-Meteo"){
-      console.log("Database received object:")
+      // console.log("Database received object:")
       let obj = {device_id: device_id, time: json.time, t: json.temperature__celcius,
       h: json.humidity__pct, precip: json.precip, p: json.pressure__hPa, visibility: json.visibility,
       wind_speed: json.wind_speed, wind_dir: json.wind_dir }
-      console.log(obj)
+      // console.log(obj)
       knex('open-meteo')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge(obj)
-      .then(() => {console.log("inserted into open-meteo")})
+      .then(() => {/*console.log("inserted into open-meteo")*/})
     } else if(json.sensorSource == "SMHI"){
       let obj = {device_id: device_id, time: json.time, t: json.t, h: json.h, p: json.p, wind_dir: json.wind_dir,
       wind_speed: json.wind_speed, radia_glob: json.radia_glob, precip:json.precip, sun: json.sun, visibility: json.visibility}
@@ -270,6 +283,15 @@ function createLocationFromBackend(object){
       .insert(obj)
       .onConflict(['device_id', 'time']).merge(obj)
       .then(() => {/*console.log("inserted into smhisensor")*/})
+    } else if(json.sensorSource == "OpenSenseMap"){
+      let obj = {
+        description: json.description, device_id: device_id, exposure: json.exposure, h: json.h, json: json, 
+        l: json.l, model: json.model, name: json.name, p: json.p, precip: json.precip, t: json.t, time: json.time, 
+        wind_dir: json.wind_dir, wind_speed: json.wind_speed }
+      knex('opensensemap')
+      .insert(obj)
+      .onConflict(['device_id', 'time']).merge(obj)
+      .then(() => {})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)
     }
@@ -416,6 +438,7 @@ module.exports = {
   getAUSensor,
   getOpenMeteo,
   getSMHI,
+  getOpenSenseMap,
   getLocationById,
   getFields,
   createLocationFromBackend,

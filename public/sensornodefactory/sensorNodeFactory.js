@@ -57,6 +57,8 @@ publisherMap.set("Open-Meteo Weather station", "Open-Meteo")
 publisherMap.set("CORE", "SMHI")
 publisherMap.set("ADDITIONAL", "SMHI")
 
+publisherMap.set("OpenSenseMap Sensor", "OpenSenseMap")
+
 const iconMap = new Map();
 iconMap.set("CityProbe2", "img/montem_logo.jpg")
 iconMap.set("Synop", "img/dmi_metobs.png")
@@ -82,6 +84,8 @@ iconMap.set("AU air quality sensor", "img/au_logo.png")
 
 iconMap.set("CORE", "img/smhi_logo.png")
 iconMap.set("ADDITIONAL", "img/smhi_logo.png")
+
+iconMap.set("OpenSenseMap Sensor", "img/opensensemap.png")
 
 export class CityLabSensor {
   constructor(options){
@@ -522,5 +526,69 @@ export class OpenMeteoStation {
 export class OpenMeteoStationFactory {
   create(options){
     return new OpenMeteoStation(options)
+  }
+}
+
+export class OpenSenseMapSensor {
+  constructor(options){
+    this.device_id = options["_id"]
+    this.time = options["lastMeasurementAt"]
+    this.name = options["name"] || ""
+    this.exposure = options["exposure"] || ""
+    this.model = options["model"] || ""
+    this.description = options["description"] || ""
+    this.sensorSource = "OpenSenseMap"
+    this.device_type ="OpenSenseMap Sensor"
+    this.json = options.sensors
+
+    // if sensors exist
+    if(options["sensors"]){
+      // console.log("SENSORS LIST", options.sensors)
+      // iterate through the array.
+      options.sensors.forEach((element) => {
+        try { // for each element try to see if a measurement exists.
+          const measurement = element;
+          // console.log("M", measurement)
+          const measurementType = measurement.title
+          const measurementValue = parseFloat(measurement.lastMeasurement["value"])
+          // name and value are known. Save one to "JSON" column and make the rest into standard columns
+          switch(measurementType){
+            case "Temperatur": 
+              this.t = measurementValue; 
+              break
+            case "rel. Luftfeuchte": 
+              this.h = measurementValue
+              break
+            case "Luftdruck": 
+              this.p = measurementValue
+              break
+            case "Windrichtung":
+              this.wind_dir = measurementValue
+              break
+            case "PM2.5":
+              this.mp2 = measurementValue
+              break
+            case "PM10":
+              this.mpx = measurementValue
+              break
+            case "Beleuchtungsstärke":
+              this.l = measurementValue
+              break
+            case "Regen":
+              this.precip = measurementValue
+              break
+            case "Windgeschwindigkeit":
+              this.wind_speed = measurementValue
+              break
+          }
+        } catch(e){}
+      }) 
+    }
+  }   
+}
+
+export class OpenSenseMapSensorFactory {
+  create(options){
+    return new OpenSenseMapSensor(options)
   }
 }

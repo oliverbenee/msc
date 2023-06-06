@@ -11,7 +11,7 @@ const $ = require( "jquery" )( window );
 const  { SmartCitizenKitFactory, SensorOptions, WiFiRouterFactory, 
   NullSensorFactory, MetNoAirQualitySensorFactory, 
   CopenhagenMeterologySensorFactory, AarhusUniversityAirqualitySensorFactory, 
-  DMIFreeDataSensorFactory, OpenMeteoStationFactory} = require('fix-esm').require('sensornodefactory')
+  DMIFreeDataSensorFactory, OpenMeteoStationFactory, OpenSenseMapSensorFactory } = require('fix-esm').require('sensornodefactory')
 
 const sensorOptions = new SensorOptions();
 const smartCitizenKitFactory = new SmartCitizenKitFactory();
@@ -22,6 +22,7 @@ const copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory(
 const aarhusUniversityAirqualitySensorFactory = new AarhusUniversityAirqualitySensorFactory()
 const dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory()
 const openMeteoStationFactory = new OpenMeteoStationFactory()
+const openSenseMapSensorFactory = new OpenSenseMapSensorFactory()
 
 function getInsertTemplate(lat, lng, sensor){
   return {"coordinates": "POINT(" + lat + " " + lng + ")", "json": sensor}
@@ -106,7 +107,7 @@ async function fetchMetNoAQ() {
         height: feature.height,
         municipality: feature.kommune.name
       }
-      console.log("new station ", stationData.device_id)
+      // console.log("new station ", stationData.device_id)
       axios.get(`/metno/${stationData.device_id}`)
       .then(response => {return response.data})
       .then((res) => {
@@ -351,14 +352,32 @@ function extend(a, b){
   return a;
 }
 
+function fetchOpenSenseMap(){
+  axios.get('/opensensemap')
+  .then(response => {
+    let data = response.data.features
+    data.forEach(element => {
+      try {
+        const latitude = element.geometry.coordinates[1]; 
+        const longitude = element.geometry.coordinates[0]
+        let measurement = openSenseMapSensorFactory.create(element.properties)
+        sendPositionToDatabase(latitude, longitude, measurement)
+      } catch(e) {
+        console.log("Unusable element error ", element, e)
+      }
+    })
+  }).catch(err => { console.error("error", err) })
+}
+
 function fetchAll(){
-  fetchDMI()
-  fetchSCK()
-  fetchWiFi()
-  fetchMetNoAQ()
-  fetchAUSensor()
-  fetchOpenMeteo()
-  fetchSMHI()
+  // fetchDMI()
+  // fetchSCK()
+  // fetchWiFi()
+  // fetchMetNoAQ()
+  // fetchAUSensor()
+  // fetchOpenMeteo()
+  // fetchSMHI()
+  fetchOpenSenseMap()
 }
 
 fetchAll()
