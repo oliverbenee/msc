@@ -9,3 +9,7 @@ h1, h2 { font-family:"Arial" }
 td {
   max-width: 10em;
 }
+
+input[type="number"] {
+  width: 100%;
+}
