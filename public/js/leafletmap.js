@@ -146,15 +146,15 @@ const basemaps = {
 let layers = L.layerGroup(); // This is a container object to quickly scan all layers with markers.
 let markers = L.layerGroup(); // this layer is used for markerclustergroups.
 
-const markerClusterGroupingTool = L.markerClusterGroup({
-  chunkedLoading: true,
-  showCoverageOnHover: false, // this would have been nice but doesn't seem to work. 
-  spiderfyOnMaxZoom: true,
-  zoomToBoundsOnClick: true, 
-  removeOutsideVisibleBounds: true,
-  spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
-})
-markers.addLayer(markerClusterGroupingTool) // This lets us ignore the layers control. 
+// const markerClusterGroupingTool = L.markerClusterGroup({
+//   chunkedLoading: true,
+//   showCoverageOnHover: false, // this would have been nice but doesn't seem to work. 
+//   spiderfyOnMaxZoom: true,
+//   zoomToBoundsOnClick: true, 
+//   removeOutsideVisibleBounds: true,
+//   spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
+// })
+// markers.addLayer(markerClusterGroupingTool) // This lets us ignore the layers control. 
 
 const dmiLayer = L.layerGroup()
 //let cityprobe2layer = L.layerGroup()
@@ -192,7 +192,7 @@ let overlaysObj = {
     "WiFi Locations": wifilayer,
   },
   "Tools": {
-    "Cluster markers": markers,
+    // "Cluster markers": markers,
     "SafeCast Radiation": SafeCast,
     "Matrikelkort": matrikelkortlayer,
     "OWM Clouds": OpenWeatherMap_Clouds,
@@ -293,7 +293,7 @@ function placeSensorDataMarker(lat, lng, sensor){
     }
     // clustering tool. 
     layers.addLayer(locationMarker)
-    markerClusterGroupingTool.addLayer(locationMarker)
+    // markerClusterGroupingTool.addLayer(locationMarker)
   }
 }
 
