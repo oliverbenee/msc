@@ -72,7 +72,7 @@ if (typeof URLSearchParams !== 'undefined' && location.search) {
   }
 }
 const geocoderControl = L.Control.geocoder({
-  query: 'Moon',
+  query: 'Katrinebjergvej',
   placeholder: 'Search here...',
   geocoder: geocoder
 }).on('markgeocode', (e) => { 
@@ -144,7 +144,7 @@ const basemaps = {
  */
 
 let layers = L.layerGroup(); // This is a container object to quickly scan all layers with markers.
-let markers = L.layerGroup();
+let markers = L.layerGroup(); // this layer is used for markerclustergroups.
 
 const markerClusterGroupingTool = L.markerClusterGroup({
   chunkedLoading: true,
@@ -216,7 +216,7 @@ const ZoomViewer = L.Control.extend({
     return gauge;
   }
 });
-const zoomViewer = (new ZoomViewer()).addTo(map);
+// const zoomViewer = (new ZoomViewer()).addTo(map);
 
 // Place a marker, and add a pop-up to it.
 function placeSensorDataMarker(lat, lng, sensor){
