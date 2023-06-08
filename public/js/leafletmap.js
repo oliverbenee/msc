@@ -643,7 +643,7 @@ function buildSidebarTable(lat, lng, sensor){
   let tableListOutput;
   Object.entries(sensor).forEach(([key, value]) => {
       if(key == "json"){
-        tableListOutput += "<tr><td>------------json--------------</td></tr>"
+        tableListOutput += "<tr><td>JSON CONTENT: </td></tr>"
         Object.entries(value).forEach((K) => {tableListOutput += `<tr><td>${K[0]}</td><td>${K[1]}</td></tr>`})
       } else {
         let unitRes = sensorOptions.getUnitMap(key)
@@ -693,9 +693,6 @@ function buildQueryToolTable(arr) {
 // Need to do union of keys from all records as some records may not contain
 // all records
 function addAllColumnHeaders(arr, table) {
-  console.log("add column headers")
-  console.log("ARR", arr)
-  console.log("TABLE", table)
   let columnSet = [],
     tr = _tr_.cloneNode(false);
   for (let i = 0, l = arr.length; i < l; i++) {

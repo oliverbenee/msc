@@ -344,8 +344,6 @@ const getFields = (request, response) => {
   }
 
   if(params.geoClause && params.targetGeom){
-    // console.log("geoClause", params.geoClause)
-    // console.log("targetGeom", params.targetGeom)
     switch(params.geoClause){
       case "st_within":
         q.where(st.within("locations.geometry", st.geomFromGeoJSON(params.targetGeom.geometry)))
