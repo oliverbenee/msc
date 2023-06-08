@@ -10,7 +10,6 @@
     h1, h2 { text-align: center; }
   
     /* Align input fields in the center of the page */
-    /* For worker name...*/
     input[type=text] {
       width: 89%;
       height: 1em;
@@ -18,9 +17,6 @@
       margin: 8px 0;
       box-sizing: border-box;
     }
-  
-    /* Table headers serve no use on mobile tables */
-    .tableheader { display: none; }
   
     /* Force table to not be like tables anymore. Ensure, that too long words can be read in a new line.  */
     table, thead, tbody, th, td, tr { 
