@@ -607,7 +607,7 @@ function getMarkers(bounds){
   console.debug("getmarkers")
   let layers = [];
 
-  markers.eachLayer((layer) => { 
+  map.eachLayer((layer) => { 
     if(layer instanceof L.Marker || layer instanceof L.polyline){
       if(bounds.contains(layer.getLatLng())){
         layers.push(layer)
