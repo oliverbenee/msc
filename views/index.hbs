@@ -4,32 +4,35 @@
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
 <!-- LEAFLET LIBRARIES. -->
 <div>
-<!-- This is a roundabout way of adding jquery to leafletmap.js-->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-<script defer type="module" src="/js/leafletmap.js"></script>
-<!-- drawing toolbar css and js files --> 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css">
-<script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-<!-- Geocoding. -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-<!-- Marker clusters. Files are stored in public/lib/leaflet-markercluster. Note, that they are copied from the npm install. --> 
-<link rel="stylesheet" href="/lib/leaflet-markercluster/MarkerCluster.css"/> 
-<link rel="stylesheet" href="/lib/leaflet-markercluster/MarkerCluster.Default.css"/> 
-<script src="/lib/leaflet-markercluster/leaflet.markercluster-src.js"></script>
-<script src="/lib/leaflet-markercluster/MarkerCluster.js"></script>
-<script src="/lib/leaflet-markercluster/MarkerCluster.Spiderfier.js"></script>
-<!-- Grouped layer control -->
-<link rel="stylesheet" href="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css"></script>
-<script src="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js"></script>
-<!-- geoJSON-vt is a performance library, that helps with solving lag for using large geojson objects by slicing the vector tiles. --> 
-<script src="https://unpkg.com/geojson-vt@3.2.0/geojson-vt.js"></script>
-<script src="/lib/leaflet-geojson-vt/src/leaflet-geojson-vt.js"></script>
-<!-- More performance libraries. -->
-<script type="text/javascript"  src="https://unpkg.com/leaflet.vectorgrid@1.2.0"></script>
-<!-- leaflet SideBars -->
-<link rel="stylesheet" href="/lib/leaflet-sidebar/src/L.Control.Sidebar.css">
-<script src="/lib/leaflet-sidebar/src/L.Control.Sidebar.js"></script>
+  <!-- This is a roundabout way of adding jquery to leafletmap.js-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+  <script defer type="module" src="/js/leafletmap.js"></script>
+  <!-- drawing toolbar css and js files -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css">
+  <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+  <!-- Geocoding. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <!-- Marker clusters. Files are stored in public/lib/leaflet-markercluster. Note, that they are copied from the npm install. -->
+  <link rel="stylesheet" href="/lib/leaflet-markercluster/MarkerCluster.css" />
+  <link rel="stylesheet" href="/lib/leaflet-markercluster/MarkerCluster.Default.css" />
+  <script src="/lib/leaflet-markercluster/leaflet.markercluster-src.js"></script>
+  <script src="/lib/leaflet-markercluster/MarkerCluster.js"></script>
+  <script src="/lib/leaflet-markercluster/MarkerCluster.Spiderfier.js"></script>
+  <!-- Grouped layer control -->
+  <link rel="stylesheet" href="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css">
+  </script>
+  <script src="/lib/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js"></script>
+  <!-- geoJSON-vt is a performance library, that helps with solving lag for using large geojson objects by slicing the vector tiles. -->
+  <script src="https://unpkg.com/geojson-vt@3.2.0/geojson-vt.js"></script>
+  <script src="/lib/leaflet-geojson-vt/src/leaflet-geojson-vt.js"></script>
+  <!-- More performance libraries. -->
+  <script type="text/javascript" src="https://unpkg.com/leaflet.vectorgrid@1.2.0"></script>
+  <!-- leaflet SideBars -->
+  <link rel="stylesheet" href="/lib/leaflet-sidebar/src/L.Control.Sidebar.css">
+  <script src="/lib/leaflet-sidebar/src/L.Control.Sidebar.js"></script>
+</div>
 
 <div id="map"></div>
 <div id="sidebar"></div>
