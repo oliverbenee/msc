@@ -317,13 +317,13 @@ const getFields = (request, response) => {
   
   var isDist
 
-  for (const FL in params.fields) {
+  for (const FL in params.fields) { // all ok.
     const element = params.fields[FL];
     if(element == "geometry"){ // force geometry into geojson format.
       q.select(st.asGeoJSON('geometry')) // https://github.com/jfgodoy/knex-postgis/blob/master/tests/functions.js
-    } else if(element == "st_x"){q.select(st.x('geometry'))} 
-    else if(element == "st_y"){q.select(st.y('geometry'))}
-    else if(element == "st_distance" && params.targetGeom != undefined){
+    } else if(element == "st_x"){q.select(st.x('geometry'))} // simply latitude. works.
+    else if(element == "st_y"){q.select(st.y('geometry'))} // simply longitude. works.
+    else if(element == "st_distance" && params.targetGeom != undefined){ //distance works. 
       q.select(st.distance('geometry', st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857)))
       isDist = true
     }
@@ -339,8 +339,8 @@ const getFields = (request, response) => {
 
   if(params.clause_column && params.clause_param && params.clause_value && !isJsonParam){
     q.where(params.clause_column, params.clause_param, parseFloat(params.clause_value))
-  } else if(isJsonParam && params.clause_value && params.clause_column){ // key and value.
-    q.whereRaw('dmisensor.json->>? = ?', [params.clause_column, JSON.parse(params.clause_value)])    
+  } else if(isJsonParam && params.clause_value && params.clause_column){ // key and value. Works.
+    q.whereRaw(`${params.source[0]}.json->>? = ?`, [params.clause_column, JSON.parse(params.clause_value)])    
   }
 
   if(params.geoClause && params.targetGeom){
