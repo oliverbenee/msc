@@ -52,7 +52,11 @@ function fetchDMIFreeData(urls) {
       }
     })
   })
-  .catch((error) => { console.error("ERROR.", error)/*, error.data.features) */ })
+  .catch((error) => { 
+    console.error("ERROR");
+    console.log("If this one says 'Cannot read properties of undefined, the DMI metobs service is probably down.")
+    console.log(error)/*, error.data.features) */ 
+  })
 }
 async function fetchDMI() {
   console.log("begin updating dmi sensors")
@@ -370,13 +374,13 @@ function fetchOpenSenseMap(){
 }
 
 function fetchAll(){
-  // fetchDMI()
-  // fetchSCK()
-  // fetchWiFi()
-  // fetchMetNoAQ()
-  // fetchAUSensor()
-  // fetchOpenMeteo()
-  // fetchSMHI()
+  fetchDMI()
+  fetchSCK()
+  fetchWiFi()
+  fetchMetNoAQ()
+  fetchAUSensor()
+  fetchOpenMeteo()
+  fetchSMHI()
   fetchOpenSenseMap()
 }
 
