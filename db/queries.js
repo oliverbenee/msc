@@ -350,6 +350,8 @@ const getFields = (request, response) => {
         break
       case 'st_dwithin': 
         q.where(st.dwithin("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857), params.searchDist))
+      case '!st_dwithin':
+        q.whereNot(st.dwithin("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857), parseFloat(params.searchDist)))
         break
       case "knn": // KNN works. 
         q.distinct(st.distance("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857)).as("dist"))
