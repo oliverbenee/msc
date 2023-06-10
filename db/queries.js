@@ -330,16 +330,16 @@ const getFields = (request, response) => {
     else {q.select(element)}
   }
 
-  for (let i=0; i<params.source.length; i++) {
+  for (let i=0; i<params.source.length; i++) { // all ok.
     q.leftJoin(params.source[i], `${params.source[i]}.device_id`, '=', 'locations.device_id')
   }
   //-----------------------------------------------------------------------------
 
   let isJsonParam = params.clause_param === "jsonsubsetof"
 
-  if(params.clause_column && params.clause_param && params.clause_value && !isJsonParam){
+  if(params.clause_column && params.clause_param && params.clause_value && !isJsonParam){ // all ok.
     q.where(params.clause_column, params.clause_param, parseFloat(params.clause_value))
-  } else if(isJsonParam && params.clause_value && params.clause_column){ // key and value. Works.
+  } else if(isJsonParam && params.clause_value && params.clause_column){ // key and value.
     q.whereRaw(`${params.source[0]}.json->>? = ?`, [params.clause_column, JSON.parse(params.clause_value)])    
   }
 
@@ -361,7 +361,7 @@ const getFields = (request, response) => {
   }
 
   //-----------------------------------------------------------------------------
-  if(params.orderSource && params.orderType && !isDist){ 
+  if(params.orderSource && params.orderType && !isDist){  // ok.
     if(params.orderSource != "st_x" && params.orderSource != "st_y"){
       q.orderBy(`${params.source[0]}.${params.orderSource}`, `${params.orderType}`)
     } else {
@@ -377,7 +377,7 @@ const getFields = (request, response) => {
   } else {
     console.log("OS:", params.orderSource, "ID: ", isDist, "OT: ", params.orderType)
   }
-  if(params.limit){q.limit(params.limit)}
+  if(params.limit){q.limit(params.limit)} //ok.
 
   console.log("SQL.")
   console.log(q.toSQL())
