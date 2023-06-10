@@ -734,6 +734,7 @@ function queryMap(){
   let geoClause = getSelect("clauseSelect")[0]
   let geoClauseComparedTo = getSelect("cls")[0]
   let targetGeom
+  let searchDist = document.getElementById("searchdistance").value
 
   let isGeoClause = document.getElementById("gccheck").checked
   let bufferExists = buffer != undefined
@@ -761,7 +762,8 @@ function queryMap(){
     orderType: orderType,
     limit: limit,
     geoClause: geoClause,
-    targetGeom: targetGeom
+    targetGeom: targetGeom,
+    searchDist: searchDist
   }
 
   console.log(QueryParams)

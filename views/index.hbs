@@ -94,8 +94,7 @@
         <!--option value="st_disjoint"> Do not intersect. st_intersect is faster. </option-->
         <!--option value="st_equals"> if geometry is the same </option>
         <option value="st_overlap"> Overlap (not completely) </option>
-        <option value="st_touches"> Geometries touch </option>
-        <option value="st_within"> Geometries overlap </option-->
+        <option value="st_touches"> Geometries touch </option-->
       </select>
     </td></tr>
     <tr><td>Target layer</td>
@@ -103,14 +102,11 @@
       <select name="cls" id="cls">
         <option value="point"> The buffer point </option>
         <option value="line"> The buffer line </option>
-        <!--option value="circle"> The buffer circle. This option is nonsensical. The same as point. </option-->
-        <!--option value="square"> The buffer square. This option is nonsensical. It overlaps with other features. </option-->
-        <!--option value="polygon"> The buffer polygon </option-->
         <option disabled> Elements in... </option>
         {{>sources}}
       </select>
     </td></tr>
-    <tr><td>Apply search distance</td><td><input type="number"></td></tr>
+    <tr><td>Apply search distance</td><td><input type="number" id="searchdistance"></td></tr>
   </table>    
   <p class="formText"> Order by </p>
   <select class="orderSelect" name="orderSource" id="orderSource">
