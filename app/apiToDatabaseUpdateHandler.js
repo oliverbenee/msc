@@ -58,7 +58,7 @@ function fetchDMIFreeData(urls) {
     console.error("ERROR");
     console.log("If this one says 'Cannot read properties of undefined', the DMI metobs service is probably down.")
     console.log(error)/*, error.data.features) */ 
-  })
+  }).finally(console.log("finished fetchind data from dmi."))
 }
 async function fetchDMI() {
   // console.log("begin updating dmi sensors")
@@ -68,7 +68,6 @@ async function fetchDMI() {
   fetchDMIFreeData(oceanobsUrls)
 }
 async function fetchSCK(){
-  console.log("fetchsck")
   axios.get('/scklocations')
   .then(response => {return response.data})
   .then((list) => {
@@ -89,6 +88,7 @@ async function fetchSCK(){
   })
   })
   .catch((error) => console.error("ERROR.", error))
+  console.log("finished fetching SCKs. Though it is likely, they are all dead by now.")
 }
 async function fetchWiFi(){
   axios.get('/wifilocations')
@@ -101,42 +101,46 @@ async function fetchWiFi(){
     })
   })
   .catch(error => console.error(error))
+  console.log("Finished fetching WiFi locations in Aarhus.")
 }
 async function fetchMetNoAQ() {
   axios.get('/metno/stations')
   .then(values => {
     let locationFeatures = values.data
-    locationFeatures.forEach(feature => {
-      let stationData = {
-        device_id: feature.eoi,
-        location_name: feature.name,
-        height: feature.height,
-        municipality: feature.kommune.name
-      }
-      // console.log("new station ", stationData.device_id)
-      axios.get(`/metno/${stationData.device_id}`)
-      .then(response => {return response.data})
-      .then((res) => {
-        //console.log("response for station ", stationData.device_id)
-        let finalStationData = stationData
-        let observations = res.data.time[0].variables
-        // un-nest JSON.
-        try {
-        for (const key in observations) {
-          if (Object.hasOwnProperty.call(observations, key)) {
-            const element = observations[key].value;
-            finalStationData[key] = element
-          }
+    try {
+      locationFeatures.forEach(feature => {
+        let stationData = {
+          device_id: feature.eoi,
+          location_name: feature.name,
+          height: feature.height,
+          municipality: feature.kommune.name
         }
-        let sensor = metNoAirQualitySensorFactory.create(finalStationData)
-        sendPositionToDatabase(feature.latitude, feature.longitude, sensor)
-        //console.log("lat: ", feature.latitude, "lng: ", feature.longitude, "SD:", stationData, "OB: ", sensor)
-        } catch(e){console.log(e)}
-      }, (error) => {
-        //console.warn("MET.no has no observations for station of id: ", stationData.device_id)
-      }).catch((error) => {/*console.error(error)*/})
-    })
+        // console.log("new station ", stationData.device_id)
+        axios.get(`/metno/${stationData.device_id}`)
+        .then(response => {return response.data})
+        .then((res) => {
+          //console.log("response for station ", stationData.device_id)
+          let finalStationData = stationData
+          let observations = res.data.time[0].variables
+          // un-nest JSON.
+          try {
+          for (const key in observations) {
+            if (Object.hasOwnProperty.call(observations, key)) {
+              const element = observations[key].value;
+              finalStationData[key] = element
+            }
+          }
+          let sensor = metNoAirQualitySensorFactory.create(finalStationData)
+          sendPositionToDatabase(feature.latitude, feature.longitude, sensor)
+          //console.log("lat: ", feature.latitude, "lng: ", feature.longitude, "SD:", stationData, "OB: ", sensor)
+          } catch(e){console.log(e)}
+        }, (error) => {
+          //console.warn("MET.no has no observations for station of id: ", stationData.device_id)
+        }).catch((error) => {/*console.error(error)*/})
+      })
+    } catch (error) { console.log("MET.no station with no data. Continue. ", error) }
   })
+  console.log("finished fetching data for MET.no")
 }
 
 let AUStationLatLngs = new Map()
@@ -232,6 +236,8 @@ function fetchAUSensor(){
   fetchAARH("hcandersensboulevard")
   fetchAARH("oesterbro")
   fetchAARH("vesterbro")
+
+  console.log("Finished fetching data from Aarhus University")
 }
 
 function tableToJson(table) {
@@ -276,7 +282,7 @@ function fetchOpenMeteoloc(lat, lng){
 }
 
 function fetchOpenMeteo(){
-  console.log("fetcopenmetero")
+  // console.log("fetcopenmetero")
   let latlngs = {
   "Aarhus C": {lat: 56.17, lng: 10.21},
   "Aarhus N": {lat: 56.20, lng: 10.17},
@@ -298,6 +304,7 @@ function fetchOpenMeteo(){
     const element = latlngs[location];
     fetchOpenMeteoloc(element.lat, element.lng)
   }
+  console.log("finished fetching data from Open-Meteo")
 }
 
 let stationValues = new Map()
@@ -316,7 +323,6 @@ function fetchSMHI(){
   let parameters = [1, 3, 4, 6, 7, 9, 10, 11, 12]
   Promise.all(parameters.map(param => axios.get(`/smhi/${param}`).then(response => {return response.data})))
   .then((data) => {  
-    console.log("data returned")
     data.forEach(RESULT => {
       let stationList = RESULT.station
       let paramName = paramtl.get(RESULT.parameter.key)
@@ -345,6 +351,7 @@ function fetchSMHI(){
     });
   })
   .then(() => {
+    console.log("finished fetching data from SMHI.")
     stationValues.forEach((element) => {
       sendPositionToDatabase(element.latitude, element.longitude, element)
     })
@@ -373,6 +380,7 @@ function fetchOpenSenseMap(){
       }
     })
   }).catch(err => { console.error("error", err) })
+  .then(console.log("finished fetching data from OpenSenseMap"))
 }
 
 function fetchAll(){
