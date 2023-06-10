@@ -155,7 +155,6 @@ router.get('/dmi/obs/oceanobs', cache(3600), (req, res) => {
 ///////////////////////////////////
 
 const API_URL_SMARTCITIZEN_LOCATIONS="https://api.smartcitizen.me"
-
 router.get('/scklocations', cache(3600), (req, res) => {
   fetch(API_URL_SMARTCITIZEN_LOCATIONS + "/devices?near=56.172592, 10.189799&distance=1000000")
   .then((response => response.json()))
@@ -274,7 +273,6 @@ router.get('/metno/:station', cache(3600), (req, res) => {
 
 const API_URL_OPENMETEO = "https://api.open-meteo.com/v1/forecast"
 const API_SUFFIX_OPENMETEO = "hourly=temperature_2m,relativehumidity_2m,precipitation,surface_pressure,visibility,windspeed_10m,winddirection_10m&forecast_days=1"
-
 router.get('/open-meteo/:lat/:lng', (req, res) => {
   let lat = req.params.lat
   let lng = req.params.lng
@@ -302,9 +300,6 @@ router.get('/smhi/:parameter', cache(3600), (req, res) => {
 ////////////////////////////////////////
 
 const API_URL_OPENSENSEMAP = "https://api.opensensemap.org/boxes"
-
-
-
 router.get('/opensensemap', cache(3600), (req, res) => {
   var requestOptions = {
     method: 'GET',
