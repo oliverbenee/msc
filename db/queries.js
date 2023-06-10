@@ -361,7 +361,7 @@ const getFields = (request, response) => {
   }
 
   //-----------------------------------------------------------------------------
-  if(params.orderSource && params.orderType && params.orderSource != 'st_distance'){ 
+  if(params.orderSource && params.orderType && !isDist){ 
     if(params.orderSource != "st_x" && params.orderSource != "st_y"){
       q.orderBy(`${params.source[0]}.${params.orderSource}`, `${params.orderType}`)
     } else {
@@ -371,7 +371,8 @@ const getFields = (request, response) => {
       else if(params.orderSource == "st_y"){orderVal = st.y("geometry")}
       q.orderBy(orderVal, `${params.orderType}`)
     }
-  } else if(params.orderSource == 'st_distance' && isDist && params.orderType){
+  }
+  if(params.orderSource == 'st_distance' && isDist && params.orderType){
     q.orderBy("dist", `${params.orderType}`)
   } else {
     console.log("OS:", params.orderSource, "ID: ", isDist, "OT: ", params.orderType)
