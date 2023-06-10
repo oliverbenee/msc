@@ -349,7 +349,8 @@ const getFields = (request, response) => {
         q.where(st.within("locations.geometry", st.geomFromGeoJSON(params.targetGeom.geometry)))
         break
       case 'st_dwithin': 
-        q.where(st.dwithin("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857), params.searchDist))
+        q.where(st.dwithin("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857), parseFloat(params.searchDist)))
+        break
       case '!st_dwithin':
         q.whereNot(st.dwithin("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857), parseFloat(params.searchDist)))
         break
