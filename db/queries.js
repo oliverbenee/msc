@@ -102,6 +102,32 @@ const getOpenMeteo = (request, response) => {
   })
 }
 
+const getSMHI = (request, response) => {
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('smhi', 'locations.device_id', 'smhi.device_id')
+  .then((result) => {
+    response.status(200).json(result)
+  }, (error) => {
+    response.status(500).json(error)
+    return
+  })
+}
+
+const getOpenSenseMap = (request, response) => {
+  knex('locations')
+  .withSchema('public')
+  .select('*', st.asGeoJSON('geometry').as('geojson'))
+  .join('opensensemap', 'locations.device_id', 'opensensemap.device_id')
+  .then((result) => {
+    response.status(200).json(result)
+  }, (error) => {
+    response.status(500).json(error)
+    return
+  })
+}
+
 const getLocationById = (request, response) => {
   knex('locations')
   .select('*', st.asGeoJSON('geometry').as('geojson'))
@@ -209,7 +235,7 @@ function createLocationFromBackend(object){
       knex('dmisensor')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge()
-      .then(() => {console.log("inserted into dmisensor.")})
+      .then(() => {/*console.log("inserted into dmisensor.")*/})
     } else if(json.sensorSource == "SmartCitizen"){
       let obj = {device_id: device_id, time: json.time, l: json.mDigitalAmbientLightSensor, nA: json.mI2SDigitalMemsMicrophonewithcustomAudioProcessingAlgorithm,
         t: json.mTemperature, h: json.mHumidity, p: json.mDigitalBarometricPressureSensor, mP2: json.mParticleMatterPM2_5, mPX: json.mParticleMatterPM10,
@@ -217,44 +243,60 @@ function createLocationFromBackend(object){
       knex('smartcitizen')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge()
-      .then(() => {console.log("inserted into smartcitizen")})
+      .then(() => {/*console.log("inserted into smartcitizen")*/})
     } else if(json.sensorSource == "Open Data Aarhus WiFi Routers"){
       let obj = {device_id: device_id, city: json.city, name: json.name, zip: json.zip, street: json.street, department: json.department, houseno: json.no}
       knex('wifilocations')
       .insert(obj)
       .onConflict("device_id").merge()
-      .then(() => {console.log("inserted into wifilocations")})
+      .then(() => {/*console.log("inserted into wifilocations")*/})
     } else if(json.sensorSource == "MET.no"){
-      console.log("is met.no")
+      // console.log("is met.no")
       let obj = {device_id: device_id, name: json.name, municipality: json.municipality, height: json.height, t: json.temperature__celcius, 
         h: json.humidity__pct, wind_speed: json.wind_speed, wind_dir: json.wind_dir, p: json.pressure__hPa, precip: json.precip, 
         json: json.jsonmap}
       knex('metdotno')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge()
-      .then(() => {console.log("inserted into metdotno")})
+      .then(() => {/*console.log("inserted into metdotno")*/})
     } else if(json.sensorSource == "Aarhus Universitet"){
       let obj = {device_id: device_id, time: json.time, no2: json.no2, nox: json.nox, 
         co: json.co, so2: json.so2, mP2: json.mp2, mPX: json.mpx, json: json.jsonmap}
       knex('ausensor')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge(obj)
-      .then(() => {console.log("inserted into ausensor")})
+      .then(() => {/*console.log("inserted into ausensor")*/})
     } else if(json.sensorSource == "Open-Meteo"){
-      console.log("Database received object:")
+      // console.log("Database received object:")
       let obj = {device_id: device_id, time: json.time, t: json.temperature__celcius,
       h: json.humidity__pct, precip: json.precip, p: json.pressure__hPa, visibility: json.visibility,
       wind_speed: json.wind_speed, wind_dir: json.wind_dir }
-      console.log(obj)
+      // console.log(obj)
       knex('open-meteo')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge(obj)
-      .then(() => {console.log("inserted into open-meteo")})
+      .then(() => {/*console.log("inserted into open-meteo")*/})
+    } else if(json.sensorSource == "SMHI"){
+      let obj = {device_id: device_id, time: json.time, t: json.t, h: json.h, p: json.p, wind_dir: json.wind_dir,
+      wind_speed: json.wind_speed, radia_glob: json.radia_glob, precip:json.precip, sun: json.sun, visibility: json.visibility}
+      knex('smhi')
+      .insert(obj)
+      .onConflict(['device_id', 'time']).merge(obj)
+      .then(() => {/*console.log("inserted into smhisensor")*/})
+    } else if(json.sensorSource == "OpenSenseMap"){
+      let obj = {
+        description: json.description, device_id: device_id, exposure: json.exposure, h: json.h, json: json, 
+        l: json.l, model: json.model, name: json.name, p: json.p, precip: json.precip, t: json.t, time: json.time, 
+        wind_dir: json.wind_dir, wind_speed: json.wind_speed }
+      knex('opensensemap')
+      .insert(obj)
+      .onConflict(['device_id', 'time']).merge(obj)
+      .then(() => {})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)
     }
   })
-  .then((result) => { console.log("added location.") },
+  .then((result) => {/* console.log("added location.") */},
   (error) => { console.error(error) })
 }
 
@@ -275,43 +317,44 @@ const getFields = (request, response) => {
   
   var isDist
 
-  for (const FL in params.fields) {
+  for (const FL in params.fields) { // all ok.
     const element = params.fields[FL];
     if(element == "geometry"){ // force geometry into geojson format.
       q.select(st.asGeoJSON('geometry')) // https://github.com/jfgodoy/knex-postgis/blob/master/tests/functions.js
-    } else if(element == "st_x"){q.select(st.x('geometry'))} 
-    else if(element == "st_y"){q.select(st.y('geometry'))}
-    else if(element == "st_distance" && params.targetGeom != undefined){
-      q.select(st.distance('geometry', params.targetGeom))
+    } else if(element == "st_x"){q.select(st.x('geometry'))} // simply latitude. works.
+    else if(element == "st_y"){q.select(st.y('geometry'))} // simply longitude. works.
+    else if(element == "st_distance" && params.targetGeom != undefined){ //distance works. 
+      q.select(st.distance('geometry', st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857)))
       isDist = true
     }
     else {q.select(element)}
   }
 
-  for (let i=0; i<params.source.length; i++) {
+  for (let i=0; i<params.source.length; i++) { // all ok.
     q.leftJoin(params.source[i], `${params.source[i]}.device_id`, '=', 'locations.device_id')
   }
   //-----------------------------------------------------------------------------
 
   let isJsonParam = params.clause_param === "jsonsubsetof"
 
-  if(params.clause_column && params.clause_param && params.clause_value && !isJsonParam){
+  if(params.clause_column && params.clause_param && params.clause_value && !isJsonParam){ // all ok.
     q.where(params.clause_column, params.clause_param, parseFloat(params.clause_value))
   } else if(isJsonParam && params.clause_value && params.clause_column){ // key and value.
-    q.whereRaw('dmisensor.json->>? = ?', [params.clause_column, JSON.parse(params.clause_value)])    
+    q.whereRaw(`${params.source[0]}.json->>? = ?`, [params.clause_column, JSON.parse(params.clause_value)])    
   }
 
   if(params.geoClause && params.targetGeom){
-    // console.log("geoClause", params.geoClause)
-    // console.log("targetGeom", params.targetGeom)
     switch(params.geoClause){
-      case "st_within":
-        q.where(st.within("locations.geometry", st.geomFromGeoJSON(params.targetGeom.geometry)))
+      case 'st_within':
+        q.where(st.within("locations.geometry", st.buffer(st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857), )))
         break
-      case "st_dwithin": 
-        q.where(st.dwithin("locations.geometry", st.geomFromGeoJSON(params.targetGeom.geometry), 50))
+      case 'st_dwithin': 
+        q.where(st.dwithin("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857), parseFloat(params.searchDist)))
         break
-      case "knn":
+      case '!st_dwithin':
+        q.whereNot(st.dwithin("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857), parseFloat(params.searchDist)))
+        break
+      case "knn": // KNN works. 
         q.distinct(st.distance("locations.geometry", st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857)).as("dist"))
         isDist = true;
         break;
@@ -321,7 +364,7 @@ const getFields = (request, response) => {
   }
 
   //-----------------------------------------------------------------------------
-  if(params.orderSource && params.orderType && params.orderSource != 'st_distance'){ 
+  if(params.orderSource && params.orderType && !isDist){  // ok.
     if(params.orderSource != "st_x" && params.orderSource != "st_y"){
       q.orderBy(`${params.source[0]}.${params.orderSource}`, `${params.orderType}`)
     } else {
@@ -331,12 +374,13 @@ const getFields = (request, response) => {
       else if(params.orderSource == "st_y"){orderVal = st.y("geometry")}
       q.orderBy(orderVal, `${params.orderType}`)
     }
-  } else if(params.orderSource == 'st_distance' && isDist && params.orderType){
+  }
+  if(params.orderSource == 'st_distance' && isDist && params.orderType){
     q.orderBy("dist", `${params.orderType}`)
   } else {
     console.log("OS:", params.orderSource, "ID: ", isDist, "OT: ", params.orderType)
   }
-  if(params.limit){q.limit(params.limit)}
+  if(params.limit){q.limit(params.limit)} //ok.
 
   console.log("SQL.")
   console.log(q.toSQL())
@@ -395,6 +439,8 @@ module.exports = {
   getMetNo,
   getAUSensor,
   getOpenMeteo,
+  getSMHI,
+  getOpenSenseMap,
   getLocationById,
   getFields,
   createLocationFromBackend,

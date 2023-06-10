@@ -72,7 +72,7 @@ if (typeof URLSearchParams !== 'undefined' && location.search) {
   }
 }
 const geocoderControl = L.Control.geocoder({
-  query: 'Moon',
+  query: 'Katrinebjergvej',
   placeholder: 'Search here...',
   geocoder: geocoder
 }).on('markgeocode', (e) => { 
@@ -144,17 +144,17 @@ const basemaps = {
  */
 
 let layers = L.layerGroup(); // This is a container object to quickly scan all layers with markers.
-let markers = L.layerGroup();
+let markers = L.layerGroup(); // this layer is used for markerclustergroups.
 
-const markerClusterGroupingTool = L.markerClusterGroup({
-  chunkedLoading: true,
-  showCoverageOnHover: false, // this would have been nice but doesn't seem to work. 
-  spiderfyOnMaxZoom: true,
-  zoomToBoundsOnClick: true, 
-  removeOutsideVisibleBounds: true,
-  spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
-})
-markers.addLayer(markerClusterGroupingTool) // This lets us ignore the layers control. 
+// const markerClusterGroupingTool = L.markerClusterGroup({
+//   chunkedLoading: true,
+//   showCoverageOnHover: false, // this would have been nice but doesn't seem to work. 
+//   spiderfyOnMaxZoom: true,
+//   zoomToBoundsOnClick: true, 
+//   removeOutsideVisibleBounds: true,
+//   spiderLegPolylineOptions: {weight: 1.5, opacity: 0.5}
+// })
+// markers.addLayer(markerClusterGroupingTool) // This lets us ignore the layers control. 
 
 const dmiLayer = L.layerGroup()
 //let cityprobe2layer = L.layerGroup()
@@ -170,7 +170,9 @@ const metNoAirLayer = L.layerGroup()
 const envZoneLayer = L.layerGroup()
 const variousUniversitiesLayer = L.layerGroup()
 const openMeteoLayer = L.layerGroup()
-const markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer, variousUniversitiesLayer, openMeteoLayer]
+const smhiLayer = L.layerGroup()
+const openSenseMapLayer = L.layerGroup()
+const markerlayers = [dmiLayer, scklayer, errorlayer, wifilayer, dbQueryLayer, metNoAirLayer, variousUniversitiesLayer, openMeteoLayer, openSenseMapLayer]
 
 // https://www.npmjs.com/package/leaflet-groupedlayercontrol
 let overlaysObj = {
@@ -179,14 +181,18 @@ let overlaysObj = {
     //"CityProbe2": cityprobe2layer,
     "Smart Citizen Kit": scklayer,
     "Sensors with no data": errorlayer,
-    "WiFi Locations": wifilayer,
     "Speedtraps": speedTrapLayer,
     "MET.no Air Quality Sensor": metNoAirLayer,
-    "Various universities": variousUniversitiesLayer,
-    "Open-meteo": openMeteoLayer
+    "Various universities in Denmark": variousUniversitiesLayer,
+    "Open-meteo": openMeteoLayer,
+    "SMHI": smhiLayer,
+    "OpenSenseMap": openSenseMapLayer
+  },
+  "Other": {
+    "WiFi Locations": wifilayer,
   },
   "Tools": {
-    "Cluster markers": markers,
+    // "Cluster markers": markers,
     "SafeCast Radiation": SafeCast,
     "Matrikelkort": matrikelkortlayer,
     "OWM Clouds": OpenWeatherMap_Clouds,
@@ -210,15 +216,15 @@ const ZoomViewer = L.Control.extend({
     return gauge;
   }
 });
-const zoomViewer = (new ZoomViewer()).addTo(map);
+// const zoomViewer = (new ZoomViewer()).addTo(map);
 
 // Place a marker, and add a pop-up to it.
 function placeSensorDataMarker(lat, lng, sensor){
   let iconUrl = "img/msql.png";
   let device_type = sensor.device_type
-  if(device_type != undefined){
-    iconUrl = sensorOptions.getIconMap(device_type)
-  } else { console.error("No icon found for", sensor) }
+  let gic = sensorOptions.getIconMap(device_type)
+  if(gic){ iconUrl = gic } 
+  else { console.error("No icon found for '", device_type, "'") }
 
   // for layer filtering.
   let publisher = sensorOptions.getPublisherMap(sensor.device_type)
@@ -245,6 +251,12 @@ function placeSensorDataMarker(lat, lng, sensor){
       break
     case "Open-Meteo":
       layerToAddTo = openMeteoLayer
+      break
+    case "SMHI":
+      layerToAddTo = smhiLayer
+      break;
+    case "OpenSenseMap":
+      layerToAddTo = openSenseMapLayer
       break
     default:
       console.warn(`no layer found. Will be added to the error layer. publisher: '${publisher}' `, sensor)
@@ -281,7 +293,7 @@ function placeSensorDataMarker(lat, lng, sensor){
     }
     // clustering tool. 
     layers.addLayer(locationMarker)
-    markerClusterGroupingTool.addLayer(locationMarker)
+    // markerClusterGroupingTool.addLayer(locationMarker)
   }
 }
 
@@ -498,7 +510,7 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor', 'open-meteo']
+let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor', 'open-meteo', 'smhi', 'opensensemap']
   Promise.all(sources.map(url =>
     fetch('/locations/' + url)
       .then(handleErrors)
@@ -595,7 +607,7 @@ function getMarkers(bounds){
   console.debug("getmarkers")
   let layers = [];
 
-  markers.eachLayer((layer) => { 
+  map.eachLayer((layer) => { 
     if(layer instanceof L.Marker || layer instanceof L.polyline){
       if(bounds.contains(layer.getLatLng())){
         layers.push(layer)
@@ -631,7 +643,7 @@ function buildSidebarTable(lat, lng, sensor){
   let tableListOutput;
   Object.entries(sensor).forEach(([key, value]) => {
       if(key == "json"){
-        tableListOutput += "<tr><td>------------json--------------</td></tr>"
+        tableListOutput += "<tr><td>JSON CONTENT: </td></tr>"
         Object.entries(value).forEach((K) => {tableListOutput += `<tr><td>${K[0]}</td><td>${K[1]}</td></tr>`})
       } else {
         let unitRes = sensorOptions.getUnitMap(key)
@@ -642,6 +654,14 @@ function buildSidebarTable(lat, lng, sensor){
         }
       }
   })
+
+  if(sensorOptions.getPublisherMap(sensor.device_type) == "SMHI"){
+    tableListOutput += "<tr><td>note: Sun and Radiation are measured at seperate locations from everything else.</td></tr>"
+  } else if(sensorOptions.getPublisherMap(sensor.device_type) == "DMI"){
+    tableListOutput += "<tr><td>Explaination of weather codes: </td><td><a href=https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476621> link </a></td></tr>"
+    tableListOutput += "<tr><td>Explaination of parameters: </td><td><a href=https://confluence.govcloud.dk/pages/viewpage.action?pageId=26476616> link </a></td></tr>"
+  }
+
   const tableListEnd = "</tbody></table>"
 
   return loc+tableListOutput+tableListEnd
@@ -673,9 +693,6 @@ function buildQueryToolTable(arr) {
 // Need to do union of keys from all records as some records may not contain
 // all records
 function addAllColumnHeaders(arr, table) {
-  console.log("add column headers")
-  console.log("ARR", arr)
-  console.log("TABLE", table)
   let columnSet = [],
     tr = _tr_.cloneNode(false);
   for (let i = 0, l = arr.length; i < l; i++) {
@@ -717,6 +734,7 @@ function queryMap(){
   let geoClause = getSelect("clauseSelect")[0]
   let geoClauseComparedTo = getSelect("cls")[0]
   let targetGeom
+  let searchDist = document.getElementById("searchdistance").value
 
   let isGeoClause = document.getElementById("gccheck").checked
   let bufferExists = buffer != undefined
@@ -744,7 +762,8 @@ function queryMap(){
     orderType: orderType,
     limit: limit,
     geoClause: geoClause,
-    targetGeom: targetGeom
+    targetGeom: targetGeom,
+    searchDist: searchDist
   }
 
   console.log(QueryParams)

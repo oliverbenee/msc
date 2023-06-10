@@ -44,7 +44,8 @@ table.queryTable td {
 
 form.queryForm {
   /* Center the form onto the page itself */
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
   /* Ensure, that the form fits all devices */
   width: 60%;
   /* Ensures the outline of the form is visible. */
@@ -72,5 +73,7 @@ select.orderSelect {
 input.inputLimit {
   width:5em;
   text-align: center;
+  margin-left: auto;
+  margin-right: auto;
   box-sizing: border-box;
 }

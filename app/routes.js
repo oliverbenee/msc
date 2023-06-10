@@ -26,6 +26,8 @@ router.get('/locations/wifi', db.getWiFi)
 router.get('/locations/metno', db.getMetNo)
 router.get('/locations/ausensor', db.getAUSensor)
 router.get('/locations/open-meteo', db.getOpenMeteo)
+router.get('/locations/smhi', db.getSMHI)
+router.get('/locations/opensensemap', db.getOpenSenseMap)
 
 router.get('/locations/:id', db.getLocationById)
 //router.post('/locations', db.createLocation)
@@ -250,6 +252,10 @@ router.get('/AUluft/vesterbro', cache(3600), (req, res) => {
     .catch(error => console.log('error', error))
 })
 
+////////////////////////////////////////////////////////////////////////////////////
+// API Fetch MET.no stations. These seem to be the same as the ones used by yr.no //
+////////////////////////////////////////////////////////////////////////////////////
+
 const API_URL_METNO_AIRQUALITYFORECAST = 'https://api.met.no/weatherapi/airqualityforecast/0.1/'
 router.get('/metno/stations', cache(3600), (req, res) => {
   fetch(API_URL_METNO_AIRQUALITYFORECAST + 'stations')
@@ -276,6 +282,39 @@ router.get('/open-meteo/:lat/:lng', (req, res) => {
   .then(response => response.json())
   .then(result => res.send(result))
   .catch(error => console.log('error', error))
+})
+
+/////////////////////////////////
+// API Fetch SMHI.se stations. //
+/////////////////////////////////
+
+const API_URL_SMHI_METOBS = "https://opendata-download-metobs.smhi.se/api/version/latest"
+router.get('/smhi/:parameter', cache(3600), (req, res) => {
+  const param = req.params.parameter
+  fetch(API_URL_SMHI_METOBS + '/parameter/' + param + '/station-set/all/period/latest-hour/data.json')
+  .then(response => response.json())
+  .then(result => res.send(result))
+  .catch(error => console.log('error', error))
+})
+
+////////////////////////////////////////
+// API Fetch OpenSenseMap senseboxes. //
+////////////////////////////////////////
+
+const API_URL_OPENSENSEMAP = "https://api.opensensemap.org/boxes"
+
+
+
+router.get('/opensensemap', cache(3600), (req, res) => {
+  var requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
+  let time = new Date().toISOString()
+  fetch(`https://api.opensensemap.org/boxes?date=${time}&format=geojson`, requestOptions)
+    .then(response => response.json())
+    .then(result => res.send(result))
+    .catch(error => console.log('error', error));
 })
 
 module.exports.router = router;

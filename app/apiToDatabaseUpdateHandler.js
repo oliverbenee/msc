@@ -11,7 +11,7 @@ const $ = require( "jquery" )( window );
 const  { SmartCitizenKitFactory, SensorOptions, WiFiRouterFactory, 
   NullSensorFactory, MetNoAirQualitySensorFactory, 
   CopenhagenMeterologySensorFactory, AarhusUniversityAirqualitySensorFactory, 
-  DMIFreeDataSensorFactory, OpenMeteoStationFactory} = require('fix-esm').require('sensornodefactory')
+  DMIFreeDataSensorFactory, OpenMeteoStationFactory, OpenSenseMapSensorFactory } = require('fix-esm').require('sensornodefactory')
 
 const sensorOptions = new SensorOptions();
 const smartCitizenKitFactory = new SmartCitizenKitFactory();
@@ -22,6 +22,7 @@ const copenhagenMeterologySensorFactory = new CopenhagenMeterologySensorFactory(
 const aarhusUniversityAirqualitySensorFactory = new AarhusUniversityAirqualitySensorFactory()
 const dmiFreeDataSensorFactory = new DMIFreeDataSensorFactory()
 const openMeteoStationFactory = new OpenMeteoStationFactory()
+const openSenseMapSensorFactory = new OpenSenseMapSensorFactory()
 
 function getInsertTemplate(lat, lng, sensor){
   return {"coordinates": "POINT(" + lat + " " + lng + ")", "json": sensor}
@@ -106,7 +107,7 @@ async function fetchMetNoAQ() {
         height: feature.height,
         municipality: feature.kommune.name
       }
-      console.log("new station ", stationData.device_id)
+      // console.log("new station ", stationData.device_id)
       axios.get(`/metno/${stationData.device_id}`)
       .then(response => {return response.data})
       .then((res) => {
@@ -257,19 +258,6 @@ function tableToJson(table) {
   return results;
 }
 
-function fetchAll(){
-  fetchDMI()
-  fetchSCK()
-  fetchWiFi()
-  fetchMetNoAQ()
-  fetchAUSensor()
-}
-// fetchAll()
-
-// setInterval(() => {
-//   fetchAll()
-// }, 600000)
- 
 function fetchOpenMeteoloc(lat, lng){
   axios.get(`/open-meteo/${lat}/${lng}`)
   .then(response => {
@@ -306,4 +294,93 @@ function fetchOpenMeteo(){
   }
 }
 
-fetchOpenMeteo()
+let stationValues = new Map()
+let paramtl = new Map()
+paramtl.set("1","t")
+paramtl.set("3","wind_dir")
+paramtl.set("4","wind_speed")
+paramtl.set("6","h")
+paramtl.set("7","precip")
+paramtl.set("9","p")
+paramtl.set("10","sun")
+paramtl.set("11","radia_glob")
+paramtl.set("12","visibility")
+
+function fetchSMHI(){
+  let parameters = [1, 3, 4, 6, 7, 9, 10, 11, 12]
+  Promise.all(parameters.map(param => axios.get(`/smhi/${param}`).then(response => {return response.data})))
+  .then((data) => {  
+    console.log("data returned")
+    data.forEach(RESULT => {
+      let stationList = RESULT.station
+      let paramName = paramtl.get(RESULT.parameter.key)
+      stationList.forEach((element) => {
+        let obj = {
+          latitude: element.latitude,
+          longitude: element.longitude,
+          device_id: element.key,
+          device_type: element.measuringStations,
+          sensorSource: "SMHI",
+          owner: element.owner,
+          height: element.height,
+        }
+        if(element.value[0] != undefined){
+          obj['time'] = new Date(element.value[0].date).toISOString().slice(0, 19).replace('T', ' ')
+          let valuesForThisStation = stationValues.get(obj.device_id)
+          if(valuesForThisStation == null){
+            obj[paramName] = element.value[0]['value']
+            stationValues.set(obj.device_id, obj)
+          } else {
+            valuesForThisStation[paramName] = element.value[0]['value']
+            stationValues.set(obj.device_id, valuesForThisStation)
+          }
+        }
+      })
+    });
+  })
+  .then(() => {
+    stationValues.forEach((element) => {
+      sendPositionToDatabase(element.latitude, element.longitude, element)
+    })
+  }).catch((error) => {console.error(error)})
+}
+
+function extend(a, b){
+  for(var key in b)
+      if(b.hasOwnProperty(key))
+          a[key] = b[key];
+  return a;
+}
+
+function fetchOpenSenseMap(){
+  axios.get('/opensensemap')
+  .then(response => {
+    let data = response.data.features
+    data.forEach(element => {
+      try {
+        const latitude = element.geometry.coordinates[1]; 
+        const longitude = element.geometry.coordinates[0]
+        let measurement = openSenseMapSensorFactory.create(element.properties)
+        sendPositionToDatabase(latitude, longitude, measurement)
+      } catch(e) {
+        console.log("Unusable element error ", element, e)
+      }
+    })
+  }).catch(err => { console.error("error", err) })
+}
+
+function fetchAll(){
+  // fetchDMI()
+  // fetchSCK()
+  // fetchWiFi()
+  // fetchMetNoAQ()
+  // fetchAUSensor()
+  // fetchOpenMeteo()
+  // fetchSMHI()
+  fetchOpenSenseMap()
+}
+
+fetchAll()
+setInterval(() => {
+  fetchAll()
+}, 600000)

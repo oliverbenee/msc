@@ -1,11 +1,5 @@
 h1, h2 { font-family:"Arial" }
 
-/* Allow responsive web map. */
-html, body, #map{
-  /*height: 100%;*/
-  width: 97vw;
-}
-
 /* Set map size. */
 #map{
   height: 650px;
@@ -14,4 +8,8 @@ html, body, #map{
 /* Make table elements readable */
 td {
   max-width: 10em;
+}
+
+input[type="number"] {
+  width: 100%;
 }
