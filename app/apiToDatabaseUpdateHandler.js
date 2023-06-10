@@ -61,7 +61,7 @@ function fetchDMIFreeData(urls) {
   })
 }
 async function fetchDMI() {
-  console.log("begin updating dmi sensors")
+  // console.log("begin updating dmi sensors")
   const metobsUrls = ['/dmi/list/metobs', '/dmi/obs/metobs']
   fetchDMIFreeData(metobsUrls);
   const oceanobsUrls = ['/dmi/list/oceanobs', 'dmi/obs/oceanobs']
