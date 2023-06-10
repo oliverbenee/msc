@@ -324,7 +324,7 @@ const getFields = (request, response) => {
     } else if(element == "st_x"){q.select(st.x('geometry'))} 
     else if(element == "st_y"){q.select(st.y('geometry'))}
     else if(element == "st_distance" && params.targetGeom != undefined){
-      q.select(st.distance('geometry', params.targetGeom))
+      q.select(st.distance('geometry', st.setSRID(st.geomFromGeoJSON(params.targetGeom.geometry), 3857)))
       isDist = true
     }
     else {q.select(element)}
