@@ -37,7 +37,9 @@ function fetchDMIFreeData(urls) {
   .then((values) => {
     const locationFeatures = values[0].features // locations.
     const sensorFeatures = values[1].features // sensor data.
-    locationFeatures.forEach(item => {
+    // console.log(values[0])
+    for (const location in locationFeatures) {
+      const item = locationFeatures[location];
       // Identify associated station for the location.
       const latitude = item.geometry.coordinates[1]; 
       const longitude = item.geometry.coordinates[0]
@@ -50,11 +52,11 @@ function fetchDMIFreeData(urls) {
         featuresForThatSensor.stationType = stationType
         sendPositionToDatabase(latitude, longitude, dmiFreeDataSensorFactory.create(featuresForThatSensor))
       }
-    })
+    }
   })
   .catch((error) => { 
     console.error("ERROR");
-    console.log("If this one says 'Cannot read properties of undefined, the DMI metobs service is probably down.")
+    console.log("If this one says 'Cannot read properties of undefined', the DMI metobs service is probably down.")
     console.log(error)/*, error.data.features) */ 
   })
 }

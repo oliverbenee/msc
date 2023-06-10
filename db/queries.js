@@ -291,12 +291,12 @@ function createLocationFromBackend(object){
       knex('opensensemap')
       .insert(obj)
       .onConflict(['device_id', 'time']).merge(obj)
-      .then(() => {})
+      .then(() => {/*console.log("inserted into opensensemap")*/})
     } else {
       console.log("no sensorsource accepts ", json.sensorSource)
     }
   })
-  .then((result) => {/* console.log("added location.") */},
+  .then((result) => {/*console.log("added location.")*/},
   (error) => { console.error(error) })
 }
 
