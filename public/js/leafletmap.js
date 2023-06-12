@@ -510,7 +510,7 @@ map.on("zoomend", () => {
 
 // Fetch data from the MySQL database. 
 async function fetchDatabase(){
-let sources=  ['dmi', 'sck', 'wifi', 'metno', 'ausensor', 'open-meteo', 'smhi', 'opensensemap']
+let sources=  ['metno', 'dmi', 'sck', 'wifi', 'ausensor', 'open-meteo', 'smhi', 'opensensemap']
   Promise.all(sources.map(url =>
     fetch('/locations/' + url)
       .then(handleErrors)

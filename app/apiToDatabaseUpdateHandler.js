@@ -122,6 +122,7 @@ async function fetchMetNoAQ() {
           //console.log("response for station ", stationData.device_id)
           let finalStationData = stationData
           let observations = res.data.time[0].variables
+          observations["time"] = res.data.time[0].to
           // un-nest JSON.
           try {
           for (const key in observations) {
