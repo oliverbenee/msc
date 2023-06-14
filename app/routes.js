@@ -1,42 +1,5 @@
 const router = require('express').Router()
 
-//////////////////
-// Serve pages. //
-//////////////////
-
-router.get('/', (req, res) => {
-  res.redirect('/index');
-})
-router.get('/index', (req, res) => {
-  res.render('index', {layout: 'main'});
-})
-router.get('/index/:subpage', (req, res) => {
-  res.send('parameter: ' + req.params.subpage + ' which is of type: ' + typeof(req.params.subpage));
-})
-
-//////////////////////
-// Database access. // https://blog.logrocket.com/crud-rest-api-node-js-express-postgresql/#what-crud-api
-//////////////////////
-
-const db = require('../db/queries')
-router.get('/locations/dmi', db.getDmi)
-//app.get('/locations/cityprobe2', db.getCityProbe)
-router.get('/locations/sck', db.getSCK)
-router.get('/locations/wifi', db.getWiFi)
-router.get('/locations/metno', db.getMetNo)
-router.get('/locations/ausensor', db.getAUSensor)
-router.get('/locations/open-meteo', db.getOpenMeteo)
-router.get('/locations/smhi', db.getSMHI)
-router.get('/locations/opensensemap', db.getOpenSenseMap)
-
-router.get('/locations/:id', db.getLocationById)
-//router.post('/locations', db.createLocation)
-router.delete('/locations/:id', db.deleteLocation)
-router.purge('/locations', db.nukeTable)
-
-// Fetch data for the table
-router.put('/locations', db.getFields)
-
 /////////////////////////
 // Cache API requests. //
 /////////////////////////
@@ -64,6 +27,43 @@ let cache = (duration) => {
     }
   }
 }
+
+//////////////////
+// Serve pages. //
+//////////////////
+
+router.get('/', cache(3600), (req, res) => {
+  res.redirect('/index');
+})
+router.get('/index', cache(3600), (req, res) => {
+  res.render('index', {layout: 'main'});
+})
+router.get('/index/:subpage', cache(3600), (req, res) => {
+  res.send('parameter: ' + req.params.subpage + ' which is of type: ' + typeof(req.params.subpage));
+})
+
+//////////////////////
+// Database access. // https://blog.logrocket.com/crud-rest-api-node-js-express-postgresql/#what-crud-api
+//////////////////////
+
+const db = require('../db/queries')
+router.get('/locations/dmi', cache(3600), db.getDmi)
+//app.get('/locations/cityprobe2', db.getCityProbe)
+router.get('/locations/sck', cache(3600), db.getSCK)
+router.get('/locations/wifi', cache(3600), db.getWiFi)
+router.get('/locations/metno', cache(3600), db.getMetNo)
+router.get('/locations/ausensor', cache(3600), db.getAUSensor)
+router.get('/locations/open-meteo', cache(3600), db.getOpenMeteo)
+router.get('/locations/smhi', cache(3600), db.getSMHI)
+router.get('/locations/opensensemap', cache(3600), db.getOpenSenseMap)
+
+router.get('/locations/:id', db.getLocationById)
+//router.post('/locations', db.createLocation)
+router.delete('/locations/:id', db.deleteLocation)
+router.purge('/locations', db.nukeTable)
+
+// Fetch data for the table
+router.put('/locations', db.getFields)
 
 ////////////////////////////////////////
 // API Fetch opendata.dk sensor data. //
@@ -260,7 +260,11 @@ router.get('/metno/stations', cache(3600), (req, res) => {
   fetch(API_URL_METNO_AIRQUALITYFORECAST + 'stations')
     .then(response => response.json())
     .then(result => res.send(result))
-    .catch(error => console.log('error', error))
+    .catch(error => {
+      if(error.type != 'FetchError'){ 
+        console.log('error', error)
+      }
+    })
 })
 
 router.get('/metno/:station', cache(3600), (req, res) => {
